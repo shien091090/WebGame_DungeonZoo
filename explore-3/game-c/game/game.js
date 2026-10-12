@@ -47,6 +47,7 @@ var COLS = 18, ROWS = 23, TILE = 80, WORLD_W = 1440, WORLD_H = 1840;
 var HUD_H = 120;
 var DAYS = 3, DUNGEON_TIME = 60, PARADE_TIME = 60;
 var TEAM_MAX = 12, MON_GAP = 46, ROPE_GAP = 24;
+var ROPE_START = 21; // 初始繩長節數: 0 隻魔物時總長 504, 繞一圈(約 314)有餘裕
 var HEAD_R = 16, TURN_MAX = 6;
 var NEST_CHAR = { f: 'fire', g: 'stone', m: 'mushroom', b: 'bat' };
 // zone: [c0,c1,r0,r1]
@@ -142,7 +143,7 @@ function mkMonster(species, rage) {
 }
 function newRun() {
   G = {
-    day: 1, gold: 0, goldEarned: 0, rep: 0, maxHearts: 4, collarMax: 3, speed: 300, ropeCount: 10,
+    day: 1, gold: 0, goldEarned: 0, rep: 0, maxHearts: 4, collarMax: 3, speed: 300, ropeCount: ROPE_START,
     team: [mkMonster('fire', 20)],
     shop: { longRope: { lv: 0, cost: 50 }, collarBag: { lv: 0, cost: 40 }, armor: { lv: 0, cost: 40 }, swiftFeet: { lv: 0, cost: 50 } }
   };
