@@ -71,6 +71,7 @@ var STAND_DEFS = [
 ];
 var PLAZA = { x0: 90, x1: 630, y0: 230, y1: 1170 };
 var FOUNT = { x: 360, y: 700, r: 70 };
+var LOOSE_INSET = 80; // 失控魔物停靠點離廣場邊界的最小距離(隊頭最貼邊 16, 要留繞圈空間)
 var GUIDE = [
   { t: '帶隊', s: '隊伍會跟著游標走' },
   { t: '圍圈', s: '繞一圈圍住魔物, 削牠體力' },
@@ -578,9 +579,13 @@ function updateParade(dt) {
     var ns = nearestStand(m.bx, m.by);
     if (!ns.stand) continue;
     var tp = nearestOnRect(ns.stand, m.bx, m.by);
+    // 停靠點夾在「隊頭繞得到」的範圍內(廣場內縮 LOOSE_INSET), 否則貼邊的魔物圈不到
+    tp.x = clamp(tp.x, PLAZA.x0 + LOOSE_INSET, PLAZA.x1 - LOOSE_INSET);
+    tp.y = clamp(tp.y, PLAZA.y0 + LOOSE_INSET, PLAZA.y1 - LOOSE_INSET);
+    var td = hyp(tp.x - m.bx, tp.y - m.by);
     m.angle = Math.atan2(tp.y - m.by, tp.x - m.bx);
-    if (ns.dist > 24) {
-      var sd = Math.min(170 * dt, ns.dist);
+    if (td > 4) {
+      var sd = Math.min(170 * dt, td);
       m.bx += Math.cos(m.angle) * sd; m.by += Math.sin(m.angle) * sd;
     } else {
       if (!m.arrived) { m.arrived = true; m.atkT = 1.5; }
