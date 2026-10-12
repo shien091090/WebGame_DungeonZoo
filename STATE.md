@@ -1,6 +1,6 @@
 stage: explore(探索)
-rounds: 探索 3, 深掘 0, 打磨 0
-current: explore-3
+rounds: 探索 4, 深掘 0, 打磨 0
+current: explore-4
 status: 等待試玩回饋
 log:
 - 2026-10-10 建立專案, 玩法寫入 idea.md
@@ -11,3 +11,5 @@ log:
 - 2026-10-12 探索第3輪設計完成, 3 款: game-a, game-b, game-c
 - 2026-10-12 探索第3輪 game-c 修 bug 完成
 - 2026-10-12 探索第3輪 game-c 修 bug 完成
+- 2026-10-12 探索第3輪檢討假設完成, 選擇: continue
+- 2026-10-12 探索第4輪設計完成, 3 款: game-a, game-b, game-c
