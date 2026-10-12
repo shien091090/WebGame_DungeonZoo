@@ -1,0 +1,6 @@
+{
+  "targets": {
+    "art": "art/art.js 的 drawShowMonster(約第 681 行取 species 處與第 755 行「表演瞬間放射」): species 不在 SP 表內時(接合腳本傳入的是假物件, 非 fire/water/thunder/stone)SP[sp] 為 undefined, 讀 .light 就崩。請在函式開頭把 sp 正規化: 若 !SP[sp] 就改成 'fire'(或 SP[sp] 取不到時用 SP.fire), 讓第 755 行及同函式內其他 SP[sp] 用法(含第 331、439 行同類寫法)都不會因未知種類而丟例外。其餘繪圖函式也檢查一遍, 凡以 SP[...] 直接取值的都補上 || SP.fire 的後備, 如第 142 行 creature 已有的作法。"
+  },
+  "reason": "game.js 傳給 drawShowMonster 的欄位(species 等)與 interface.json 一致, 呼叫合法; 崩潰出在 art.js 對 species 沒有防呆, 直接用 SP[sp].light, 其他函式已有 || SP.fire 後備, 唯獨這處漏了, 屬美術端問題。"
+}

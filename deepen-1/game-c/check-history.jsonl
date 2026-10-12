@@ -1,0 +1,2 @@
+{"retries": 0, "ok": false, "errors": [{"step": "art", "message": "TypeError: Cannot read properties of undefined (reading 'light') |     at Object.drawShowMonster (art/art.js:755:53) |     at C:\\Users\\user\\.claude\\skills\\game-studio-lab\\check\\check.js:202:31"}]}
+{"retries": 1, "ok": true, "errors": []}
