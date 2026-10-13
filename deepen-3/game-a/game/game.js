@@ -815,7 +815,7 @@ function startFly(m) {
   var d = dist(m.x, m.y, tx, ty);
   if (d > 360) { tx = m.x + (tx - m.x) / d * 360; ty = m.y + (ty - m.y) / d * 360; }
   tx = clamp(tx, 100, 620); ty = clamp(ty, 310, 950);
-  m.state = 'fly'; m.dashing = false;
+  m.state = 'fly'; m.dashing = false; m.dashT = 0;
   m.fly = { t: 0, sx: m.x, sy: m.y, tx: tx, ty: ty };
 }
 function landFly(m) {
@@ -823,11 +823,17 @@ function landFly(m) {
   S.slam.push({ x: m.x, y: m.y, t: 0, dur: 0.4 });
   var o = liveOthers(m);
   for (var i = 0; i < o.length; i++) if (dist(m.x, m.y, o[i].x, o[i].y) <= 110) ignite(o[i], 12, 1);
+  // 落地那一格若鋪了地板照常觸發(第 42 條); 同時更新所在格, 避免沿用起飛前的格子
+  var ci = cellOf(m.x, m.y);
+  if (ci !== m.cell) {
+    m.cell = ci;
+    if (S.floors[ci] && (m.lastTrig[ci] === undefined || S.t - m.lastTrig[ci] >= 2)) sFloorTrigger(m, ci);
+  }
 }
 
 function showMove(m, vx, vy, spd, dt) {
   var l = Math.sqrt(vx * vx + vy * vy);
-  if (l < 1e-6) return;
+  if (l < 1) { var ra = rnd(0, 6.283); vx = Math.cos(ra); vy = Math.sin(ra); l = 1; } // 兩隻疊在同一點時方向為零向量, 改隨機方向才分得開
   m.x += vx / l * spd * dt; m.y += vy / l * spd * dt;
   if (Math.abs(vx) > 0.01) m.dir = vx > 0 ? 1 : -1;
 }
@@ -860,8 +866,9 @@ function moveShowMon(m, dt) {
       m.dashCd -= dt;
       if (m.dashCd <= 0 && others.length) {
         o = pick(others); m.hunt = o; m.dashCd = 2; m.dashT = 0.3;
-        var dd = dist(m.x, m.y, o.x, o.y) || 1;
-        m.dvx = (o.x - m.x) / dd; m.dvy = (o.y - m.y) / dd;
+        var dd = dist(m.x, m.y, o.x, o.y);
+        if (dd < 1) { var ra3 = rnd(0, 6.283); m.dvx = Math.cos(ra3); m.dvy = Math.sin(ra3); }
+        else { m.dvx = (o.x - m.x) / dd; m.dvy = (o.y - m.y) / dd; }
       } else if (m.dashCd <= 0) m.dashCd = 2;
     }
     return;
@@ -895,8 +902,9 @@ function moveShowMon(m, dt) {
   } else if (sp === 'water') {
     m.orbitT -= dt;
     if (m.orbitT <= 0 || !m.center || m.center.state !== 'roam' || m.center === m) { m.center = nearestOther(m); m.orbitT = 5; }
-    var c = m.center, d = dist(m.x, m.y, c.x, c.y) || 1;
-    var rx = (m.x - c.x) / d, ry = (m.y - c.y) / d;
+    var c = m.center, d = dist(m.x, m.y, c.x, c.y);
+    var rx, ry;
+    if (d < 1) { var ra2 = rnd(0, 6.283); rx = Math.cos(ra2); ry = Math.sin(ra2); d = 1; } else { rx = (m.x - c.x) / d; ry = (m.y - c.y) / d; }
     var vx = -ry * 70, vy = rx * 70;
     var rad = clamp(200 - d, -70, 70);
     vx += rx * rad; vy += ry * rad;
