@@ -42,11 +42,11 @@ var DUNGEONS = [
            '#####..#####', '#..........#', '#.p..oo..p.#', '#..........#', '#.L......L.#', '#..........#'] }
 ];
 var CARDS = [
-  { key: 'provoke', name: '激將',     cost: 10, desc: '點名的魔物大怒' },
-  { key: 'chill',   name: '冰鎮',     cost: 10, desc: '點名的魔物冷靜下來' },
-  { key: 'rampage', name: '橫衝直撞', cost: 15, desc: '點名的魔物一路撞開別隻' },
-  { key: 'rally',   name: '集合',     cost: 15, desc: '全場其他魔物跑到點名的魔物身邊' },
-  { key: 'encore',  name: '安可',     cost: 20, desc: '點名的魔物連演 3 次' }
+  { key: 'provoke', name: '激將',     cost: 0, desc: '點名的魔物大怒' },
+  { key: 'chill',   name: '冰鎮',     cost: 0, desc: '點名的魔物冷靜下來' },
+  { key: 'rampage', name: '橫衝直撞', cost: 0, desc: '點名的魔物一路撞開別隻' },
+  { key: 'rally',   name: '集合',     cost: 0, desc: '全場其他魔物跑到點名的魔物身邊' },
+  { key: 'encore',  name: '安可',     cost: 0, desc: '點名的魔物連演 3 次' }
 ];
 function cardDef(k) { for (var i = 0; i < CARDS.length; i++) if (CARDS[i].key === k) return CARDS[i]; return null; }
 
