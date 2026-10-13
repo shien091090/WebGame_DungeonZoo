@@ -1,0 +1,233 @@
+{
+  "canvas": {
+    "width": 1280,
+    "height": 720
+  },
+  "draw": [
+    {
+      "name": "drawBackground",
+      "state": []
+    },
+    {
+      "name": "drawTile",
+      "state": ["x", "y", "dungeon", "kind", "room", "nest"],
+      "size": [60, 60]
+    },
+    {
+      "name": "drawTamer",
+      "state": ["x", "y", "facing", "weapon", "dashing", "blink", "lassoing"],
+      "size": [64, 64]
+    },
+    {
+      "name": "drawWildMonster",
+      "state": ["x", "y", "species", "hp", "maxHp", "hit", "weak", "stunLeft", "stunDur", "lassoed", "casting", "move", "moveT", "moveDur", "dir"],
+      "size": {
+        "crab": [110, 110],
+        "default": [80, 80]
+      }
+    },
+    {
+      "name": "drawCaptureRing",
+      "state": ["x", "y", "t", "dur"],
+      "size": [110, 110]
+    },
+    {
+      "name": "drawLasso",
+      "state": ["x1", "y1", "x2", "y2", "progress", "t", "limit", "len", "maxLen"]
+    },
+    {
+      "name": "drawHazard",
+      "state": ["x", "y", "kind", "phase", "radius", "angle", "spread", "length", "width", "t", "dur", "reflected"]
+    },
+    {
+      "name": "drawWeaponFx",
+      "state": ["x", "y", "weapon", "move", "shape", "angle", "spread", "radius", "length", "width", "t", "dur"]
+    },
+    {
+      "name": "drawDungeonCard",
+      "state": ["x", "y", "dungeon", "open", "condition", "selected"],
+      "size": [360, 440]
+    },
+    {
+      "name": "drawRosterCard",
+      "state": ["x", "y", "species", "level", "picked", "selected"],
+      "size": [180, 240]
+    },
+    {
+      "name": "drawTimelineSlot",
+      "state": ["x", "y", "style", "slot", "card", "target", "selected", "active", "done"],
+      "size": {
+        "row": [640, 54],
+        "mini": [130, 46]
+      }
+    },
+    {
+      "name": "drawPickerPanel",
+      "state": ["layer", "options", "index"],
+      "size": {
+        "panel": [460, "50 + 52 × 選項數"],
+        "title": [460, 50],
+        "row": [460, 52]
+      }
+    },
+    {
+      "name": "drawSetupInfo",
+      "state": ["x", "y", "gold", "cards"],
+      "size": [460, 60]
+    },
+    {
+      "name": "drawCardFx",
+      "state": ["x", "y", "card", "t", "dur"]
+    },
+    {
+      "name": "drawStageDevice",
+      "state": ["x", "y", "device", "active", "t", "dur"],
+      "size": {
+        "confettiL": [60, 90],
+        "confettiR": [60, 90],
+        "sprinkler": [60, 60],
+        "spin": [360, 360]
+      }
+    },
+    {
+      "name": "drawDeviceFx",
+      "state": ["x", "y", "kind", "radius", "color", "t", "dur"]
+    },
+    {
+      "name": "drawShowArena",
+      "state": []
+    },
+    {
+      "name": "drawShowMonster",
+      "state": ["x", "y", "species", "level", "rage", "redLow", "marks", "markLeft", "markDur", "mode", "performing", "performT", "performDur", "fx", "fxT", "fxDur", "chargeT", "chargeDur", "looseT", "looseDur", "move", "moveT", "moveDur", "dir"],
+      "size": {
+        "crab": [120, 120],
+        "default": [96, 96],
+        "rageBar": [90, 12]
+      }
+    },
+    {
+      "name": "drawFence",
+      "state": ["x", "y", "side", "broken"],
+      "size": [136, 14]
+    },
+    {
+      "name": "drawVisitor",
+      "state": ["x", "y", "side", "mode"],
+      "size": [56, 76]
+    },
+    {
+      "name": "drawShopItem",
+      "state": ["x", "y", "item", "cost", "level", "owned", "equipped", "affordable", "selected"],
+      "size": [380, 100]
+    },
+    {
+      "name": "drawButton",
+      "state": ["x", "y", "w", "h", "label", "selected"]
+    },
+    {
+      "name": "drawFloatText",
+      "state": ["x", "y", "text", "kind", "t", "dur"]
+    },
+    {
+      "name": "drawResultPanel",
+      "state": ["rep", "goldEarned", "bestChain", "roster", "stars"],
+      "size": [800, 520]
+    },
+    {
+      "name": "drawHud",
+      "state": ["phase", "day", "dayMax", "gold", "rep", "hearts", "maxHearts", "ropes", "ropeMax", "weapon", "xCdLeft", "xCdMax", "timeLeft", "timeMax", "dungeon", "message"],
+      "size": {
+        "dungeon": [1280, 100],
+        "other": [1280, 50]
+      }
+    }
+  ],
+  "notes": {
+    "x,y": "皆為物件中心點(畫面座標; 地下城已加上偏移 (40, 110)); 例外: drawButton 的 x,y 為左上角、w,h 為寬高",
+    "固定版位": "drawPickerPanel 固定畫在 x 760~1220, 標題列 y 60~110, 第 i 行 y 110 + 52i ~ 162 + 52i(由美術依 options 長度畫); drawResultPanel 固定畫在畫面中央 (640, 380); drawHud 固定畫在畫面頂端全寬, phase 為 dungeon 時高 100、其他 phase 高 50; 其餘有 x,y 的元件依 spec 數值表版面由 RD 傳入",
+    "文字歸屬": "說明頁以外畫面上所有文字都由美術在對應的 draw 函式裡畫, RD 不另外畫字。各函式要畫的文字: drawDungeonCard 畫地下城名稱、住的兩種魔物名、condition 字串(未開放時)或「已開放」; drawRosterCard 畫種類名稱、「Lv N」與「上場」標記; drawPickerPanel 畫標題(layer 為 card 時「放哪張卡?」、target 時「點名誰?」)與每行的 name、desc(魔物與清空那行只畫 name); drawSetupInfo 畫「金幣 N」「已排 N 段」; drawTimelineSlot 的 row 樣式畫時段字串「5i~5i+5 秒」、卡名與點名魔物名(不點名卡畫「全場」, 空的畫「—」), mini 樣式不畫字, 只畫卡的圖示與點名魔物的小頭像(不點名卡只畫卡圖示); drawCardFx 畫卡名加驚嘆號(例「集合!」); drawShopItem 依 item 畫名稱、說明(見 spec 第 71 條)、價格或「已擁有」、「裝備中」; drawButton 畫 label; drawFloatText 畫 text; drawCaptureRing 畫「準備捕捉」; drawShowMonster 畫「Lv N」; drawResultPanel 畫所有結算數字、陣容與「按 Z 重來」; drawHud 畫天數、金幣、名聲、計時、地下城名、心、繩、武器與 message 字串。drawStageDevice、drawDeviceFx 不畫字",
+    "dungeon": "forest(菇菇林) | dune(沙丘巢) | mine(冰晶礦坑)",
+    "kind(Tile)": "wall | pillar | floor | hurt(傷害地形: 菇菇林沒有、沙丘巢仙人掌叢、冰晶礦坑冰錐叢) | slow(減速地形: 菇菇林泥沼、沙丘巢鬆沙、冰晶礦坑冰面)",
+    "room": "left(左房) | right(右房) | hall(走道)",
+    "nest": "true 表示這格是巢穴",
+    "species": "spore(菇菇球) | frog(露水蛙) | mole(鑽沙鼴) | tumble(風滾草) | butterfly(冰晶蝶) | crab(礦石蟹)",
+    "facing": "面向, 0~7: 0 上、1 右上、2 右、3 右下、4 下、5 左下、6 左、7 左上",
+    "weapon": "club(棍棒) | sword(劍) | spear(長槍) | whip(長鞭)",
+    "dashing": "true 表示長槍突進中(無敵)",
+    "blink": "true 表示受擊無敵閃爍中",
+    "lassoing": "true 表示馴獸師正套著一隻魔物",
+    "hit": "true 表示受擊閃白(0.1 秒)",
+    "weak": "true 表示殘血(血量 ≤ 30%), 要畫虛弱記號",
+    "stunLeft,stunDur": "劍擊暈的剩餘秒數 / 總長 2; stunLeft 為 0 表示沒暈。被套索套住時另以 lassoed 表示, 也要畫暈眩",
+    "lassoed": "true 表示被套索套住(暈眩, 不能出招)",
+    "casting": "true 表示正在施放技能的預警期間",
+    "move,moveT,moveDur": "move: walk(一般移動或靜止) | jump(露水蛙跳躍中, 總長 0.4) | burrow(鑽沙鼴鑽地中, 總長 1, 只露出地面上的土堆或完全不畫身體由美術決定, 但要看得出位置) | roll(風滾草滾動中, 一直是 roll); moveT 為已過秒數, walk 與 roll 時 moveT、moveDur 為 0 / 0",
+    "dir": "-1 朝左 | 1 朝右",
+    "t,dur(CaptureRing)": "準備捕捉已過秒數 / 總長(0.8, 露水蛙加成會縮短到最低 0.35); 進度 = t/dur",
+    "x1,y1,x2,y2": "套索兩端: 1 是馴獸師、2 是被套的魔物",
+    "progress": "繞圈進度 0~1, 1 = 收服; 建議畫成魔物周圍的一圈進度環",
+    "t,limit(Lasso)": "套索已過秒數 / 時限(5, 冰晶蝶加成每級 +1)",
+    "len,maxLen": "套索目前長度 / 最大長度 220(越接近越該顯示繃緊)",
+    "kind(Hazard)": "spore(孢子雲) | bubble(水泡) | spikes(地刺) | whirl(旋風) | frost(冰粉) | claw(鉗擊)",
+    "phase(Hazard)": "warn(預警) | active(生效) | fly(投射物飛行中)",
+    "形狀(Hazard)": "spore、frost: 以 x,y 為圓心的實心圓, radius 為外緣半徑(spore 110、frost 140); spikes: 從 x,y(施放者中心)朝 angle 延伸的長方形, length 320、width 50(寬度以中線左右各 25); claw: 以 x,y 為頂點、朝 angle 的扇形, spread 為張角弧度(120° = 2.094)、radius 為外緣半徑 160; bubble、whirl: 投射物, x,y 為中心, radius 為判定半徑(bubble 16、whirl 30), angle 為飛行方向。用不到的欄位給 0",
+    "t,dur(Hazard)": "目前 phase 已過秒數 / 該 phase 總長: spore warn 0.9、active 0.5; spikes warn 0.7、active 0.3; frost warn 0.6、active 0.4; claw warn 0.6、active 0.3; bubble fly 的 dur 為 0(飛到撞到為止); whirl fly 的 dur 為 2.5(存在時間)",
+    "angle": "方向弧度, 0 朝右, 順時針為正(畫面 y 向下)",
+    "reflected": "true 表示被劍打回去的投射物(改成打魔物, 建議換色)",
+    "move(WeaponFx)": "normal(Z 普攻) | skill(X 武器技)",
+    "shape(WeaponFx)": "arc(扇形: angle 為中心方向弧度、spread 為張角弧度、radius 為外緣半徑) | circle(整圈: radius 為外緣半徑) | line(長方形: 從 x,y 朝 angle 方向延伸 length、寬 width, 中線左右各半) | dash(突進殘影: 從 x,y 朝 angle 方向 length 的軌跡)",
+    "t,dur(WeaponFx)": "特效已過秒數 / 總長 0.2(突進為 0.25)",
+    "open": "true 表示已開放",
+    "condition": "未開放時的條件與進度字串, 例「金幣 60 + 收服露水蛙 1/2」; 已開放為空字串",
+    "level": "等級 0~3",
+    "picked": "true 表示已選上場",
+    "selected": "true 表示目前選擇框 / 游標在這一項",
+    "style(TimelineSlot)": "row(布置第 2 步的大列, 640×54) | mini(表演場下方縮小格, 130×46)",
+    "slot": "時段編號 0~8(第 i 段 = 開演後 5i ~ 5i+5 秒)",
+    "card": "provoke(激將) | chill(冰鎮) | rally(集合) | encore(安可) | rampage(橫衝直撞) | confetti(彩帶砲) | sprinkler(灑水車) | spin(旋轉舞台) | balloon(抽獎氣球) | 空字串(沒放)",
+    "target": "點名的種類代號; 不點名卡與沒放卡為空字串",
+    "active,done": "只在 mini 樣式有意義: active 為 true 表示目前在這個時段; done 為 true 表示這段的卡已發動(或沒反應), 畫暗。row 樣式一律 false",
+    "layer": "card(第一層選卡) | target(第二層點名)",
+    "options": "陣列, 每項 { type: card | monster | clear, key: 卡代號 / 種類代號 / clear, name, desc(一句說明, 魔物與清空為空字串) }",
+    "index": "面板中目前選中的行(0 起算)",
+    "cards(SetupInfo)": "已放卡的時段數 0~9",
+    "card(CardFx)": "同 card。點名卡冒在目標魔物頭上(x,y 為目標魔物中心); 不點名卡冒在畫面上方中央 (640, 180)",
+    "t,dur(CardFx)": "已過秒數 / 總長 0.8",
+    "device": "confettiL(左彩帶砲) | confettiR(右彩帶砲) | sprinkler(灑水車停車位) | spin(旋轉舞台轉盤, x,y 為圓心 (640, 356), 半徑 180, 畫在地板上、魔物之下)",
+    "active,t,dur(StageDevice)": "active 為 true 表示作用中: confettiL / confettiR 發射動作總長 0.5; sprinkler 為 true 表示車開出去了, 停車位畫成空的, 總長 2; spin 轉動總長 3。沒作用時 active false、t,dur 為 0 / 0",
+    "kind(DeviceFx)": "confettiWarn(彩帶砲落點預警圈, radius 160, 總長 0.8) | confettiBurst(彩帶砲爆開, radius 160, 總長 0.3, 只是顯示) | sprinkler(開動中的灑水車與水簾, x 為車身中心當下 x、y 為車道 y, radius 80 = 水簾上下各 80 的半高, 總長 2) | balloonWarn(氣球落下中, x,y 為落點, radius 110 為落點預警圈外緣, 氣球從上方往落點掉, 總長 1) | balloonBurst(氣球爆開, radius 110, 總長 0.3, 只是顯示)",
+    "color": "只對 balloonWarn、balloonBurst 有意義: red(點火) | blue(澆熄); 其他 kind 為空字串",
+    "t,dur(DeviceFx)": "已過秒數 / 該 kind 總長(見 kind)",
+    "rage": "0~100; 怒氣條上 50 標出表演門檻, redLow~100 標出紅區",
+    "redLow": "紅區下限 80 / 75 / 70 / 65",
+    "marks": "失控標記數 0~4(到 5 就失控, 不再顯示標記)",
+    "markLeft,markDur": "距離下次標記自動 −1 的剩餘秒數 / 總長 4; marks 為 0 時為 0 / 4",
+    "mode(ShowMonster)": "roam(照習性走動) | rampage(橫衝直撞中) | rally(集合: 走向被點名的魔物) | hold(被點名集合, 原地不動) | spin(被旋轉舞台捲動中) | knock(被撞開 / 被旋風推開中 0.2 秒) | charge(衝向圍欄 / 撞欄中) | loose(在觀眾席亂竄)",
+    "performing": "true 表示正在表演(表演瞬間起 0.5 秒)",
+    "performT,performDur": "表演動作已過秒數 / 總長 0.5; 沒在表演時為 0 / 0.5",
+    "fx(ShowMonster)": "none | ignited(剛被點燃型效果或相撞升怒) | doused(剛被澆熄型效果降怒)",
+    "fxT,fxDur": "fx 已過秒數 / 總長 0.5",
+    "chargeT,chargeDur": "撞欄已過秒數 / 總長 1.5; 還在衝刺途中時 chargeT 為 0; mode 不是 charge 時為 0 / 1.5",
+    "looseT,looseDur": "觀眾席亂竄已過秒數 / 總長 6; mode 不是 loose 時為 0 / 6",
+    "move,moveT,moveDur(ShowMonster)": "同 WildMonster 的 move: walk | jump(總長 0.4) | burrow(總長 1) | roll",
+    "side": "top | bottom",
+    "mode(Visitor)": "watch | scared | empty",
+    "item": "club | sword | spear | whip | attack | armor | ropeBag | rampage | confetti | sprinkler | spin | balloon",
+    "cost": "價格; 已擁有時仍給原價但 owned 為 true",
+    "level(ShopItem)": "強化已買次數; 武器與節目卡為 0",
+    "equipped": "只對武器有意義",
+    "label": "下一步 | 開演 | 出發",
+    "kind(FloatText)": "gold | redGold(紅區金幣, 文字含「×2」) | chain(文字含「連鎖 N」) | repDown | capture | levelUp | coin20 | fizzle(「沒反應」)",
+    "t,dur(FloatText)": "飄字已過秒數 / 總長 1",
+    "roster": "陣容陣列, 每項 { species, level }",
+    "bestChain": "七天中最長的連鎖段數",
+    "phase(Hud)": "guide | select | dungeon | setup1 | setup2 | show | shop | result",
+    "hearts,maxHearts,ropes,ropeMax,weapon,xCdLeft,xCdMax": "只在 dungeon 顯示; xCdMax 為 0 表示這把武器沒有 X 技(棍棒)",
+    "timeLeft,timeMax": "本段剩餘秒數 / 總長(地下城 60、表演場 45); 其他 phase 為 0 / 0",
+    "dungeon(Hud)": "目前地下城代號, 不在地下城時為空字串",
+    "message": "HUD 訊息字串(按鍵提示等), 由 RD 依 spec 數值表「HUD 訊息」給",
+    "繪製順序": "地下城: drawBackground → drawTile → drawHazard(預警與生效)→ drawCaptureRing → drawWildMonster → drawLasso → drawTamer → drawWeaponFx → drawHazard(投射物)→ drawFloatText → drawHud。表演場: drawShowArena → drawStageDevice(spin 轉盤)→ drawDeviceFx(預警圈)→ drawHazard → drawShowMonster → drawDeviceFx(灑水車、爆開、落下中的氣球)→ drawStageDevice(彩帶砲、灑水車停車位)→ drawCardFx → drawFence / drawVisitor → drawTimelineSlot(mini × 9)→ drawFloatText → drawHud。布置第 2 步不畫表演場: drawBackground → drawTimelineSlot(row × 9)→ drawSetupInfo → drawButton(開演)→ drawPickerPanel(開著時)→ drawHud"
+  },
+  "guidePages": 5
+}
