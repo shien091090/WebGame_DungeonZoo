@@ -1,6 +1,6 @@
-stage: deepen(深掘)
-rounds: 探索 4, 深掘 5, 打磨 0
-current: deepen-5
+stage: polish(打磨)
+rounds: 探索 4, 深掘 5, 打磨 1
+current: polish
 status: 等待試玩回饋
 log:
 - 2026-10-10 建立專案, 玩法寫入 idea.md
@@ -25,3 +25,5 @@ log:
 - 2026-10-14 深掘第4輪設計完成, 3 款: game-a, game-b, game-c
 - 2026-10-14 深掘第4輪檢討假設完成, 選擇: continue
 - 2026-10-14 深掘第5輪設計完成, 3 款: game-a, game-b, game-c
+- 2026-10-14 深掘第5輪檢討假設完成, 選擇: next
+- 2026-10-14 打磨第1輪設計完成, 1 款: game
