@@ -1,17 +1,29 @@
 # 音效 / 音樂素材來源
 
-授權統計: CC0 55 項(Kenney 46 檔 + OpenGameArt 2 檔 + OpenGameArt 7 段內嵌)、CC BY 4.0 5 項(背景音樂)。
+授權統計: CC0 56 項(Kenney 45 檔 + OpenGameArt 3 檔 + OpenGameArt 8 段內嵌)、CC BY 4.0 7 項(背景音樂 5 檔 + 觀眾歡呼 2 檔)。另有 1 個程式產生的音效(heat_warn, 無外部素材, 不列)。
+
+打磨第 3 輪異動: 拿掉 sfx_upgrade.ogg(個別升級移除)與長鞭普攻的內嵌段 attack_whip(長鞭移除); 新增 sfx_crowd_cheer.mp3、sfx_crowd_frenzy.mp3、sfx_crowd_unrest.ogg 與內嵌段 exit_prompt、crowd_clap。
 
 ## 遊戲畫面需要放的署名(CC BY 4.0)
 
-背景音樂為 Kevin MacLeod 作品, 依授權須署名。建議放在總結算畫面或開始畫面角落(由製作人決定位置):
+背景音樂(Kevin MacLeod)與觀眾歡呼聲(Gregor Quendel)依授權須署名。建議放在總結算畫面或開始畫面角落(由製作人決定位置):
 
 ```
 Music: "Waunobe March", "Monster Promenade", "Easy Lemon (60 second)", "Four Beers' Polka", "Happy Boy End Theme"
 Kevin MacLeod (incompetech.com)
 Licensed under Creative Commons: By Attribution 4.0
 https://creativecommons.org/licenses/by/4.0/
+
+Crowd cheering: "Free Crowd Cheering Sounds" by Gregor Quendel (gregorquendel.com)
+Licensed under CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
 ```
+
+## 觀眾歡呼聲(assets/, CC BY 4.0)
+
+| 檔名 | 事件 | 原始頁面(原檔名) | 作者 | 授權 | 剪輯 |
+|---|---|---|---|---|---|
+| sfx_crowd_cheer.mp3 | crowd_cheer(循環) | https://opengameart.org/content/free-crowd-cheering-sounds (Gregor Quendel - Crowd Cheering Sounds - 03 - Strong cheering - I.mp3) | Gregor Quendel | CC BY 4.0 | 取 6.0~14.4 秒(8.4 秒), 依 mp3 音框邊界截斷、未重新編碼; 播放時去頭 0.15 秒、尾段 1.2 秒交叉淡化進開頭做成循環 |
+| sfx_crowd_frenzy.mp3 | crowd_frenzy(循環, 主層) | https://opengameart.org/content/free-crowd-cheering-sounds (Gregor Quendel - Crowd Cheering Sounds - 01 - Strong cheering and strong rhythmic cheering.mp3) | Gregor Quendel | CC BY 4.0 | 同上(6.0~14.4 秒) |
 
 ## 背景音樂(assets/, CC BY 4.0)
 
@@ -27,7 +39,7 @@ https://creativecommons.org/licenses/by/4.0/
 
 ## 短音效(assets/, CC0)
 
-除最後兩列(OpenGameArt)外全部出自 Kenney(https://kenney.nl), 頁面標示 CC0。檔案為原檔直接複製改名, 未剪輯; 音量、音高(播放速度)與截斷長度在 sound.js 裡調。sound.js 另以 base64 內嵌同一份 ogg 供 Web Audio 解碼。
+除最後三列(OpenGameArt)外全部出自 Kenney(https://kenney.nl), 頁面標示 CC0。檔案為原檔直接複製改名, 未剪輯; 音量、音高(播放速度)與截斷長度在 sound.js 裡調。sound.js 另以 base64 內嵌同一份 ogg 供 Web Audio 解碼。
 
 | 檔名 | 事件 | 原始頁面(原檔名) | 作者 | 授權 | 剪輯 |
 |---|---|---|---|---|---|
@@ -73,12 +85,12 @@ https://creativecommons.org/licenses/by/4.0/
 | sfx_crowd_step_3.ogg | crowd_flee | https://kenney.nl/assets/impact-sounds (footstep_concrete_004.ogg) | Kenney | CC0 | 無 |
 | sfx_coin_tally.ogg | coin_tally | https://kenney.nl/assets/casino-audio (chips-stack-5.ogg) | Kenney | CC0 | 無 |
 | sfx_buy.ogg | buy | https://kenney.nl/assets/rpg-audio (handleCoins.ogg) | Kenney | CC0 | 無 |
-| sfx_upgrade.ogg | upgrade | https://kenney.nl/assets/digital-audio (powerUp2.ogg) | Kenney | CC0 | 無 |
 | sfx_unlock.ogg | unlock | https://kenney.nl/assets/music-jingles (jingles_STEEL04.ogg) | Kenney | CC0 | 無 |
 | sfx_tutorial_done.ogg | tutorial_done | https://kenney.nl/assets/interface-sounds (maximize_001.ogg) | Kenney | CC0 | 無 |
 | sfx_star.ogg | star | https://kenney.nl/assets/interface-sounds (glass_001.ogg) | Kenney | CC0 | 無(播放時依第幾顆升調) |
 | sfx_intermission.ogg | intermission | https://opengameart.org/content/classic-fanfare-lick (fanfare.ogg) | fvcalderan | CC0 | 無。作者在留言說明是自己用 GarageBand 內建樂器演奏, 非套用現成樂句 |
 | sfx_cheer.ogg | cheer | https://opengameart.org/content/cheers-0 (cheers.ogg) | Nocturnal_Vanguard | CC0 | 無 |
+| sfx_crowd_unrest.ogg | crowd_frenzy(循環, 騷動疊層) | https://opengameart.org/content/crowd-shoutingspeaking-ambience (crowd_shouting.ogg) | StarNinjas | CC0 | 只留開頭約 10.2 秒(依 Ogg 頁截斷、最後一頁標結尾並重算檢查碼, 未重新編碼); 播放時去頭 0.6 秒、尾段 1.5 秒交叉淡化進開頭做成循環。作者表示樂見署名但不強制 |
 
 ## 內嵌於 sound.js 的音效(無獨立檔, CC0)
 
@@ -89,11 +101,12 @@ https://creativecommons.org/licenses/by/4.0/
 | attack_club | attack(weapon: club) | https://opengameart.org/content/swishes-sound-pack (swish-2.wav) | artisticdude | CC0 | 去頭尾靜音、混成單聲道、降取樣 22.05 kHz、峰值正規化 −1 dBFS |
 | attack_sword | attack(weapon: sword) | https://opengameart.org/content/swishes-sound-pack (swish-13.wav) | artisticdude | CC0 | 同上 |
 | attack_spear | attack(weapon: spear) | https://opengameart.org/content/swishes-sound-pack (swish-11.wav) | artisticdude | CC0 | 同上 |
-| attack_whip | attack(weapon: whip) | https://opengameart.org/content/swishes-sound-pack (swish-10.wav) | artisticdude | CC0 | 同上 |
 | skill | skill | https://opengameart.org/content/swishes-sound-pack (swish-7.wav) | artisticdude | CC0 | 同上 |
 | freeze_all | freeze_all | https://opengameart.org/content/freeze-spell-0 (freeze.wav) | artisticdude | CC0 | 去頭尾靜音(從 0.10 秒起)、混成單聲道、48 kHz 降為 24 kHz、尾端淡出 0.25 秒、峰值正規化 −1 dBFS; 播放時 1.6 秒收掉 |
 | show_end | show_end | https://opengameart.org/content/applause-in-a-large-hall-or-church (applause-clapping-church-crowd-immersive.wav) | eXpl0it3r | CC0 | 取全曲最響的 3 秒(4.6~7.6 秒), 淡入 0.03 秒、淡出 0.9 秒, 單聲道 22.05 kHz, 峰值正規化 −1 dBFS |
+| exit_prompt | exit_prompt | https://opengameart.org/content/doorbell (doorbell.wav) | frosty ham | CC0 | 混成單聲道、48 kHz 降為 22.05 kHz、剪掉尾端 −50 dB 以下、淡出 0.15 秒、峰值正規化 −1 dBFS(0.93 秒, C5 → A4 兩音) |
+| crowd_clap | crowd_clap(循環) | https://opengameart.org/content/applause-in-a-large-hall-or-church (applause-clapping-church-crowd-immersive.wav) | eXpl0it3r | CC0 | 從掌聲漸弱的尾段(33.0~36.8 秒)切出 16 個單拍, 以 5 人各自節奏、拍一陣停一下的方式重新散佈成 6 秒首尾相接的循環(約每秒 10 拍), 單聲道 22.05 kHz, 峰值正規化 −3 dBFS |
 
 ## 核對
 
-assets/ 共 53 個檔 = 背景音樂 5 列 + 短音效 48 列; 另 7 段內嵌於 sound.js。沒有未登記的檔。
+assets/ 共 55 個檔 = 背景音樂 5 列 + 觀眾歡呼 2 列 + 短音效 48 列; 另 8 段內嵌於 sound.js(heat_warn 為程式產生, 不在此表)。沒有未登記的檔。

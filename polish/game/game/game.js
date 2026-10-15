@@ -1,14 +1,16 @@
 'use strict';
-/* 來馬戲團看一點大場面(打磨版第 2 輪)— 玩法驗證 Demo。只用方向鍵 + Z、X。
+/* 來馬戲團看一點大場面(打磨版第 3 輪)— 玩法驗證 Demo。只用方向鍵 + Z、X。
    邏輯與繪製分離: update(dt) 改狀態, render() 呼叫 Art.drawXxx。 */
 
 // ───────────────────────── 基本工具 ─────────────────────────
 const CW = (Art.canvas && Art.canvas.width) || 1280;
 const CH = (Art.canvas && Art.canvas.height) || 720;
-const DAY_MAX = 10;
-const BUILD = 'polish-2';
+const DAY_MAX = 7;
+const BUILD = 'polish-3';
 const PENDING_KEY = 'gamelog-WebGame_DungeonZoo-pending';
-const SHELF_FAME = [80, 150, 300, 500];   // 商店上架名聲門檻(0 一開始就上架)
+const SHELF_FAME = [100, 200, 350, 500];   // 商店上架名聲門檻(0 一開始就上架)
+const ROWS = 4;                            // 暗號節目單列數
+const TIERS = ['quiet', 'clap', 'cheer', 'frenzy'];
 const D2R = Math.PI / 180;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
@@ -18,7 +20,14 @@ function fmtNum(v) { return String(+v.toFixed(2)); }
 
 // ───────────────────────── 聲音(全部走這一層; Sound 不存在也不會壞) ─────────────────────────
 const Snd = {
-  muted: false, ready: false, want: null, cur: undefined, frame: {},
+  muted: false, ready: false, want: null, cur: undefined, frame: {}, crowdCur: '',
+  // 循環觀眾聲(安靜段 = ''); Sound 沒有 setCrowd 就略過
+  crowd(n) {
+    n = n || '';
+    if (n === this.crowdCur) return;
+    this.crowdCur = n;
+    try { if (typeof Sound !== 'undefined' && Sound.setCrowd) Sound.setCrowd(n); } catch (e) { console.error(e); }
+  },
   init() {
     if (this.ready) return;
     this.ready = true;
@@ -105,13 +114,12 @@ const SPECIES = ['lily', 'monkey', 'beetle', 'parrot', 'penguin', 'tanuki'];
 const SP = {
   lily:    { name: '鈴蘭精',   hp: 7,  effect: 'calm',   interval: 3.0, decay: 2,   rep: 1, kill: 3, desc: '朝對手撒三發花粉, 打中會〔冷靜〕', skill: 'pollen' },
   monkey:  { name: '火柴猴',   hp: 7,  effect: 'ignite', interval: 3.0, decay: 2,   rep: 1, kill: 3, desc: '丟出會飛回來的火柴, 打中會〔生氣〕', skill: 'match' },
-  beetle:  { name: '齒輪甲蟲', hp: 12, effect: 'ignite', interval: 3.2, decay: 2,   rep: 1, kill: 5, desc: '轉圈噴出一串齒輪, 打中會〔生氣〕', skill: 'gear' },
+  beetle:  { name: '齒輪甲蟲', hp: 12, effect: 'ignite', interval: 3.8, decay: 2,   rep: 1, kill: 5, desc: '轉圈噴出一串齒輪, 打中會〔生氣〕', skill: 'gear' },
   parrot:  { name: '標靶鸚鵡', hp: 12, effect: 'target', interval: 2.6, decay: 2,   rep: 1, kill: 5, desc: '羽毛射中的變成大家的〔標靶〕', skill: 'feather' },
   penguin: { name: '冰柱企鵝', hp: 16, effect: 'freeze', interval: 3.0, decay: 1.5, rep: 2, kill: 7, desc: '一道冰柱射線, 打中的〔凍住〕不動', skill: 'icebeam' },
-  tanuki:  { name: '戲法狸',   hp: 18, effect: 'warp',   interval: 3.0, decay: 1.5, rep: 2, kill: 8, desc: '紙牌射中的會被〔變走〕到別處', skill: 'card' },
+  tanuki:  { name: '戲法狸',   hp: 18, effect: 'warp',   interval: 3.6, decay: 1.5, rep: 2, kill: 8, desc: '紙牌射中的會被〔變走〕到別處', skill: 'card' },
 };
 const NEST_CH = { l: 'lily', m: 'monkey', g: 'beetle', p: 'parrot', q: 'penguin', k: 'tanuki' };
-const UP_COST = [20, 40, 70];
 const PROJ = {
   pollen:  { speed: 160, r: 12, life: 4 },
   match:   { speed: 200, r: 14, life: 3 },
@@ -125,13 +133,13 @@ const CUES = [
   { key: 'perf1',   name: '有人表演',     desc: '有任何一隻表演了',         price: 0,  fame: 0 },
   { key: 'angry1',  name: '任一怪物生氣', desc: '有一隻生氣了',             price: 20, fame: 0 },
   { key: 'cold',    name: '冷場',         desc: '一半以上的魔物冷掉了',     price: 20, fame: 0 },
-  { key: 'angry3',  name: '三隻怪物生氣', desc: '場上同時有 3 隻生氣',      price: 30, fame: 80 },
-  { key: 'mark3',   name: '有人標記 3',   desc: '有一隻標記到 3 個',        price: 30, fame: 80 },
-  { key: 'chain3',  name: '連鎖 3',       desc: '出現連鎖 3 段的表演',      price: 30, fame: 150 },
-  { key: 'multi3',  name: '一招 3 隻',    desc: '有一招打中 3 隻以上',      price: 30, fame: 150 },
-  { key: 'target1', name: '有人當標靶',   desc: '有一隻正被當成標靶',       price: 30, fame: 150 },
-  { key: 'half',    name: '一半生氣',     desc: '一半以上的魔物生氣了',     price: 40, fame: 300 },
-  { key: 'frozen1', name: '有人被凍住',   desc: '有一隻被凍住了',           price: 40, fame: 300 },
+  { key: 'angry3',  name: '三隻怪物生氣', desc: '場上同時有 3 隻生氣',      price: 30, fame: 100 },
+  { key: 'mark3',   name: '有人標記 3',   desc: '有一隻標記到 3 個',        price: 30, fame: 100 },
+  { key: 'chain3',  name: '連鎖 3',       desc: '出現連鎖 3 段的表演',      price: 30, fame: 200 },
+  { key: 'multi3',  name: '一招 3 隻',    desc: '有一招打中 3 隻以上',      price: 30, fame: 200 },
+  { key: 'target1', name: '有人當標靶',   desc: '有一隻正被當成標靶',       price: 30, fame: 200 },
+  { key: 'half',    name: '一半生氣',     desc: '一半以上的魔物生氣了',     price: 40, fame: 350 },
+  { key: 'frozen1', name: '有人被凍住',   desc: '有一隻被凍住了',           price: 40, fame: 350 },
   { key: 'gain30',  name: '滿意度 +30',   desc: '這列輪到後觀眾滿意度又多了 30', price: 40, fame: 500 },
 ];
 const PROGS = [
@@ -140,12 +148,12 @@ const PROGS = [
   { key: 'ice',     name: '冰水桶',   desc: '讓所有生氣的怪物都冷靜一點', price: 20, fame: 0 },
   { key: 'pep',     name: '加油棒',   desc: '怒氣不到 50 的全部打氣',     price: 20, fame: 0 },
   { key: 'tutti',   name: '大合奏',   desc: '生氣的怪物全部立刻表演',     price: 30, fame: 0 },
-  { key: 'scatter', name: '散場',     desc: '大家互相遠離 3 秒',         price: 30, fame: 80 },
-  { key: 'mob',     name: '圍攻',     desc: '大家去圍最氣的那隻 3 秒',   price: 30, fame: 80 },
-  { key: 'lull',    name: '安撫曲',   desc: '有標記的全部冷靜下來',       price: 40, fame: 150 },
-  { key: 'bull',    name: '標靶秀',   desc: '最冷靜的那隻當標靶 4 秒',   price: 40, fame: 150 },
-  { key: 'still',   name: '全場定格', desc: '全場凍住 1.5 秒',           price: 40, fame: 300 },
-  { key: 'shuffle', name: '魔術箱',   desc: '全場洗牌換位置',             price: 30, fame: 300 },
+  { key: 'scatter', name: '散場',     desc: '大家互相遠離 3 秒',         price: 30, fame: 100 },
+  { key: 'mob',     name: '圍攻',     desc: '大家去圍最氣的那隻 3 秒',   price: 30, fame: 100 },
+  { key: 'lull',    name: '安撫曲',   desc: '有標記的全部冷靜下來',       price: 40, fame: 200 },
+  { key: 'bull',    name: '標靶秀',   desc: '最冷靜的那隻當標靶 4 秒',   price: 40, fame: 200 },
+  { key: 'still',   name: '全場定格', desc: '全場凍住 1.5 秒',           price: 40, fame: 350 },
+  { key: 'shuffle', name: '魔術箱',   desc: '全場洗牌換位置',             price: 30, fame: 350 },
   { key: 'cheer',   name: '歡呼',     desc: '5 秒內觀眾滿意度 ×1.5',     price: 50, fame: 500 },
 ];
 const CUE_BY = {}; CUES.forEach(c => { CUE_BY[c.key] = c; });
@@ -184,11 +192,11 @@ const DUNGEONS = {
       '#........G......GG..G..........#',
       '#.....o..#..........#.....m....#',
       '#..l..GG.#....S.....#..o.......#',
-      '#.....GG.#..........#..........#',
+      '#.....GG.#........E.#..........#',
       '################################'],
   },
   tower: {
-    name: '齒輪鐘塔', species: ['beetle', 'parrot'], reqRep: 80, reqSp: 'lily', reqN: 2,
+    name: '齒輪鐘塔', species: ['beetle', 'parrot'], reqRep: 100, reqSp: 'lily', reqN: 2,
     map: [
       '################################',
       '#........#..........#..........#',
@@ -204,11 +212,11 @@ const DUNGEONS = {
       '#........X..........X..K.......#',
       '#..W.....#..........#......p...#',
       '#.g...o..#....S.....#...L..K...#',
-      '#..K.....#..........#..........#',
+      '#..K.....#........E.#..........#',
       '################################'],
   },
   snow: {
-    name: '雪境', species: ['penguin', 'tanuki'], reqRep: 300, reqSp: 'parrot', reqN: 2,
+    name: '雪境', species: ['penguin', 'tanuki'], reqRep: 350, reqSp: 'parrot', reqN: 2,
     map: [
       '################################',
       '#........#..........#..........#',
@@ -224,7 +232,7 @@ const DUNGEONS = {
       '#........#..........#..........#',
       '#....W...#..........#..k....F..#',
       '#.q......#....S.....#.....W....#',
-      '#........#..........#..........#',
+      '#........#........E.#..........#',
       '################################'],
   },
 };
@@ -262,7 +270,7 @@ let tutorialDone = false;   // 見習日完成過(本次開啟網頁內)
 const keys = { up: false, down: false, left: false, right: false, z: false, x: false };
 let pressed = {};
 
-function emptyRows() { const r = []; for (let i = 0; i < 6; i++) r.push({ cue: '', prog: '' }); return r; }
+function emptyRows() { const r = []; for (let i = 0; i < ROWS; i++) r.push({ cue: '', prog: '' }); return r; }
 
 function newRun(replay) {
   G = {
@@ -275,7 +283,7 @@ function newRun(replay) {
     unlockQueue: [], shelfSeen: {},
     ownedCues: { wait: true, perf1: true }, ownedProgs: { all: true, spot: true },
     rows: emptyRows(), stageInit: false,
-    log: ['', '', '', '', '', '', '', '', '', ''],
+    log: ['', '', '', '', '', '', ''],
     placeCur: 0,
     s1: { cur: 0, top: 0, zone: 'grid', back: 0 },
     s2: { row: 0, col: 0, panel: null },
@@ -299,6 +307,7 @@ function setScene(s) {
   scene = s;
   pressed = {};
   keys.z = false; keys.x = false;   // 轉場後的動作要重新按
+  if (s !== 'show') Snd.crowd('');
   Snd.music(musicFor(s));
 }
 
@@ -306,19 +315,16 @@ function setScene(s) {
 function bankSort() { G.bank.sort((a, b) => SPECIES.indexOf(a.sp) - SPECIES.indexOf(b.sp) || a.num - b.num); }
 function addMonster(sp, on) {
   let num = 0; for (const b of G.bank) if (b.sp === sp && b.num > num) num = b.num;
-  const m = { sp, num: num + 1, lv: 0, on: !!on };
+  const m = { sp, num: num + 1, on: !!on };
   G.bank.push(m); bankSort();
   return m;
 }
 function stageCount() { let n = 0; for (const b of G.bank) if (b.on) n++; return n; }
-function topLv(sp) { let l = 0; for (const b of G.bank) if (b.sp === sp && b.lv > l) l = b.lv; return l; }
-function angryLowOf(lv) { return 80 - 5 * lv; }
-function baseSat(sp, lv) { return SP[sp].rep + 0.5 * lv; }
-function maxHeartsNow() { return 6 + G.armorBought + topLv('penguin'); }
+function maxHeartsNow() { return 3 + G.armorBought; }
 function ropeMaxNow() { return 4 + G.ropeBought; }
-function xCdBase(w) { return w === 'sword' ? 3 : w === 'spear' ? 1.2 : w === 'whip' ? 1.2 : 0; }
-function xCdMax() { return xCdBase(G.weapon) * (1 - 0.15 * topLv('beetle')); }
-function captureDur() { return Math.max(0.35, 0.8 - 0.15 * topLv('lily')); }
+function xCdBase(w) { return w === 'sword' ? 3 : w === 'spear' ? 1.2 : 0; }
+function xCdMax() { return xCdBase(G.weapon); }
+function captureDur() { return 0.8; }
 
 function checkUnlock() {
   for (const id of DUNGEON_ORDER) {
@@ -340,47 +346,8 @@ function dungeonCondition(id) {
   return '名聲 ' + Math.min(G.rep, d.reqRep) + '/' + d.reqRep + ' + 收服' + SP[d.reqSp].name + ' ' + Math.min(G.cap[d.reqSp], d.reqN) + '/' + d.reqN;
 }
 
-// 升級(個體)
-const BONUS = {
-  lily: ['花香', '準備捕捉', l => '−' + fmtNum(0.15 * l) + ' 秒'],
-  monkey: ['靈巧', '移速', l => '+' + 25 * l],
-  beetle: ['齒輪', 'X 技冷卻', l => '−' + 15 * l + '%'],
-  parrot: ['羽翼', 'Z 範圍', l => '+' + 10 * l + '%'],
-  penguin: ['冰甲', '心', l => '+' + l],
-  tanuki: ['戲法', '套索時限', l => '+' + l + ' 秒'],
-};
-// 升級面板(結構化, 字串全部在這裡組好)
-function upgradeObj(b) {
-  const bo = BONUS[b.sp], mx = topLv(b.sp), l = b.lv;
-  const bonusTxt = v => bo[1] + ' ' + bo[2](v);
-  if (l >= 3) {
-    return { maxed: true, from: 3, to: 3, cost: 0, affordable: true, rows: [
-      { label: '生氣', before: '容易生氣 Lv3', after: '', note: '' },
-      { label: '觀眾滿意度', before: '每次 ' + fmtNum(baseSat(b.sp, l)), after: '', note: '' },
-      { label: bo[0], before: bonusTxt(mx), after: '', note: '' },
-    ] };
-  }
-  const n = l + 1, cost = UP_COST[l];
-  return { maxed: false, from: l, to: n, cost, affordable: G.gold >= cost, rows: [
-    { label: '生氣', before: '', after: '更容易進入生氣狀態', note: '' },
-    { label: '觀眾滿意度', before: '每次 ' + fmtNum(baseSat(b.sp, l)), after: '每次 ' + fmtNum(baseSat(b.sp, n)), note: '' },
-    n > mx
-      ? { label: bo[0], before: bonusTxt(mx), after: bonusTxt(n), note: '' }
-      : { label: bo[0], before: '', after: '', note: '看同種最高等級: Lv' + mx },
-  ] };
-}
-function monsterInfoState(b, where, x, y) {
-  return { x, y, where, species: b.sp, num: b.num, level: b.lv, desc: SP[b.sp].desc, effect: SP[b.sp].effect,
-    total: where === 'setup' ? stageCount() : 0, totalMax: 20, upgrade: upgradeObj(b) };
-}
-function canUpgrade(b) { return b.lv < 3 && G.gold >= UP_COST[b.lv]; }
-function doUpgrade(b, where) {
-  if (!canUpgrade(b)) return false;
-  const cost = UP_COST[b.lv];
-  G.gold -= cost; b.lv++;
-  ev('upgrade', { day: G.day, where, species: b.sp, num: b.num, level: b.lv, cost });
-  Snd.play('upgrade');
-  return true;
+function monsterInfoState(b, x, y) {
+  return { x, y, species: b.sp, num: b.num, desc: SP[b.sp].desc, effect: SP[b.sp].effect, total: stageCount(), totalMax: 20 };
 }
 
 // ───────────────────────── 輸入(只掛鍵盤) ─────────────────────────
@@ -434,9 +401,9 @@ function nearestMon() {
   return best;
 }
 function monTgt(m, hh) { const p = scr(m.x, m.y); return { x: p.x, y: p.y, hh: hh || 58 }; }
-function slotCenter(idx, shop) {
-  const s = shop ? G.shop : G.s1, r = Math.floor(idx / 10) - s.top, c = idx % 10;
-  return shop ? { x: 145 + 110 * c, y: 195 + 115 * r } : { x: 145 + 110 * c, y: 120 + 125 * r };
+function slotCenter(idx) {
+  const r = Math.floor(idx / 10) - G.s1.top, c = idx % 10;
+  return { x: 145 + 110 * c, y: 120 + 125 * r };
 }
 function nestTgt() {
   if (!D) return null;
@@ -454,9 +421,10 @@ function nearestOf(list) {
 // 馴獸師頭上(心列之上): 尾巴指向 (馴獸師 x, 馴獸師 y − 60)
 function tamerTgt() { if (!D) return null; const p = scr(D.tamer.x, D.tamer.y); return { x: p.x, y: p.y, hh: 60 }; }
 function objTgt(r, hh) { if (!r) return null; const p = scr(r.o.x, r.o.y); return { x: p.x, y: p.y, hh: hh || 30 }; }
-function xSkillName(w) { return w === 'sword' ? 'X 擊暈' : w === 'spear' ? 'X 突進' : 'X 擊飛'; }
 
 const ARROWS = ['up', 'down', 'left', 'right'];
+function heatTgt() { return { x: 640, y: 46, hh: 0 }; }   // 第 15、16 階段: 指向熱度表下緣, 泡泡中心固定 (640, 110)
+function miniTgt(i) { return { x: 322 + 212 * i, y: 691, hh: 23 }; }
 const TS = {
   1: { where: () => inMeadow(), text: () => '方向鍵 移動', keys: () => ARROWS, tgt: tamerTgt, ok: c => ARROWS.every(k => c.pk[k]) },
   2: { where: () => inMeadow(), text: () => 'Z 打牠', keys: () => ['z'], tgt: () => { const m = nearestMon(); return m ? monTgt(m) : nestTgt(); }, ok: c => c.flags.zhit },
@@ -469,7 +437,7 @@ const TS = {
   6: { note: true, where: () => inMeadow(), text: () => '收服 1 隻用掉 1 條繩 · 每趟最多 ' + ropeMaxNow() + ' 條', keys: () => [],
     tgt: () => ({ x: 130, y: 92, hh: 0 }), ok: () => !!D && D.caps.length >= 2 },
   7: { where: () => scene === 'setup1' && G.day === 0, text: () => 'Z 讓牠上台表演', keys: () => ['z'],
-    tgt: () => { const c = slotCenter(G.s1.cur, false); return { x: c.x, y: c.y, hh: 55 }; }, ok: () => G.bank.length > 0 && G.bank.every(b => b.on) },
+    tgt: () => { const c = slotCenter(G.s1.cur); return { x: c.x, y: c.y, hh: 55 }; }, ok: () => G.bank.length > 0 && G.bank.every(b => b.on) },
   8: { where: () => scene === 'setup1' && G.day === 0, text: () => '↓ 再 Z 下一步', keys: () => ['down', 'z'],
     tgt: () => ({ x: 1070, y: 505, hh: 35 }), ok: () => scene === 'setup2' },
   9: { where: () => scene === 'setup2' && G.day === 0, text: () => 'Z 選暗號: 什麼時候演', keys: () => ['z'],
@@ -479,43 +447,32 @@ const TS = {
   11: { where: () => scene === 'setup2' && G.day === 0, text: () => '↓ 再排第 2 列', keys: () => ['down'],
     tgt: () => ({ x: 280, y: 178, hh: 26 }), ok: () => !!(G.rows[1].cue && G.rows[1].prog) },
   12: { where: () => scene === 'setup2' && G.day === 0, text: () => '↓ 到開演 按 Z', keys: () => ['down', 'z'],
-    tgt: () => ({ x: 260, y: 615, hh: 35 }), ok: () => scene === 'show' },
+    tgt: () => ({ x: 260, y: 445, hh: 35 }), ok: () => scene === 'show' },
   13: { where: () => scene === 'show' && G.day === 0, text: () => '暗號成立 就演節目', keys: () => [],
-    tgt: () => (S && S.cur >= 0 ? { x: 110 + 212 * S.cur, y: 691, hh: 23 } : { x: 110, y: 691, hh: 23 }), ok: () => !!S && S.fires >= 1 },
+    tgt: () => miniTgt(S && S.cur >= 0 ? S.cur : 0), ok: () => !!S && S.fires >= 1 },
   14: { where: () => scene === 'show' && G.day === 0, text: () => '接著輪到第 2 列', keys: () => [],
-    tgt: () => (S && S.cur >= 0 ? { x: 110 + 212 * S.cur, y: 691, hh: 23 } : { x: 322, y: 691, hh: 23 }), ok: () => !!S && S.fires >= 2 },
-  15: { where: () => scene === 'show', text: () => '生氣時表演 觀眾滿意度×2', keys: () => [],
+    tgt: () => miniTgt(S && S.cur >= 0 ? S.cur : 1), ok: () => !!S && S.fires >= 2 },
+  15: { fixed: true, where: () => scene === 'show' && G.day === 0, text: () => '熱度 = 大家的平均怒氣', keys: () => [],
+    tgt: heatTgt, tick: (c, dt) => { c.t += dt; }, ok: c => c.t >= 4 },
+  16: { fixed: true, where: () => scene === 'show', text: () => '太熱了! 小心失控', keys: () => [],
+    tgt: heatTgt, tick: (c, dt) => { c.t += dt; }, ok: c => c.t >= 4 || (!!S && S.heat < 75 && c.t > 0.3) },
+  17: { where: () => scene === 'show', text: () => '生氣時表演 觀眾滿意度×2', keys: () => [],
     tgt: () => { const m = TUT.angryMon; return m && S && S.mons.indexOf(m) >= 0 ? { x: m.x, y: m.y, hh: 64 } : null; },
     tick: (c, dt) => { c.t += dt; }, ok: c => c.t >= 4 },
-  16: { where: () => scene === 'show', text: () => '標記滿 5 個 會失控', keys: () => [],
+  18: { where: () => scene === 'show', text: () => '標記滿 5 個 會失控', keys: () => [],
     tgt: () => { const m = TUT.markMon; return m && S && S.mons.indexOf(m) >= 0 ? { x: m.x, y: m.y, hh: 72 } : null; },
     tick: (c, dt) => { c.t += dt; }, ok: c => c.t >= 5 || (!!TUT.markMon && TUT.markMon.marks === 0 && c.t > 0.3) },
-  17: { where: () => scene === 'place', text: () => '←→ 選 Z 決定', keys: () => ['left', 'right', 'z'],
+  19: { where: () => scene === 'place', text: () => '←→ 選 Z 決定', keys: () => ['left', 'right', 'z'],
     tgt: () => ({ x: 240 + 400 * (G.placeCur), y: 370, hh: 210 }), ok: c => c.flags.placeChosen },
-  18: { where: () => scene === 'shop', text: () => '←→ 換分頁', keys: () => ['left', 'right'], tgt: () => ({ x: 640, y: 85, hh: 25 }), ok: c => c.flags.tab },
-  19: { where: () => scene === 'setup1' || (scene === 'shop' && G.shop.tab === 3),
-    text: () => (scene === 'shop' ? 'Z 升級這隻' : 'X 升級這隻'), keys: () => (scene === 'shop' ? ['z'] : ['x']),
-    tgt: () => { const shop = scene === 'shop', c = slotCenter(shop ? G.shop.idx : G.s1.cur, shop); return { x: c.x, y: c.y, hh: 55 }; }, ok: c => c.flags.upgrade },
-  20: { where: () => inDungeon(), text: () => xSkillName(G.weapon), keys: () => ['x'], tgt: tamerTgt, ok: c => c.flags.xskill },
+  20: { where: () => scene === 'shop', text: () => '←→ 換分頁', keys: () => ['left', 'right'], tgt: () => ({ x: 640, y: 85, hh: 25 }), ok: c => c.flags.tab },
   21: { where: () => inDungeon() && D.id === 'lake', text: () => '躲進草叢 魔物看不到你', keys: () => [],
     tgt: () => (D.bushes.length ? objTgt(nearestOf(D.bushes)) : null), ok: c => c.flags.hide },
   22: { where: () => inDungeon() && D.id === 'lake', text: () => 'Z 打落果子 引開魔物', keys: () => ['z'],
     tgt: () => objTgt(nearestOf(D.trees.filter(t => t.hasFruit)), 32), ok: c => c.flags.fruit },
-  23: { where: () => inDungeon() && D.id === 'tower', text: () => 'Z 點燃 快跑開', keys: () => ['z'],
-    tgt: () => objTgt(nearestOf(D.kegs.filter(k => k.mode === 'ok'))), ok: c => c.flags.keg },
-  24: { where: () => inDungeon() && D.id === 'tower', text: () => 'Z 打 3 下 打通', keys: () => ['z'],
-    tgt: () => objTgt(nearestOf(crackCells())), ok: c => c.flags.wall },
-  25: { where: () => inDungeon() && D.id === 'snow', text: () => '站上去 傳送', keys: () => [],
-    tgt: () => objTgt(nearestOf(D.portals)), ok: c => c.flags.tele },
-  26: { where: () => inDungeon() && D.id === 'snow', text: () => '走進泉水 補滿心', keys: () => [],
-    tgt: () => objTgt(nearestOf(D.fountains.filter(f => f.full))), ok: c => c.flags.heal },
+  23: { where: () => inDungeon() && D.id === 'lake', text: () => '走進出口 可以提早收工', keys: () => [],
+    tgt: () => (D.exit ? objTgt({ o: D.exit }, 30) : null), tick: (c, dt) => { c.t += dt; }, ok: c => c.flags.exit || c.t >= 6 },
 };
 const TUT_IDS = Object.keys(TS).map(Number).sort((a, b) => a - b);
-function crackCells() {
-  const out = [];
-  for (let r = 0; r < D.H; r++) for (let c = 0; c < D.W; c++) if (D.grid[r][c] === 'X') out.push({ x: c * TILE + 30, y: r * TILE + 30 });
-  return out;
-}
 
 // 每幀檢查「第一次成立」的出現時機(成立後鎖存)
 function tutWatch() {
@@ -528,17 +485,14 @@ function tutWatch() {
     if (D.lasso) tutTrig(4);
     if (!TUT.done[21] && D.bushes.length) { const b = nearestOf(D.bushes); if (b && b.d <= 150) tutTrig(21); }
     if (!TUT.done[22]) { const b = nearestOf(D.trees.filter(t => t.hasFruit)); if (b && b.d <= 200) tutTrig(22); }
-    if (!TUT.done[23]) { const b = nearestOf(D.kegs.filter(k => k.mode === 'ok')); if (b && b.d <= 200) tutTrig(23); }
-    if (!TUT.done[24]) { const b = nearestOf(crackCells()); if (b && b.d <= 200) tutTrig(24); }
-    if (!TUT.done[25]) { const b = nearestOf(D.portals); if (b && b.d <= 200) tutTrig(25); }
-    if (!TUT.done[26] && T.hearts < T.maxHearts) { const b = nearestOf(D.fountains.filter(f => f.full)); if (b && b.d <= 300) tutTrig(26); }
+    if (!TUT.done[23] && D.id === 'lake' && D.exit && dist(D.exit.x, D.exit.y, T.x, T.y) <= 200) tutTrig(23);
   }
   if (scene === 'setup1' && G.day === 0) tutTrig(7);
   if (scene === 'setup2' && G.day === 0) tutTrig(9);
   if (scene === 'show' && G.day === 0) tutTrig(13);
-  if (scene === 'place' && G.day === 1) tutTrig(17);
-  if (scene === 'shop') tutTrig(18);
-  if ((scene === 'setup1' || (scene === 'shop' && G.shop.tab === 3)) && G.bank.some(canUpgrade)) tutTrig(19);
+  if (scene === 'show' && S && S.heat >= 90) tutTrig(16);
+  if (scene === 'place' && G.day === 1) tutTrig(19);
+  if (scene === 'shop') tutTrig(20);
 }
 function tutStart(id) {
   const c = { id, phase: 'show', pk: {}, flags: {}, t: 0, age: 0, doneT: 0, lastTg: null };
@@ -594,6 +548,7 @@ function tutUpdate(dt) {
         if (c.id === 10) tutTrig(11);
         if (c.id === 11) tutTrig(12);
         if (c.id === 13) tutTrig(14);
+        if (c.id === 14) tutTrig(15);
       } else if (!here) {
         TUT.cur = null;   // 離開該階段的場景: 收起來, 條件成立時再出現
       }
@@ -621,11 +576,12 @@ function renderTutorial() {
   } else {
     tg = c.lastTg; if (!tg) return;
   }
-  const side = tg.y < 300 ? 'down' : 'up';
-  const ty = side === 'down' ? tg.y + tg.hh : tg.y - tg.hh;
+  let side = tg.y < 300 ? 'down' : 'up';
+  let ty = side === 'down' ? tg.y + tg.hh : tg.y - tg.hh;
   const top = (scene === 'dungeon' ? 100 : 50) + 52;
-  const by = clamp(side === 'down' ? ty + 60 : ty - 60, top, CH - 52);
-  const bx = clamp(tg.x, 170, CW - 170);
+  let by = clamp(side === 'down' ? ty + 60 : ty - 60, top, CH - 52);
+  let bx = clamp(tg.x, 170, CW - 170);
+  if (def.fixed) { side = 'down'; ty = 46; bx = 640; by = 110; tg = { x: 640, y: 46, hh: 0 }; }   // 第 15、16 階段: 指向熱度表, 畫在 HUD 之上
   const keysList = def.keys();
   Art.drawTutorial(ctx, {
     stage: c.id, kind: 'main', text: def.text(), keys: keysList,
@@ -772,13 +728,15 @@ function startDungeon(id) {
     id, grid, W, H, portals: [], nests: [], mons: [], hz: [], fx: [], floats: [], cracks: {}, kegs: [], trees: [], fruits: [], fountains: [], blasts: [], bushes: [],
     timed: id !== 'meadow', timeLeft: 75, elapsed: 0, pairCd: { 1: 0, 2: 0 }, ring: { m: null, t: 0 }, lasso: null,
     ropes: ropeMaxNow(), tamer: null, caps: [], kills: 0, killGold: 0, heartsLost: 0, endT: -1, hidden: false, respawnT: id === 'meadow' ? 3 : 10,
+    exit: null, prompt: null, capPop: 0,
   };
   let sx = 0, sy = 0;
   for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) {
     const ch = grid[r][c], cx = c * TILE + 30, cy = r * TILE + 30;
     if (ch === 'S') { sx = cx; sy = cy; grid[r][c] = '.'; }
     else if (ch === '1' || ch === '2') { D.portals.push({ id: +ch, x: cx, y: cy, charge: 0, armed: true }); grid[r][c] = '.'; }
-    else if (ch === 'K') { D.kegs.push({ x: cx, y: cy, mode: 'ok', fuseT: 0, respawn: 0 }); grid[r][c] = '.'; }
+    else if (ch === 'E') { D.exit = { x: cx, y: cy, armed: true }; grid[r][c] = '.'; }
+    else if (ch === 'K') { D.kegs.push({ x: cx, y: cy, mode: 'ok', fuseT: 0 }); grid[r][c] = '.'; }
     else if (ch === 'F') { D.fountains.push({ x: cx, y: cy, full: true }); grid[r][c] = '.'; }
     else if (ch === 'Y') D.trees.push({ x: cx, y: cy, hasFruit: true, regrow: 0 });
     else if (ch === 'G') D.bushes.push({ x: cx, y: cy });
@@ -789,7 +747,6 @@ function startDungeon(id) {
   D.hb = { fx: 'none', t: 2, delta: 0, last: mh };   // 頭上心列特效
   for (const n of D.nests) spawnWild(n);
   ev('dungeon_start', { day: G.day, dungeon: id, weapon: G.weapon, hearts: mh, ropes: D.ropes });
-  if (xCdBase(G.weapon) > 0) tutTrig(18);
   setScene('dungeon');
 }
 
@@ -949,7 +906,7 @@ function facingFromDir(dx, dy) {
 function hurtTamer(source, h) {
   const T = D.tamer;
   if (T.invuln > 0 || T.dash) return false;
-  T.hearts--; T.invuln = 1.2; D.heartsLost++;
+  T.hearts--; T.invuln = 1.5; D.heartsLost++;
   if (h && h.kind === 'icebeam') T.slowT = 1;
   Snd.play('player_hurt');
   ev('player_hit', { dungeon: D.id, source, x: Math.round(T.x), y: Math.round(T.y), heartsLeft: T.hearts, elapsed: +D.elapsed.toFixed(1) });
@@ -977,7 +934,7 @@ function updateTamer(dt) {
   if (dx || dy) {
     T.facing = facingFromDir(dx, dy);
     const len = Math.hypot(dx, dy);
-    let sp = 300 + 25 * topLv('monkey');
+    let sp = 300;
     if (tileAt(T.x, T.y) === 'W') sp *= 0.5;
     if (T.slowT > 0) sp *= 0.5;
     const step = sp * dt, n = Math.max(1, Math.ceil(step / 8));
@@ -997,13 +954,12 @@ function updateTamer(dt) {
 function addFx(o) { D.fx.push(Object.assign({ x: D.tamer.x, y: D.tamer.y, weapon: D.tamer.weapon, move: 'normal', shape: 'arc', angle: 0, spread: 0, radius: 0, length: 0, width: 0, t: 0, dur: 0.2 }, o)); }
 function doAttack(isX) {
   const T = D.tamer, wp = T.weapon, ang = (T.facing - 2) * Math.PI / 4;
-  const atk = G.atkBought, rb = 1 + 0.1 * topLv('parrot');
+  const atk = G.atkBought;
   let sh = null;
   if (!isX) {
-    if (wp === 'club') { sh = { shape: 'arc', spread: 100 * D2R, radius: 70 * rb, dmg: 2 + atk }; T.zCd = 0.35; }
-    else if (wp === 'sword') { sh = { shape: 'arc', spread: 120 * D2R, radius: 80 * rb, dmg: 2 + atk, reflect: true }; T.zCd = 0.35; }
-    else if (wp === 'spear') { sh = { shape: 'line', length: 170 * rb, width: 40, dmg: 2 + atk }; T.zCd = 0.45; }
-    else { sh = { shape: 'circle', radius: 100 * rb, dmg: 1 + atk }; T.zCd = 0.4; }
+    if (wp === 'club') { sh = { shape: 'arc', spread: 100 * D2R, radius: 70, dmg: 2 + atk }; T.zCd = 0.35; }
+    else if (wp === 'sword') { sh = { shape: 'arc', spread: 120 * D2R, radius: 80, dmg: 2 + atk, reflect: true }; T.zCd = 0.35; }
+    else { sh = { shape: 'line', length: 170, width: 40, dmg: 2 + atk }; T.zCd = 0.45; }
     addFx({ move: 'normal', shape: sh.shape, angle: ang, spread: sh.spread || 0, radius: sh.radius || 0, length: sh.length || 0, width: sh.width || 0, dur: 0.2 });
     Snd.play('attack', wp);
     if (applyShape(sh, T.x, T.y, ang) > 0) tut('zhit');
@@ -1014,10 +970,6 @@ function doAttack(isX) {
     if (wp === 'sword') {
       sh = { shape: 'arc', spread: 120 * D2R, radius: 80, dmg: 0, stun: true };
       addFx({ move: 'skill', shape: 'arc', angle: ang, spread: sh.spread, radius: 80 });
-      applyShape(sh, T.x, T.y, ang);
-    } else if (wp === 'whip') {
-      sh = { shape: 'arc', spread: 100 * D2R, radius: 170, dmg: 2 + atk, knock: true };
-      addFx({ move: 'skill', shape: 'arc', angle: ang, spread: sh.spread, radius: 170 });
       applyShape(sh, T.x, T.y, ang);
     } else if (wp === 'spear') {
       T.dash = { t: 0, ang, hit: new Set(), sx: T.x, sy: T.y, trav: 0 };
@@ -1106,7 +1058,7 @@ function igniteKeg(k) {
   k.mode = 'fuse'; k.fuseT = 0; Snd.play('keg_fuse');
 }
 function explodeKeg(k) {
-  k.mode = 'gone'; k.respawn = 20; k.fuseT = 0;
+  k.mode = 'gone'; k.fuseT = 0;   // 炸掉就消失, 這趟不再長回來(下次進地下城才重新生成)
   D.blasts.push({ x: k.x, y: k.y, t: 0, dur: 0.3 });
   Snd.play('keg_blast'); tut('keg');
   ev('object_use', { dungeon: D.id, object: 'keg', action: 'blast', x: Math.round(k.x), y: Math.round(k.y) });
@@ -1305,10 +1257,6 @@ function updateObjects(dt) {
   // 爆炸桶
   for (const k of D.kegs) {
     if (k.mode === 'fuse') { k.fuseT += dt; if (k.fuseT >= 0.6) explodeKeg(k); }
-    else if (k.mode === 'gone') {
-      k.respawn -= dt;
-      if (k.respawn <= 0 && dist(T.x, T.y, k.x, k.y) > 44) { k.mode = 'ok'; k.fuseT = 0; }
-    }
   }
   for (const b of D.blasts) b.t += dt;
   D.blasts = D.blasts.filter(b => b.t < b.dur);
@@ -1320,7 +1268,7 @@ function updateObjects(dt) {
 function startLasso(m) {
   m.lassoed = true; cancelWarns(m); cancelBurst(m); m.casting = false;
   const T = D.tamer;
-  D.lasso = { m, t: 0, limit: 5 + topLv('tanuki'), sum: 0, last: Math.atan2(T.y - m.y, T.x - m.x) };
+  D.lasso = { m, t: 0, limit: 5, sum: 0, last: Math.atan2(T.y - m.y, T.x - m.x) };
   D.ring.m = null; D.ring.t = 0;
   Snd.play('capture_ready'); tut('lasso');
 }
@@ -1338,7 +1286,7 @@ function captureDone() {
   const auto = G.stageInit && stageCount() < 20;
   const b = addMonster(m.sp, auto);
   G.cap[m.sp]++;
-  D.caps.push(m.sp);
+  D.caps.push(m.sp); D.capPop = 0;
   addDFloat(m.x, m.y - 40, '收服!', 'capture');
   Snd.play('capture'); tut('capture');
   ev('capture', { dungeon: D.id, species: m.sp, num: b.num, elapsed: +D.elapsed.toFixed(1), x: Math.round(m.x), y: Math.round(m.y) });
@@ -1374,7 +1322,37 @@ function updateCapture(dt) {
   if (D.ring.t >= captureDur()) startLasso(best);
 }
 
+// 出口詢問框開著: 整個地下城暫停, 只接受 ← → Z X
+function updateExitPrompt(dt) {
+  const P = D.prompt;
+  P.t += dt;
+  if (pressed.left && P.choice !== 0) { P.choice = 0; Snd.play('ui_move'); }
+  else if (pressed.right && P.choice !== 1) { P.choice = 1; Snd.play('ui_move'); }
+  else if (pressed.x || (pressed.z && P.choice === 1)) {
+    ev('exit_prompt', { dungeon: D.id, action: 'stay', elapsed: +D.elapsed.toFixed(1), captures: D.caps.length, heartsLeft: D.tamer.hearts });
+    D.prompt = null; D.exit.armed = false;   // 離開出口 > 60 才會再觸發
+    Snd.play('ui_cancel');
+  } else if (pressed.z) {
+    ev('exit_prompt', { dungeon: D.id, action: 'leave', elapsed: +D.elapsed.toFixed(1), captures: D.caps.length, heartsLeft: D.tamer.hearts });
+    Snd.play('ui_confirm');
+    D.prompt = null;
+    endDungeon('exit');
+  }
+}
+function checkExit() {
+  const E = D.exit, T = D.tamer;
+  if (!E) return;
+  const d = dist(T.x, T.y, E.x, E.y);
+  if (!E.armed) { if (d > 60) E.armed = true; return; }
+  if (d <= 30) {
+    D.prompt = { choice: 1, t: 0 };
+    ev('exit_prompt', { dungeon: D.id, action: 'show', elapsed: +D.elapsed.toFixed(1), captures: D.caps.length, heartsLeft: T.hearts });
+    Snd.play('exit_prompt'); tut('exit');
+  }
+}
+
 function updateDungeon(dt) {
+  if (D.prompt) { updateExitPrompt(dt); return; }
   D.elapsed += dt;
   if (D.timed) D.timeLeft -= dt;
   updateTamer(dt);
@@ -1405,7 +1383,8 @@ function updateDungeon(dt) {
     else { endDungeon('down'); return; }
   }
   if (D.timed && D.timeLeft <= 0) { endDungeon('time'); return; }
-  if (D.endT >= 0) { D.endT -= dt; if (D.endT <= 0) endDungeon('tutorial'); }
+  if (D.endT >= 0) { D.endT -= dt; if (D.endT <= 0) { endDungeon('tutorial'); return; } }
+  checkExit();
 }
 function endDungeon(reason) {
   if (D.lasso) { D.lasso.m.lassoed = false; D.lasso = null; }
@@ -1477,10 +1456,6 @@ function setup1Input() {
       if (b.on) { b.on = false; Snd.play('ui_cancel'); }
       else if (stageCount() < 20) { b.on = true; Snd.play('ui_confirm'); }
       else Snd.play('ui_denied');
-    } else if (pressed.x && n > 0) {
-      const b = G.bank[s.cur], p = slotCenter(s.cur, false);
-      if (doUpgrade(b, 'setup')) { uiFloat(p.x, p.y - 30, 'Lv↑', 'levelUp'); tut('upgrade'); }
-      else Snd.play('ui_denied');
     }
     fixScroll(s, 'cur', n);
   } else if (s.zone === 'next') {
@@ -1501,6 +1476,7 @@ function setup1Input() {
   }
 }
 
+const BTN_GO = ROWS, BTN_BACK = ROWS + 1;   // 布置第 2 步游標: 0~3 是列, 4 開演, 5 返回上一步
 function panelOptions(layer) {
   const out = [];
   if (layer === 'cue') CUES.forEach(c => { if (G.ownedCues[c.key]) out.push({ key: c.key, name: c.name, desc: c.desc }); });
@@ -1529,22 +1505,22 @@ function setup2Input() {
     }
     return;
   }
-  const last = G.day === 0 ? 1 : 5;   // 見習日只開放第 1、2 列
-  if (s.row === 6) {   // 「開演」
+  const last = G.day === 0 ? 1 : ROWS - 1;   // 見習日只開放第 1、2 列
+  if (s.row === BTN_GO) {   // 「開演」
     if (pressed.up) { s.row = last; Snd.play('ui_move'); }
-    else if (pressed.right) { s.row = 7; Snd.play('ui_move'); }
+    else if (pressed.right) { s.row = BTN_BACK; Snd.play('ui_move'); }
     else if (pressed.z) { Snd.play('ui_confirm'); startShow(); }
     else if (pressed.x) { backToSetup1(); }
     return;
   }
-  if (s.row === 7) {   // 「返回上一步」
+  if (s.row === BTN_BACK) {   // 「返回上一步」
     if (pressed.up) { s.row = last; Snd.play('ui_move'); }
-    else if (pressed.left) { s.row = 6; Snd.play('ui_move'); }
+    else if (pressed.left) { s.row = BTN_GO; Snd.play('ui_move'); }
     else if (pressed.z) { backToSetup1(); }
     return;
   }
   if (pressed.up) { s.row = Math.max(0, s.row - 1); Snd.play('ui_move'); }
-  else if (pressed.down) { s.row = s.row >= last ? 6 : s.row + 1; Snd.play('ui_move'); }
+  else if (pressed.down) { s.row = s.row >= last ? BTN_GO : s.row + 1; Snd.play('ui_move'); }
   else if (pressed.left) { s.col = 0; Snd.play('ui_move'); }
   else if (pressed.right) { s.col = 1; Snd.play('ui_move'); }
   else if (pressed.x) { G.rows[s.row][s.col === 0 ? 'cue' : 'prog'] = ''; Snd.play('ui_cancel'); }
@@ -1564,6 +1540,7 @@ function startShow() {
     cur: -1, waitT: 0, sinceFire: 0, fires: 0, ev: { chain3: false, multi3: false, perf1: false }, satSince: 0, cheer: 0,
     move: null, spots: [], sat: 0, best: 0, performs: 0, angryPerforms: 0, loose: null,
     fences: { top: [], bottom: [] }, vis: { top: [], bottom: [] },
+    heat: 0, tierIdx: 0, lowT: 0, tierT: 0.4, frenzyT: 0, heatSum: 0, heatDt: 0, heatMax: 0, tierSec: [0, 0, 0, 0],
   };
   for (let i = 0; i < 8; i++) {
     S.fences.top.push(false); S.fences.bottom.push(false);
@@ -1574,7 +1551,7 @@ function startShow() {
   for (const b of roster) {
     const p = SHOW_POS[idx++];
     const m = {
-      sp: b.sp, num: b.num, lv: b.lv, x: p[0], y: p[1], rage: tutorial ? 75 : 60, marks: 0, markT: 0, markAdd: 0, slow: false,
+      sp: b.sp, num: b.num, x: p[0], y: p[1], rage: tutorial ? 75 : 60, marks: 0, markT: 0, markAdd: 0, slow: false,
       perfT: rnd(0.5, 2), perfAct: -1, relayT: -1, relayChain: 0, lastRelay: -99, frozen: 0, target: 0, pend: false,
       fx: 'none', fxT: 0, progMove: false, hold: false,
       ang: rnd(0, Math.PI * 2), dirT: rnd(0.5, 2), cyc: rnd(0, 1), tp: 0, tpT: 0, teleT: rnd(0, 2.5), swooping: false,
@@ -1584,13 +1561,39 @@ function startShow() {
     S.mons.push(m);
   }
   S.cur = S.rows.findIndex(r => r.complete);
-  ev('setup_done', { day: G.day, roster: roster.map(b => ({ species: b.sp, num: b.num, level: b.lv })), rows: G.rows.map(r => ({ cue: r.cue, program: r.prog })) });
+  ev('setup_done', { day: G.day, roster: roster.map(b => ({ species: b.sp, num: b.num })), rows: G.rows.map(r => ({ cue: r.cue, program: r.prog })) });
   Snd.play('show_start');
   if (tutorial) tutForceSkip(11);   // 沒走完的布置階段收掉; 階段 12(開演)讓它在表演場播完成特效
   setScene('show');
+  // 熱度: 開演時直接依開演熱度定段
+  S.heat = avgHeat(); S.heatMax = S.heat; S.tierIdx = tierOf(S.heat);
+  ev('heat_tier', { day: G.day, tier: TIERS[S.tierIdx], heat: Math.round(S.heat), elapsed: 0 });
+  Snd.crowd(S.tierIdx > 0 ? TIERS[S.tierIdx] : '');
 }
-function rl(m) { return angryLowOf(m.lv); }
-function isAngry(m) { return m.rage >= rl(m); }
+const ANGRY_LOW = 80;
+function rl() { return ANGRY_LOW; }
+function isAngry(m) { return m.rage >= ANGRY_LOW; }
+function tierOf(h) { return h >= 90 ? 3 : h >= 75 ? 2 : h >= 50 ? 1 : 0; }
+function avgHeat() { let s = 0; for (const m of S.mons) s += m.rage; return S.mons.length ? s / S.mons.length : 0; }
+// 熱度與熱度段: 往上跨門檻立刻換段, 往下要低於該段門檻連續 1 秒才降段
+function updateHeat(dt) {
+  S.heat = avgHeat();
+  if (S.heat > S.heatMax) S.heatMax = S.heat;
+  S.heatSum += S.heat * dt; S.heatDt += dt; S.tierSec[S.tierIdx] += dt;
+  if (S.tierT < 0.4) S.tierT = Math.min(0.4, S.tierT + dt);
+  const tgt = tierOf(S.heat);
+  let next = S.tierIdx;
+  if (tgt > S.tierIdx) { next = tgt; S.lowT = 0; }
+  else if (tgt < S.tierIdx) { S.lowT += dt; if (S.lowT >= 1) { next = tgt; S.lowT = 0; } }
+  else S.lowT = 0;
+  if (S.tierIdx === 3) S.frenzyT += dt;
+  if (next !== S.tierIdx) {
+    S.tierIdx = next; S.tierT = 0; S.frenzyT = 0;
+    ev('heat_tier', { day: G.day, tier: TIERS[next], heat: Math.round(S.heat), elapsed: +S.clock.toFixed(1) });
+    if (next === 3) Snd.play('heat_warn');
+    Snd.crowd(next > 0 ? TIERS[next] : '');
+  }
+}
 function intervalShow(m) { return m.rage < 50 ? 6 : 4 - 2.5 * (m.rage - 50) / 50; }
 function addSFloat(x, y, text, kind) { S.floats.push({ x, y, text, kind, t: 0, dur: 1 }); }
 
@@ -1615,7 +1618,7 @@ function perform(m, chain) {
   S.ev.perf1 = true;
   const cast = newCast(m, chain, false);
   cast.angry = isAngry(m);
-  if (cast.angry) { S.angryPerforms++; Snd.once('angry_perform'); if (!TUT.done[15]) { TUT.angryMon = m; tutTrig(15); } }
+  if (cast.angry) { S.angryPerforms++; Snd.once('angry_perform'); if (!TUT.done[17]) { TUT.angryMon = m; tutTrig(17); } }
   Snd.once('perform');
   if (chain >= 2) Snd.once('chain', chain);
   const t = pickAim(m);
@@ -1628,7 +1631,7 @@ function checkSettle(c) {
   const n = c.hits.size, m = c.owner;
   if (n >= 3) S.ev.multi3 = true;
   const cheer = S.cheer > 0;
-  const v = baseSat(m.sp, m.lv) * (1 + 0.5 * Math.min(4, n)) * (c.angry ? 2 : 1) * (1 + 0.25 * (c.chain - 1)) * (cheer ? 1.5 : 1);
+  const v = SP[m.sp].rep * (1 + 0.5 * Math.min(4, n)) * (c.angry ? 2 : 1) * (1 + 0.25 * (c.chain - 1)) * (cheer ? 1.5 : 1);
   const f = Math.max(1, Math.round(v));
   S.sat += f; S.satSince += f;
   addSFloat(m.x, m.y - 70, '滿意度 +' + f + (c.angry ? ' 生氣×2' : '') + (cheer ? ' ×1.5' : ''), c.angry ? 'angryFame' : 'sat');
@@ -1637,7 +1640,7 @@ function checkSettle(c) {
 
 function markFx(m) {
   Snd.once('mark_add', m.marks);
-  if (!TUT.done[16]) { TUT.markMon = m; tutTrig(16); }
+  if (!TUT.done[18]) { TUT.markMon = m; tutTrig(18); }
   if (m.marks >= 3) ev('mark_peak', { day: G.day, species: m.sp, num: m.num, marks: m.marks, elapsed: +S.clock.toFixed(1) });
 }
 function addMark(m) {
@@ -1721,7 +1724,7 @@ function startLoose(m) {
   S.loose = { m, t: 0, side, idx: clamp(Math.round((m.x - 165) / 136), 0, 7), broken: false, fled: false };
   m.marks = 0; m.frozen = 0; m.target = 0; m.relayT = -1; m.hold = false; m.progMove = false;
   m.move = 'walk'; m.moveT = 0; m.moveDur = 0;
-  Snd.music(null); Snd.play('loose');
+  Snd.music(null); Snd.crowd(''); Snd.play('loose');
 }
 function updateLooseShow(dt) {
   const L = S.loose, m = L.m;
@@ -1831,7 +1834,7 @@ function cueTrue(key) {
   return false;
 }
 function nextComplete(from) {
-  for (let i = 1; i <= 6; i++) { const j = (from + i) % 6; if (S.rows[j].complete) return j; }
+  for (let i = 1; i <= ROWS; i++) { const j = (from + i) % ROWS; if (S.rows[j].complete) return j; }
   return from;
 }
 function updateProgram(dt) {
@@ -1946,6 +1949,7 @@ function updateShow(dt) {
   }
   S.spots = S.spots.filter(s => !s.done);
   updateHazardsShow(dt);
+  updateHeat(dt);
   if (S.banner) { S.banner.t += dt; if (S.banner.t >= 0.8) S.banner = null; }
   for (const f of S.floats) f.t += dt;
   S.floats = S.floats.filter(f => f.t < f.dur);
@@ -1961,11 +1965,13 @@ function finishShow(reason) {
   G.rep += sat; G.gold += gold; G.goldEarned += gold;
   if (S.best > G.bestChain) G.bestChain = S.best;
   SR = { sat, gold, fameGain: sat, tallyT: 0, tallyDur: 1.5, loose, timeLeft: loose ? Math.round(Math.max(0, S.left)) : 0, bestChain: S.best, tutorial: S.tutorial, tickT: 0 };
-  const o = { day: G.day, reason, dur: +(S.total - Math.max(0, S.left)).toFixed(1), satisfaction: sat, gold, fameGain: sat, bestChain: S.best, performs: S.performs, angryPerforms: S.angryPerforms };
+  const o = { day: G.day, reason, dur: +(S.total - Math.max(0, S.left)).toFixed(1), satisfaction: sat, gold, fameGain: sat, bestChain: S.best, performs: S.performs, angryPerforms: S.angryPerforms,
+    heatAvg: S.heatDt > 0 ? Math.round(S.heatSum / S.heatDt) : Math.round(S.heat), heatMax: Math.round(S.heatMax),
+    tierSec: { quiet: +S.tierSec[0].toFixed(1), clap: +S.tierSec[1].toFixed(1), cheer: +S.tierSec[2].toFixed(1), frenzy: +S.tierSec[3].toFixed(1) } };
   if (loose) { o.looseSpecies = L.m.sp; o.looseNum = L.m.num; o.looseX = Math.round(L.m.x); o.looseY = Math.round(L.m.y); }
   ev('show_end', o);
   if (!loose) Snd.play('show_end');
-  if (S.tutorial) tutForceSkip(14);
+  if (S.tutorial) tutForceSkip(15);
   S = null;
   checkUnlock();
   setScene('sresult');
@@ -1984,14 +1990,14 @@ function sresultInput(dt) {
 }
 
 // ───────────────────────── 商店 ─────────────────────────
-const SHOP_TABS = ['char', 'cue', 'program', 'monster'];
+const SHOP_TABS = ['char', 'cue', 'program'];
 const SHOP_ITEMS = {
-  char: ['club', 'sword', 'spear', 'whip', 'attack', 'armor', 'ropeBag'],
+  char: ['club', 'sword', 'spear', 'attack', 'armor', 'ropeBag'],
   cue: ['angry1', 'cold', 'angry3', 'mark3', 'chain3', 'multi3', 'target1', 'half', 'frozen1', 'gain30'],
   program: ['ice', 'pep', 'tutti', 'scatter', 'mob', 'lull', 'bull', 'still', 'shuffle', 'cheer'],
 };
-const WEAPON_PRICE = { sword: 60, spear: 60, whip: 60 };
-const WEAPON_DESC = { club: 'Z 敲擊', sword: 'Z 斬擊可打回飛彈 X 擊暈', spear: 'Z 長刺 X 突進', whip: 'Z 整圈抽打 X 擊飛' };
+const WEAPON_PRICE = { sword: 60, spear: 60 };
+const WEAPON_DESC = { club: 'Z 敲擊', sword: 'Z 斬擊可打回飛彈 X 擊暈', spear: 'Z 長刺 X 突進' };
 const ENH_DESC = { attack: '每次攻擊傷害 +1', armor: '心上限 +1', ropeBag: '每天捕獸繩 +1' };
 function shopState(item) {
   const o = { item, cost: 0, level: 0, owned: false, equipped: false, affordable: false, fameReq: 0, fameLocked: false };
@@ -2035,46 +2041,27 @@ function shopBuy(item) {
   }
 }
 function shopInput() {
-  const s = G.shop, tab = s.tab;
-  const items = tab < 3 ? SHOP_ITEMS[SHOP_TABS[tab]] : null;
-  const n = tab < 3 ? items.length : G.bank.length;
-  if (tab === 3) fixScroll(s, 'idx', n);
+  const s = G.shop, items = SHOP_ITEMS[SHOP_TABS[s.tab]], n = items.length;
   if (s.zone === 'tab') {
-    if (pressed.left && s.tab > 0) { s.tab--; s.idx = 0; s.top = 0; Snd.play('ui_move'); tut('tab'); }
-    else if (pressed.right && s.tab < 3) { s.tab++; s.idx = 0; s.top = 0; Snd.play('ui_move'); tut('tab'); }
-    else if (pressed.down) { s.zone = n > 0 ? 'grid' : 'go'; s.idx = 0; s.top = 0; Snd.play('ui_move'); }
+    if (pressed.left && s.tab > 0) { s.tab--; s.idx = 0; Snd.play('ui_move'); tut('tab'); }
+    else if (pressed.right && s.tab < SHOP_TABS.length - 1) { s.tab++; s.idx = 0; Snd.play('ui_move'); tut('tab'); }
+    else if (pressed.down) { s.zone = 'grid'; s.idx = 0; Snd.play('ui_move'); }
   } else if (s.zone === 'grid') {
-    if (tab < 3) {
-      const r = Math.floor(s.idx / 3), c = s.idx % 3;
-      if (pressed.left) { if (c > 0) { s.idx--; Snd.play('ui_move'); } }
-      else if (pressed.right) { if (c < 2 && s.idx + 1 < n) { s.idx++; Snd.play('ui_move'); } }
-      else if (pressed.up) { if (r > 0) s.idx -= 3; else s.zone = 'tab'; Snd.play('ui_move'); }
-      else if (pressed.down) { if (s.idx + 3 < n) s.idx += 3; else s.zone = 'go'; Snd.play('ui_move'); }
-      else if (pressed.z) shopBuy(items[s.idx]);
-    } else {
-      const r = gridMove(s, 'idx', n);
-      if (r === 'moved') Snd.play('ui_move');
-      else if (r === 'up') { s.zone = 'tab'; Snd.play('ui_move'); }
-      else if (r === 'down') { s.zone = 'go'; Snd.play('ui_move'); }
-      else if (pressed.z) {
-        const b = G.bank[s.idx], p = slotCenter(s.idx, true);
-        if (doUpgrade(b, 'shop')) { uiFloat(p.x, p.y - 30, 'Lv↑', 'levelUp'); tut('upgrade'); }
-        else Snd.play('ui_denied');
-      }
-      fixScroll(s, 'idx', n);
-    }
+    const r = Math.floor(s.idx / 3), c = s.idx % 3;
+    if (pressed.left) { if (c > 0) { s.idx--; Snd.play('ui_move'); } }
+    else if (pressed.right) { if (c < 2 && s.idx + 1 < n) { s.idx++; Snd.play('ui_move'); } }
+    else if (pressed.up) { if (r > 0) s.idx -= 3; else s.zone = 'tab'; Snd.play('ui_move'); }
+    else if (pressed.down) { if (s.idx + 3 < n) s.idx += 3; else s.zone = 'go'; Snd.play('ui_move'); }
+    else if (pressed.z) shopBuy(items[s.idx]);
   } else {
-    if (pressed.up) {
-      s.zone = 'grid';
-      if (tab < 3) s.idx = Math.floor((n - 1) / 3) * 3; else { s.idx = Math.floor((n - 1) / 10) * 10; fixScroll(s, 'idx', n); }
-      Snd.play('ui_move');
-    } else if (pressed.z) { Snd.play('ui_cancel'); enterPlace(); }
+    if (pressed.up) { s.zone = 'grid'; s.idx = Math.floor((n - 1) / 3) * 3; Snd.play('ui_move'); }
+    else if (pressed.z) { Snd.play('ui_cancel'); enterPlace(); }
   }
 }
 
 // ───────────────────────── 總結算 ─────────────────────────
 function toResult() {
-  const stars = G.rep >= 5000 ? 3 : G.rep >= 2500 ? 2 : G.rep >= 1000 ? 1 : 0;
+  const stars = G.rep >= 1800 ? 3 : G.rep >= 1000 ? 2 : G.rep >= 500 ? 1 : 0;
   RS = { t: 0, stars, shown: 0 };
   ev('game_end', { fame: G.rep, stars, goldEarned: G.goldEarned, bestChain: G.bestChain, days: G.log.slice(), bankSize: G.bank.length });
   downloadLog();
@@ -2112,7 +2099,7 @@ function update(dt) {
   for (const f of UI.floats) f.t += dt;
   UI.floats = UI.floats.filter(f => f.t < f.dur);
   pressed = {};
-  tutUpdate(dt);
+  tutUpdate(scene === 'dungeon' && D && D.prompt ? 0 : dt);   // 出口詢問中泡泡也停在當下
 }
 
 // ───────────────────────── 繪製 ─────────────────────────
@@ -2121,18 +2108,19 @@ function hudMessage() {
     case 'place': return '←→ 選擇 Z 決定 ↓ 聲音';
     case 'select': return '←→ 選擇 Z 進入 X 返回';
     case 'dungeon':
+      if (D.prompt) return '←→ 選擇 Z 決定 X 留下';
       if (D.lasso) return '繞牠一圈!';
       if (D.ring.m) return '站住別動';
       if (D.tamer.hidden) return '躲藏中';
       if (D.id === 'meadow') return '收服火柴猴 ' + Math.min(2, D.caps.length) + '/2';
-      return G.weapon === 'sword' ? 'Z 攻擊 X 擊暈' : G.weapon === 'spear' ? 'Z 攻擊 X 突進' : G.weapon === 'whip' ? 'Z 攻擊 X 擊飛' : 'Z 攻擊';
+      return G.weapon === 'sword' ? 'Z 攻擊 X 擊暈' : G.weapon === 'spear' ? 'Z 攻擊 X 突進' : 'Z 攻擊';
     case 'dresult': case 'sresult': return 'Z 繼續';
-    case 'setup1': return G.s1.zone === 'grid' ? 'Z 上台/下台 X 升級這隻 ↓ 下一步' : 'Z 確定 ↑ 回格子';
+    case 'setup1': return G.s1.zone === 'grid' ? 'Z 上台/下台 ↓ 下一步' : 'Z 確定 ↑ 回格子';
     case 'setup2':
       if (G.s2.panel) return '↑↓ 選 Z 確定 X 取消';
-      return G.s2.row >= 6 ? '←→ 開演/返回 Z 確定' : '↑↓ 選列 ←→ 暗號/節目 Z 放入 X 清空';
+      return G.s2.row >= BTN_GO ? '←→ 開演/返回 Z 確定' : '↑↓ 選列 ←→ 暗號/節目 Z 放入 X 清空';
     case 'show': return '表演中…';
-    case 'shop': return G.shop.tab === 3 ? 'Z 升級這隻' : '←→ 切分頁 方向鍵選擇 Z 購買';
+    case 'shop': return '←→ 切分頁 方向鍵選擇 Z 購買';
     case 'result': return 'Z 重來';
   }
   return '';
@@ -2142,7 +2130,7 @@ function hudState() {
   return {
     phase: scene, day: G.day, dayMax: DAY_MAX, gold: G.gold, rep: G.rep, sat: inS ? S.sat : 0,
     cheerLeft: inS ? S.cheer : 0, cheerDur: 5,
-    ropes: inD ? D.ropes : 0, ropeMax: inD ? ropeMaxNow() : 0,
+    ropes: inD ? D.ropes : 0, ropeMax: inD ? ropeMaxNow() : 0, caught: inD ? D.caps.slice() : [],
     weapon: G.weapon, xCdLeft: inD ? D.tamer.xCd : 0, xCdMax: inD ? xCdMax() : 0,
     timeLeft: inD ? (D.timed ? Math.max(0, D.timeLeft) : 0) : inS ? Math.max(0, S.left) : 0,
     timeMax: inD ? (D.timed ? 75 : 0) : inS ? S.total : 0,
@@ -2173,6 +2161,10 @@ function renderDungeon() {
     if (ch === 'X') Art.drawCrackWall(ctx, { x, y, dungeon: id, cracks: D.cracks[r * D.W + c] || 0 });
     else Art.drawTile(ctx, { x, y, dungeon: id, kind: tileKind(ch), nest: ch === 'n' });
   }
+  if (D.exit) {
+    const x = D.exit.x - ox, y = D.exit.y - oy;
+    if (onScr(x, y, 60)) Art.drawExit(ctx, { x, y, dungeon: id, armed: D.exit.armed });
+  }
   for (const f of D.fountains) {
     const x = f.x - ox, y = f.y - oy; if (!onScr(x, y, 60)) continue;
     Art.drawFountain(ctx, { x, y, dungeon: id, full: f.full });
@@ -2192,6 +2184,7 @@ function renderDungeon() {
   drawHazards(D.hz, true, ox, oy);
   if (D.ring.m) Art.drawCaptureRing(ctx, { x: D.ring.m.x - ox, y: D.ring.m.y - oy, t: D.ring.t, dur: captureDur() });
   for (const k of D.kegs) {
+    if (k.mode === 'gone') continue;   // 炸掉就不畫、不擋路
     const x = k.x - ox, y = k.y - oy; if (!onScr(x, y, 140)) continue;
     const fuse = k.mode === 'fuse';
     Art.drawKeg(ctx, { x, y, dungeon: id, mode: k.mode, fuseT: fuse ? Math.min(0.6, k.fuseT) : 0.6, fuseDur: 0.6, radius: 130 });
@@ -2225,6 +2218,7 @@ function renderDungeon() {
   renderTutorial();
   Art.drawHud(ctx, hudState());
   renderTutNote();
+  if (D.prompt) Art.drawExitPrompt(ctx, { choice: D.prompt.choice, t: D.prompt.t });
 }
 
 function renderShow() {
@@ -2236,7 +2230,7 @@ function renderShow() {
     let mode = 'roam';
     if (isL) mode = 'charge'; else if (L) mode = 'stopped'; else if (m.hold) mode = 'hold'; else if (m.progMove) mode = 'program';
     Art.drawShowMonster(ctx, {
-      x: m.x, y: m.y, species: m.sp, level: m.lv, rage: m.rage, angryLow: rl(m),
+      x: m.x, y: m.y, species: m.sp, rage: m.rage, angryLow: ANGRY_LOW,
       marks: isL ? 0 : Math.min(4, m.marks), markLeft: m.marks > 0 ? Math.max(0, m.markT) : 0, markDur: 4, mode, target: m.target > 0,
       frozenLeft: m.frozen, frozenDur: 1.5, performing: m.perfAct >= 0, performT: m.perfAct >= 0 ? m.perfAct : 0, performDur: 0.5,
       fx: m.fx, fxT: m.fx === 'none' ? 0 : m.fxT, fxDur: 0.5,
@@ -2252,43 +2246,46 @@ function renderShow() {
       const v = S.vis[side][i];
       Art.drawFence(ctx, { x: 165 + 136 * i, y: side === 'top' ? 140 : 572, side, broken: S.fences[side][i] });
       const mode = v.mode === 'flee' ? (v.t >= 1.5 ? 'empty' : 'flee') : 'watch';
-      Art.drawVisitor(ctx, { x: 165 + 136 * i, y: side === 'top' ? 95 : 622, side, mode, fleeT: mode === 'flee' ? v.t : 0, fleeDur: 1.5 });
+      Art.drawVisitor(ctx, { x: 165 + 136 * i, y: side === 'top' ? 95 : 622, side, i, mode, mood: TIERS[S.tierIdx],
+        t: S.clock, fleeT: mode === 'flee' ? v.t : 0, fleeDur: 1.5 });
     }
   }
   if (L) {
     showMon(L.m);
     Art.drawLooseFx(ctx, { x: L.m.x, y: L.m.y, t: Math.min(2.5, L.t), dur: 2.5 });
   }
-  for (let i = 0; i < 6; i++) {
+  if (!L && S.tierIdx === 3) Art.drawHeatAlert(ctx, { t: S.frenzyT });
+  for (let i = 0; i < ROWS; i++) {
     const r = S.rows[i], cur = i === S.cur;
     const waiting = cur && r.cue === 'wait' && S.waitT <= 0;
-    Art.drawCueRow(ctx, { x: 110 + 212 * i, y: 691, style: 'mini', index: i, cue: r.cue, program: r.prog, complete: r.complete, selCell: -1,
+    Art.drawCueRow(ctx, { x: 322 + 212 * i, y: 691, style: 'mini', index: i, cue: r.cue, program: r.prog, complete: r.complete, selCell: -1,
       current: cur, t: waiting ? Math.min(6, S.sinceFire) : 0, dur: waiting ? 6 : 0, switching: cur && S.waitT > 0, locked: false });
   }
   for (const f of S.floats) Art.drawFloatText(ctx, { x: f.x, y: f.y - f.t * 30, text: f.text, kind: f.kind, t: f.t, dur: f.dur });
   Art.drawHud(ctx, hudState());
+  Art.drawHeatMeter(ctx, { x: 640, y: 25, heat: S.heat, tier: TIERS[S.tierIdx], t: S.clock, tierT: Math.min(0.4, S.tierT), tierDur: 0.4 });
   renderTutorial();
 }
 
-function bankSlotState(b, i, x, y, selected) {
-  return { x, y, species: b.sp, num: b.num, level: b.lv, onStage: b.on, selected, canUpgrade: canUpgrade(b) };
+function bankSlotState(b, x, y, selected) {
+  return { x, y, species: b.sp, num: b.num, onStage: b.on, selected };
 }
-function drawBank(s, key, shop, selected) {
+function drawBank(s, selected) {
   const n = G.bank.length;
   for (let i = s.top * 10; i < Math.min(n, (s.top + 3) * 10); i++) {
-    const p = slotCenter(i, shop);
-    Art.drawBankSlot(ctx, bankSlotState(G.bank[i], i, p.x, p.y, selected && i === s[key]));
+    const p = slotCenter(i);
+    Art.drawBankSlot(ctx, bankSlotState(G.bank[i], p.x, p.y, selected && i === s.cur));
   }
   const rows = Math.ceil(n / 10);
-  if (s.top > 0) Art.drawScrollMark(ctx, { x: 640, y: shop ? 128 : 58, dir: 'up' });
-  if (s.top + 3 < rows) Art.drawScrollMark(ctx, { x: 640, y: shop ? 492 : 437, dir: 'down' });
+  if (s.top > 0) Art.drawScrollMark(ctx, { x: 640, y: 58, dir: 'up' });
+  if (s.top + 3 < rows) Art.drawScrollMark(ctx, { x: 640, y: 437, dir: 'down' });
 }
 function renderSetup1() {
   const s = G.s1;
   Art.drawBackground(ctx, { scene: 'setup1' });
-  drawBank(s, 'cur', false, s.zone === 'grid');
+  drawBank(s, s.zone === 'grid');
   const b = G.bank[Math.min(s.cur, G.bank.length - 1)];
-  if (b) Art.drawMonsterInfo(ctx, monsterInfoState(b, 'setup', 480, 555));
+  if (b) Art.drawMonsterInfo(ctx, monsterInfoState(b, 480, 555));
   Art.drawButton(ctx, { x: 960, y: 470, w: 220, h: 70, label: '下一步', selected: s.zone === 'next' });
   if (G.day !== 0) Art.drawButton(ctx, { x: 960, y: 570, w: 220, h: 70, label: '回選地點', selected: s.zone === 'back' });
   for (const f of UI.floats) Art.drawFloatText(ctx, { x: f.x, y: f.y - f.t * 30, text: f.text, kind: f.kind, t: f.t, dur: f.dur });
@@ -2298,13 +2295,13 @@ function renderSetup1() {
 function renderSetup2() {
   const s = G.s2;
   Art.drawBackground(ctx, { scene: 'setup2' });
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < ROWS; i++) {
     const r = G.rows[i], locked = G.day === 0 && i >= 2;
     Art.drawCueRow(ctx, { x: 380, y: 100 + 78 * i, style: 'row', index: i, cue: locked ? '' : r.cue, program: locked ? '' : r.prog, complete: !locked && !!(r.cue && r.prog),
       selCell: s.row === i ? s.col : -1, current: false, t: 0, dur: 0, switching: false, locked });
   }
-  Art.drawButton(ctx, { x: 160, y: 580, w: 200, h: 70, label: '開演', selected: s.row === 6 });
-  Art.drawButton(ctx, { x: 400, y: 580, w: 200, h: 70, label: '返回上一步', selected: s.row === 7 });
+  Art.drawButton(ctx, { x: 160, y: 410, w: 200, h: 70, label: '開演', selected: s.row === BTN_GO });
+  Art.drawButton(ctx, { x: 400, y: 410, w: 200, h: 70, label: '返回上一步', selected: s.row === BTN_BACK });
   if (s.panel) Art.drawPickerPanel(ctx, { layer: s.panel.layer, options: s.panel.options, index: s.panel.index });
   Art.drawHud(ctx, hudState());
   renderTutorial();
@@ -2312,21 +2309,16 @@ function renderSetup2() {
 function renderShop() {
   const s = G.shop, tab = SHOP_TABS[s.tab];
   Art.drawBackground(ctx, { scene: 'shop' });
-  SHOP_TABS.forEach((t, i) => Art.drawShopTab(ctx, { x: 280 + 240 * i, y: 85, tab: t, current: i === s.tab, selected: s.zone === 'tab' && i === s.tab }));
+  SHOP_TABS.forEach((t, i) => Art.drawShopTab(ctx, { x: 400 + 240 * i, y: 85, tab: t, current: i === s.tab, selected: s.zone === 'tab' && i === s.tab }));
   let lines = [];
-  if (s.tab < 3) {
-    const items = SHOP_ITEMS[tab];
-    items.forEach((it, i) => {
-      const st = shopState(it);
-      st.x = 220 + 420 * (i % 3); st.y = 170 + 100 * Math.floor(i / 3); st.selected = s.zone === 'grid' && s.idx === i;
-      Art.drawShopItem(ctx, st);
-    });
-    if (s.zone === 'grid') lines = shopDetailLines(items[s.idx]);
-  } else {
-    drawBank(s, 'idx', true, s.zone === 'grid');
-    if (s.zone === 'grid' && G.bank[s.idx]) Art.drawMonsterInfo(ctx, monsterInfoState(G.bank[s.idx], 'shop', 520, 590));
-  }
-  if (s.tab < 3) Art.drawShopDetail(ctx, { x: 640, y: 570, lines });
+  const items = SHOP_ITEMS[tab];
+  items.forEach((it, i) => {
+    const st = shopState(it);
+    st.x = 220 + 420 * (i % 3); st.y = 170 + 100 * Math.floor(i / 3); st.selected = s.zone === 'grid' && s.idx === i;
+    Art.drawShopItem(ctx, st);
+  });
+  if (s.zone === 'grid') lines = shopDetailLines(items[s.idx]);
+  Art.drawShopDetail(ctx, { x: 640, y: 570, lines });
   Art.drawButton(ctx, { x: 1000, y: 625, w: 200, h: 70, label: '離開', selected: s.zone === 'go' });
   for (const f of UI.floats) Art.drawFloatText(ctx, { x: f.x, y: f.y - f.t * 30, text: f.text, kind: f.kind, t: f.t, dur: f.dur });
   Art.drawHud(ctx, hudState());
@@ -2370,7 +2362,7 @@ function render() {
     case 'shop': renderShop(); break;
     case 'result': {
       Art.drawBackground(ctx, { scene: 'result' });
-      const bank = SPECIES.filter(sp => G.bank.some(b => b.sp === sp)).map(sp => ({ species: sp, count: G.bank.filter(b => b.sp === sp).length, maxLevel: topLv(sp) }));
+      const bank = SPECIES.filter(sp => G.bank.some(b => b.sp === sp)).map(sp => ({ species: sp, count: G.bank.filter(b => b.sp === sp).length }));
       Art.drawResultPanel(ctx, { rep: G.rep, goldEarned: G.goldEarned, bestChain: G.bestChain, days: G.log.slice(), bank, stars: RS.shown });
       Art.drawHud(ctx, hudState());
       break;
