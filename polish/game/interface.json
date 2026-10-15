@@ -35,6 +35,18 @@
       ]
     },
     {
+      "name": "drawIntermission",
+      "state": [
+        "t",
+        "ready",
+        "monsters"
+      ],
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
       "name": "drawPlaceCard",
       "state": [
         "x",
@@ -170,6 +182,33 @@
         64,
         64
       ]
+    },
+    {
+      "name": "drawHeartBar",
+      "state": [
+        "x",
+        "y",
+        "hearts",
+        "maxHearts",
+        "fx",
+        "fxT",
+        "fxDur",
+        "delta"
+      ],
+      "size": {
+        "bar": [
+          200,
+          16
+        ],
+        "heart": [
+          14,
+          13
+        ],
+        "fxArea": [
+          240,
+          64
+        ]
+      }
     },
     {
       "name": "drawWildMonster",
@@ -316,7 +355,6 @@
         "species",
         "num",
         "level",
-        "effect",
         "onStage",
         "selected",
         "canUpgrade"
@@ -331,17 +369,30 @@
       "state": [
         "x",
         "y",
+        "where",
         "species",
         "num",
+        "level",
         "desc",
+        "effect",
         "total",
         "totalMax",
-        "lines"
+        "upgrade"
       ],
-      "size": [
-        840,
-        170
-      ]
+      "size": {
+        "panel": [
+          840,
+          170
+        ],
+        "left": [
+          300,
+          170
+        ],
+        "right": [
+          540,
+          170
+        ]
+      }
     },
     {
       "name": "drawScrollMark",
@@ -369,7 +420,8 @@
         "current",
         "t",
         "dur",
-        "switching"
+        "switching",
+        "locked"
       ],
       "size": {
         "row": [
@@ -396,7 +448,7 @@
       "size": {
         "panel": [
           460,
-          "50 + 52 × 選項數"
+          "50 + 44 × 選項數"
         ],
         "title": [
           460,
@@ -404,7 +456,7 @@
         ],
         "row": [
           460,
-          52
+          44
         ]
       }
     },
@@ -431,7 +483,7 @@
         "species",
         "level",
         "rage",
-        "redLow",
+        "angryLow",
         "marks",
         "markLeft",
         "markDur",
@@ -523,8 +575,9 @@
     {
       "name": "drawShowResult",
       "state": [
-        "fame",
+        "sat",
         "gold",
+        "fameGain",
         "tallyT",
         "tallyDur",
         "bestChain",
@@ -628,9 +681,9 @@
         "dayMax",
         "gold",
         "rep",
-        "showFame",
-        "hearts",
-        "maxHearts",
+        "sat",
+        "cheerLeft",
+        "cheerDur",
         "ropes",
         "ropeMax",
         "weapon",
@@ -656,6 +709,7 @@
       "name": "drawTutorial",
       "state": [
         "stage",
+        "kind",
         "text",
         "keys",
         "pressed",
@@ -684,14 +738,15 @@
   ],
   "notes": {
     "x,y": "皆為物件中心點(畫面座標; 地下城已由 RD 換算成畫面座標 = 世界 − 鏡頭 + (0, 100), 畫面外的不呼叫); 例外: drawButton 的 x,y 為左上角、w,h 為寬高",
-    "固定版位": "drawTitle、drawCalendar 畫滿全畫面 1280×720(呼叫時不畫 HUD); drawPickerPanel 固定畫在 x 760~1220, 標題列 y 60~110, 第 i 行 y 110 + 52i ~ 162 + 52i(由美術依 options 長度畫); drawDungeonResult、drawShowResult 固定畫在畫面中央 (640, 390), 760×460; drawResultPanel 固定畫在 (640, 390), 800×560; drawHud 固定畫在畫面頂端全寬, phase 為 dungeon 時高 100、其他 phase 高 50; drawLooseFx 的「失控!」橫幅固定畫在 (640, 300), 600×140, 另在 x,y(失控那隻)畫爆發特效 160×160; 其餘有 x,y 的元件依 spec 數值表版面由 RD 傳入(drawBannerFx 固定傳 (640, 180), drawShopDetail 傳 (640, 570), drawMonsterInfo 傳 (480, 555), 新地下城開放提示是 drawFloatText kind unlock 傳 (640, 110))",
-    "文字歸屬": "新手教學(drawTutorial)以外畫面上所有文字都由美術在對應的 draw 函式裡畫, RD 不另外畫字。drawTitle 畫遊戲名「來動物園看一點大場面」與閃爍的「按 Z 開始」; drawCalendar 畫「第 N 天」(day 0 畫「見習日」)、「共 dayMax 天」、5 格天數的數字 1~5; drawPlaceCard 畫場所名(地下城 / 表演 / 商店)與 note 字串; drawDungeonCard 畫地下城名稱、住的兩種魔物名、condition 字串(未開放時)或「已開放」; drawDungeonResult 畫標題(依 reason:「時間到」「倒下了」「見習完成!」)、「收服」與頭像列(沒有時畫「這趟沒有收服」)、「打倒 N 隻」「金幣 +N」與「按 Z 繼續」; drawBankSlot 畫「N 號」、「Lv N」、效果標籤字; drawMonsterInfo 畫「種類名 N 號」、desc 字串、「上場 total / totalMax」與 lines 的每一行; drawCueRow 的 row 樣式畫序號「第 N 個」、暗號格裡的「當」與暗號名、節目格裡的「演」與節目名(空格畫「—」), mini 樣式不畫字, 只畫暗號圖示 → 節目圖示(空格畫空框)、等待進度條與換列等待的「…」; drawPickerPanel 畫標題(layer 為 cue 時「什麼時候?」、program 時「演什麼?」)與每行的 name、desc; drawBannerFx 畫「暗號名 → 節目名!」; drawLooseFx 畫「失控!」; drawShowResult 畫標題(loose 為 true:「失控! 表演提前結束」並畫「剩 N 秒」; 否則「收場!」; tutorial 為 true 時標題前加「見習」)、「本場名聲 N」、「金幣 +N」(N 為跳動中的數字)、「最長連鎖 N」與「按 Z 繼續」(跳完才畫); drawShopTab 畫分頁名(角色 / 表演 / 怪物); drawShopItem 依 item 畫名稱、說明(spec 第 84 條; 暗號另畫小標「暗號」、節目另畫「節目」)、價格或「已擁有」「裝備中」, fameLocked 時改畫「名聲 N 解鎖」; drawShopDetail 畫 lines 的每一行; drawButton 畫 label; drawFloatText 畫 text; drawCaptureRing 畫「準備捕捉」; drawShowMonster 畫「Lv N」; drawResultPanel 畫所有結算數字、5 天行程、怪物庫與「按 Z 重來」; drawHud 畫天數(day 0 畫「見習日」, 其他「第 N 天 / dayMax」)、金幣、名聲、計時、地下城名、心、繩、武器、本場名聲(show 時)與 message 字串。drawPortal、drawCrackWall、drawHazard、drawWeaponFx、drawKeg、drawFountain、drawFruitTree、drawFruit、drawBlast、drawScrollMark 不畫字",
-    "scene(Background)": "place(今天去哪) | select(地下城選擇) | dungeon | dresult(地下城結算) | setup1 | setup2 | sresult(表演結算) | shop | result(總結算); 結算畫面的背景要壓暗, 讓面板跳出來。表演場不呼叫 drawBackground(用 drawShowArena), 開始畫面與日曆過場也不呼叫",
+    "固定版位": "drawTitle、drawCalendar、drawIntermission 畫滿全畫面 1280×720(呼叫時不畫 HUD); drawPickerPanel 固定畫在 x 760~1220, 標題列 y 60~110, 第 i 行(i 從 0 起算)y 110 + 44i ~ 154 + 44i(由美術依 options 長度畫, 最多 13 行, 最下緣 y 682); drawDungeonResult、drawShowResult 固定畫在畫面中央 (640, 390), 760×460; drawResultPanel 固定畫在 (640, 390), 800×560; drawHud 固定畫在畫面頂端全寬, phase 為 dungeon 時高 100、其他 phase 高 50; 地下城 HUD 第 2 行固定版位: 捕獸繩列第 k 條(k 從 0 起算)圖示中心 (40 + 22k, 74)、整列範圍 x 20~260、y 56~92(新手教學第 6 階段附註泡泡的尾巴指向 (130, 92)), 武器框 x 634~814、y 56~92, 按鍵提示文字中心 (1040, 74), 不再畫心(心改由 drawHeartBar 畫在馴獸師頭上); drawLooseFx 的「失控!」橫幅固定畫在 (640, 300), 600×140, 另在 x,y(失控那隻)畫爆發特效 160×160; 其餘有 x,y 的元件依 spec 數值表版面由 RD 傳入(drawBannerFx 固定傳 (640, 180), drawShopDetail 傳 (640, 570), drawMonsterInfo 布置第 1 步傳 (480, 555)、商店怪物頁傳 (520, 590), 開放 / 上架提示是 drawFloatText kind unlock 傳 (640, 110), drawHeartBar 傳 (馴獸師 x, 馴獸師 y − 46))",
+    "文字歸屬": "新手教學(drawTutorial)以外畫面上所有文字都由美術在對應的 draw 函式裡畫, RD 不另外畫字。drawTitle 畫遊戲名「來馬戲團看一點大場面」與閃爍的「按 Z 開始」; drawCalendar 畫「第 N 天」(day 0 畫「見習日」)、「共 dayMax 天」、10 格天數的數字 1~10; drawIntermission 畫大字「見習表演」、「把剛抓到的火柴猴帶上台表演給觀眾看!」、三步圖解文字「① 選誰上台」「② 排暗號節目單: 什麼時候 → 演什麼」「③ 開演, 看牠們表演賺觀眾滿意度」, ready 為 true 時畫閃爍的「按 Z 繼續」(都是固定字串, 美術直接寫死); drawPlaceCard 畫場所名(地下城 / 表演 / 商店)與 note 字串; drawDungeonCard 畫地下城名稱、住的兩種魔物名、condition 字串(未開放時)或「已開放」; drawDungeonResult 畫標題(依 reason:「時間到」「倒下了」「見習完成!」)、「收服」與頭像列(沒有時畫「這趟沒有收服」)、「打倒 N 隻」「金幣 +N」與「按 Z 繼續」; drawBankSlot 畫「N 號」、「Lv N」(不畫效果標籤); drawMonsterInfo 畫「種類名 N 號」、Lv 徽章、desc(含〔 〕標籤)、where 為 setup 時畫「上台 total / totalMax」, 以及 upgrade 的標頭(「升級」/「已滿級」、「Lv a → Lv b」、「N 金」)、每列的 label / before / after / note 字串、底部按鍵提示(where 為 setup:「X 升級這隻」; shop:「Z 升級這隻」); drawCueRow 的 row 樣式畫序號「第 N 個」、暗號格裡的「當」與暗號名、節目格裡的「演」與節目名(空格畫「—」), locked 時改畫鎖頭與「見習後開放」; mini 樣式不畫字, 只畫暗號圖示 → 節目圖示(空格畫空框)、等待進度條與換列等待的「…」; drawPickerPanel 畫標題(layer 為 cue 時「什麼時候?」、program 時「演什麼?」)與每行的 name、desc; drawBannerFx 畫「暗號名 → 節目名!」; drawLooseFx 畫「失控!」; drawShowResult 畫標題(loose 為 true:「失控! 表演提前結束」並畫「剩 N 秒」; 否則「收場!」; tutorial 為 true 時標題前加「見習」)、「觀眾滿意度 N」、「金幣 +N」與「名聲 +N」(N 為跳動中的數字)、「最長連鎖 N」與「按 Z 繼續」(跳完才畫); drawShopTab 畫分頁名(角色 / 暗號 / 節目 / 怪物); drawShopItem 依 item 畫名稱、說明(spec 第 84 條與第 58、59 條表的「說明」欄)、價格或「已擁有」「裝備中」, fameLocked 時改畫「名聲 N 解鎖」; drawShopDetail 畫 lines 的每一行; drawButton 畫 label; drawFloatText 畫 text; drawCaptureRing 畫「準備捕捉」; drawShowMonster 畫「Lv N」; drawResultPanel 畫所有結算數字、10 天行程、怪物庫與「按 Z 重來」; drawHud 畫天數(day 0 畫「見習日」, 其他「第 N / dayMax 天」)、金幣、名聲、計時、地下城名、繩、武器、觀眾滿意度(show 時, 字「觀眾滿意度 N」)、歡呼中的「歡呼 ×1.5」與 message 字串。drawHeartBar、drawPortal、drawCrackWall、drawHazard、drawWeaponFx、drawKeg、drawFountain、drawFruitTree、drawFruit、drawBlast、drawScrollMark 不畫字",
+    "scene(Background)": "place(今天去哪) | select(地下城選擇) | dungeon | dresult(地下城結算) | setup1 | setup2 | sresult(表演結算) | shop | result(總結算); 結算畫面的背景要壓暗, 讓面板跳出來。表演場不呼叫 drawBackground(用 drawShowArena), 開始畫面、日曆過場、見習過場也不呼叫",
     "t(Title)": "開始畫面已顯示的秒數(一直累加, 給背景魔物走動與「按 Z 開始」閃爍用, 閃爍週期 1 秒)",
-    "day,dayMax,t,dur(Calendar)": "day: 0~5(0 = 見習日); dayMax: 5; t/dur: 過場已過秒數 / 總長 2.0(0~0.6 秒翻頁、之後大字停住); 只在過場播放期間呼叫",
-    "log(Calendar)": "長度 5 的陣列, 第 i 項是第 i+1 天去了哪: dungeon | show | 空字串(還沒過或就是今天); day 那格(第 day 項)要亮起, 已過的格畫叉與圖示",
+    "day,dayMax,t,dur(Calendar)": "day: 0~10(0 = 見習日); dayMax: 10; t/dur: 過場已過秒數 / 總長 2.0(0~0.6 秒翻頁、之後大字停住); 只在過場播放期間呼叫",
+    "log(Calendar)": "長度 10 的陣列, 第 i 項(i 從 0 起算)是第 i+1 天去了哪: dungeon | show | 空字串(還沒過或就是今天); 今天那格(第 day−1 項; day 0 時沒有格要亮)要亮起, 已過的格畫叉與圖示。10 格排成一排或兩排各 5 格, 要放得進 1280 寬",
+    "t,ready,monsters(Intermission)": "t: 見習過場已顯示的秒數(一直累加, 給火柴猴走向舞台的動畫與「按 Z 繼續」閃爍用, 閃爍週期 1 秒); ready: false 表示出現未滿 0.6 秒、還不接受 Z(不畫「按 Z 繼續」), true 才畫; monsters: 剛收服的種類代號陣列(見習日固定是 [\"monkey\",\"monkey\"]), 畫成走向帳篷舞台的小隊伍",
     "place": "dungeon(地下城) | show(表演) | shop(商店)",
-    "note(PlaceCard)": "卡上小字, 由 RD 給: 「抓魔物 · 過一天」「賺名聲 · 過一天」「買東西 · 不花時間」",
+    "note(PlaceCard)": "卡上小字, 由 RD 給: 「抓魔物 · 過一天」「賺滿意度 · 過一天」「買東西 · 不花時間」",
     "dungeon": "meadow(見習草地, 教學) | lake(鏡湖) | tower(齒輪鐘塔) | snow(雪境)",
     "kind(Tile)": "wall | pillar | floor | hurt(傷害地形: 見習草地與鏡湖沒有、鐘塔齒輪刃、雪境冰刺) | slow(減速地形: 鏡湖淺灘、鐘塔機油、雪境雪堆; 見習草地沒有) | bush(草叢, 只有鏡湖, 可以走, 要看得出馴獸師能躲進去)。果樹、爆炸桶、傳送陣、回復泉那格的 kind 為 floor, 物件另由各自的 draw 函式畫在上面; 裂牆那格由 drawCrackWall 畫(不呼叫 drawTile), 碎掉後改呼叫 drawTile kind floor",
     "nest": "true 表示這格是巢穴",
@@ -713,6 +768,9 @@
     "lassoing": "true 表示馴獸師正套著一隻魔物",
     "slowed": "true 表示被冰柱射線打中、移速減半中(1 秒)",
     "hidden": "true 表示躲在草叢裡(畫半透明或被草葉蓋住, 但玩家仍要看得到自己的位置)",
+    "x,y(HeartBar)": "心列中心 = (馴獸師畫面 x, 馴獸師畫面 y − 46), 在 drawTamer 本體框(64×64)之外的頭上; 每顆心 14×13, 間距 16, 整排以 x 置中; maxHearts > 12 時間距縮成 13, 整排不超過 bar 200 寬",
+    "hearts,maxHearts(HeartBar)": "目前心數 / 上限(滿的心畫實心、少掉的畫空心框)",
+    "fx,fxT,fxDur,delta": "fx: none | hurt(扣血) | heal(回血); fxT/fxDur: 特效已過秒數 / 總長 2.0; 閒置時 fx 為 none、fxT = fxDur = 2.0(不在播)。整排不透明度: fx 為 none 或 fxT ≥ 2.0 → 0.4; fxT < 1.5 → 1; 1.5~2.0 從 1 線性淡回 0.4。hurt 特效(前 0.5 秒): 掉的那幾顆(第 hearts ~ hearts+delta−1 顆, 從 0 起算)碎成紅色碎片往下噴、整排左右抖; heal 特效(前 0.6 秒): 補回的那幾顆(第 hearts−delta ~ hearts−1 顆)依序從空變滿、冒綠色光點往上飄。delta: 這次增減的顆數(正整數; fx 為 none 時 0)。特效可畫出 bar 框, 範圍 fxArea 240×64 以心列中心為中心",
     "hp,maxHp": "野生魔物血量; 血條 hpBar 56×6 畫在本體框外的頭上, 中心 = (x, y − 46)(戲法狸 y − 55)",
     "hit": "true 表示受擊閃白(0.1 秒)",
     "weak": "true 表示殘血(血量 ≤ 30%), 要畫虛弱記號(畫在本體框內)",
@@ -743,39 +801,42 @@
     "captures": "這趟收服的種類代號陣列(一隻一項, 依收服順序), 畫成一排頭像; 最多 20 個, 超過 10 個時換第二排",
     "kills,gold(DungeonResult)": "這趟打倒的魔物數 / 打倒得到的金幣",
     "num": "該種內的編號(1 起算), 畫成「N 號」",
-    "level": "個體等級 0~3(drawBankSlot、drawShowMonster)",
-    "effect": "ignite(激怒, 紅) | calm(冷靜, 藍) | target(標靶, 紫) | freeze(凍結, 紫) | warp(變走, 紫); 標籤字分別為「激怒」「冷靜」「標靶」「凍結」「變走」(drawBankSlot 用)",
-    "onStage": "true 表示這隻目前排在上場名單(畫勾與亮框); 商店怪物頁也照實傳",
+    "level": "個體等級 0~3(drawBankSlot、drawShowMonster、drawMonsterInfo)",
+    "effect": "只給 drawMonsterInfo 用(drawBankSlot 已拿掉效果標籤): ignite(惹生氣) | calm(冷靜) | target(標靶) | freeze(凍住) | warp(變走); 決定 desc 裡〔 〕標籤的底色: ignite 紅、calm 藍、其他紫",
+    "onStage": "true 表示這隻目前排在上台名單(畫勾與亮框); 商店怪物頁也照實傳",
     "selected": "true 表示目前選擇框 / 游標在這一項",
     "canUpgrade": "true 表示金幣夠且沒滿級(格子角落畫小小的升級箭頭); level 為 3 時畫「MAX」小標, 不用另傳",
-    "desc(MonsterInfo)": "這種的效果一句說明(spec 第 56 條), 由 RD 傳字串",
-    "total,totalMax": "全部上場總數 / 上限 20",
-    "lines": "字串陣列, 由 RD 依 spec 第 55 條格式組好(升級面板 4 行或「已滿級」1 行; 商店說明列則是 1~3 行說明), 美術逐行畫出, 不自己組字",
+    "where(MonsterInfo)": "setup(布置第 1 步) | shop(商店怪物頁)。shop 時不畫「上台 N / 20」, 底部按鍵提示改「Z 升級這隻」",
+    "版面(MonsterInfo)": "面板 840×170 以 x,y 為中心; 左半 left 300×170(x−420 ~ x−120): 頭像 64、「種類名 N 號」+ Lv 徽章、desc(最多 2 行)、「上台 total / totalMax」; 右半 right 540×170(x−120 ~ x+420): 升級面板, 標頭一行 + 表格 3 列 + 底部按鍵提示一行。表格四欄左緣建議: label x−100、before x+40、箭頭 x+170、after x+200, 每列高 30",
+    "desc(MonsterInfo)": "這種的攻擊說明(spec 第 56 條表), 由 RD 傳字串; 用全形〔 〕括起來的字(每句一個, 例「丟出會飛回來的火柴, 打中會〔生氣〕」)畫成圓角標籤(底色依 effect、白字, 不畫〔 〕本身), 其他字畫一般文字",
+    "total,totalMax": "全部上台總數 / 上限 20(只在 where 為 setup 時畫)",
+    "upgrade": "升級面板物件 { maxed, from, to, cost, affordable, rows }。maxed: true 表示已滿級(標頭畫「已滿級」徽章、不畫費用與 Lv 箭頭; rows 只填 before 欄的目前效果, after 為空字串); from/to: 升級前後等級(Lv 徽章畫「Lv from → Lv to」); cost: 費用(金色徽章「N 金」, affordable 為 false 時畫紅); rows: 固定 3 項(第 0 項生氣、第 1 項觀眾滿意度、第 2 項馴獸師加成), 每項 { label, before, after, note }: label 項目名(灰); before 升級前(白); after 升級後(綠); before 與 after 都有字時中間畫灰色「→」; before 為空字串時 after 從 before 欄起畫, 前面畫綠色向上箭頭(第 0 項「更容易進入生氣狀態」用這種; 已滿級時第 0 項 before 給「容易生氣 Lv3」之類目前狀態); note 非空字串時整列 before~after 欄只畫 note(灰字, 例「看同種最高等級: Lv2」)。字串全部由 RD 組好, 美術不自己組字",
     "dir(ScrollMark)": "up | down; 小三角形記號, 表示這個方向還有沒顯示的怪物庫列; 沒有更多時 RD 不呼叫",
     "style(CueRow)": "row(布置第 2 步的大列 680×64; 列內序號 x−340~x−250、暗號格 rowCell 280×52 中心 (x − 100, y)、節目格 rowCell 280×52 中心 (x + 200, y)) | mini(表演場下方縮小格 200×46; 左半畫暗號圖示、右半畫節目圖示, 中間一個箭頭)",
-    "index(CueRow)": "列號 0~5(畫成「第 index+1 個」)",
-    "cue": "wait(過 6 秒) | red1(有人進紅區) | cold(冷場) | red3(三隻進紅區) | mark3(有人標記 3) | chain3(連鎖 3) | multi3(一招 3 隻) | 空字串(沒填)。red1 是新圖示, 要和 red3 看得出差別(1 隻 vs 3 隻)",
-    "program": "ice(冰水桶) | pep(加油棒) | scatter(散場) | mob(圍攻) | tutti(大合奏) | lull(安撫曲) | spot(聚光燈) | shuffle(魔術箱) | 空字串(沒填)",
+    "index(CueRow)": "列號 0~5(從 0 起算, 畫成「第 index+1 個」)",
+    "cue": "wait(過 6 秒) | perf1(有人表演) | angry1(任一怪物生氣) | cold(冷場) | angry3(三隻怪物生氣) | mark3(有人標記 3) | chain3(連鎖 3) | multi3(一招 3 隻) | target1(有人當標靶) | half(一半生氣) | frozen1(有人被凍住) | gain30(滿意度 +30) | 空字串(沒填)。新圖示: perf1、target1、half、frozen1、gain30; angry1(原 red1)與 angry3(原 red3)沿用舊圖示, 要看得出 1 隻 / 3 隻 / 一半的差別",
+    "program": "all(全體表演) | spot(聚光燈) | ice(冰水桶) | pep(加油棒) | tutti(大合奏) | scatter(散場) | mob(圍攻) | lull(安撫曲) | bull(標靶秀) | still(全場定格) | shuffle(魔術箱) | cheer(歡呼) | 空字串(沒填)。新圖示: all、bull、still、cheer; all(全部表演)要和 tutti(只有生氣的表演)看得出差別",
     "complete": "true 表示暗號與節目都填了; false 的列畫暗(表演中會被跳過)",
     "selCell": "只在 row 樣式有意義: -1 游標不在這列 | 0 游標在暗號格 | 1 游標在節目格; mini 樣式一律 -1",
     "current": "只在 mini 樣式有意義: true 表示這是「目前這列」(正在等它的暗號), 要框起來; row 樣式一律 false",
     "t,dur(CueRow)": "只在 mini 樣式、current 為 true、暗號是 wait、且不在換列等待中時有意義: 距離上一個節目發動已過秒數 / 6(畫成格內進度條); 其他情況一律 0 / 0, 不畫進度條",
     "switching": "只在 mini 樣式、current 為 true 時有意義: true 表示剛發動完、換列等待中(1.5 秒), 格內畫「…」",
+    "locked": "只在 row 樣式有意義: true 表示這列在見習日鎖住(第 3~6 列, index 2~5), 整列畫暗 + 鎖頭 + 「見習後開放」, 不畫暗號格與節目格內容; 平常一律 false; mini 樣式一律 false(見習表演的第 3~6 個縮小格照空列畫空框)",
     "layer": "cue(選暗號) | program(選節目)",
-    "options": "陣列, 每項 { key: 暗號或節目代號 / clear, name, desc(一句說明, clear 那行為空字串) }; clear 那行的 name 為「清空」",
+    "options": "陣列, 每項 { key: 暗號或節目代號 / clear, name, desc(一句說明, clear 那行為空字串) }; clear 那行的 name 為「清空」; 最多 13 項",
     "index(PickerPanel)": "面板中目前選中的行(0 起算)",
     "cue,program,t,dur(BannerFx)": "節目發動時冒出的「暗號 → 節目!」; cue、program 同 CueRow; t/dur 為已過秒數 / 總長 0.8, 只在播放期間呼叫",
-    "rage": "0~100; 怒氣條 rageBar 60×8 畫在本體框外的頭上, 中心 = (x, y − 44)(戲法狸 y − 52); 條上 50 標出表演門檻, redLow~100 標出紅區",
-    "redLow": "紅區下限 80 / 75 / 70 / 65",
+    "rage": "0~100; 怒氣條 rageBar 60×8 畫在本體框外的頭上, 中心 = (x, y − 44)(戲法狸 y − 52); 條上 50 標出表演門檻, angryLow~100 標出生氣段(紅色)",
+    "angryLow": "生氣門檻 80 / 75 / 70 / 65(原 redLow); 怒氣 ≥ angryLow 就是生氣, 有沒有標記都一樣",
     "marks": "失控標記數 0~4(到 5 就失控, 不再顯示標記); 標記畫在怒氣條上方一排, 中心 y = y − 56(戲法狸 y − 64), 每個直徑 8、間距 11, 整排以 x 置中",
     "markLeft,markDur": "距離下次標記自動 −1 的剩餘秒數 / 總長 4; marks 為 0 時為 0 / 4",
     "Lv(ShowMonster)": "「Lv N」小字畫在本體框外的腳下, 中心 = (x, y + 40)(戲法狸 y + 48)",
     "mode(ShowMonster)": "roam(照自己的模式走) | program(被散場或圍攻帶著走) | hold(圍攻的目標, 原地不動) | charge(失控那隻: 衝向圍欄、撞破) | stopped(失控收場期間其他魔物: 停住不動, 畫成僵住 / 嚇到的樣子)。charge 那隻要畫在 drawFence / drawVisitor 之上(會衝到圍欄位置)",
-    "target": "true 表示這隻是標靶(4 秒內一直要畫標靶記號, 畫在本體框內或剛好貼著本體, 不能蓋住怒氣條)",
-    "frozenLeft,frozenDur": "凍結剩餘秒數 / 總長 1.5; frozenLeft 為 0 表示沒凍結; 凍結中要把本體包在冰塊裡",
+    "target": "true 表示這隻是標靶(彩羽或節目標靶秀造成; 4 秒內一直要畫標靶記號, 畫在本體框內或剛好貼著本體, 不能蓋住怒氣條)",
+    "frozenLeft,frozenDur": "凍住剩餘秒數 / 總長 1.5(冰柱射線或節目全場定格); frozenLeft 為 0 表示沒凍住; 凍住中要把本體包在冰塊裡",
     "performing": "true 表示正在表演(表演瞬間起 0.5 秒)",
     "performT,performDur": "表演動作已過秒數 / 總長 0.5; 沒在表演時為 0 / 0.5",
-    "fx(ShowMonster)": "none | ignited(剛被點燃型效果升怒) | doused(剛被澆熄型效果降怒) | special(剛被特殊效果打中: 變成標靶、被凍結、被變走)",
+    "fx(ShowMonster)": "none | ignited(剛被惹生氣型效果升怒) | doused(剛被冷靜型效果降怒) | special(剛被特殊效果打中: 變成標靶、被凍住、被變走)",
     "fxT,fxDur": "fx 已過秒數 / 總長 0.5; fx 為 none 時為 0 / 0.5",
     "looseT,looseDur": "失控收場已過秒數 / 總長 2.5(0~1.0 秒衝刺、1.0 秒撞破圍欄); 只在 mode 為 charge 時有意義, 其他 mode 為 0 / 2.5",
     "move,moveT,moveDur(ShowMonster)": "同 WildMonster 的 move, 但沒有 eat: walk | hop(總長 0.3) | swoop(總長 0.5) | fadeOut(總長 0.25) | fadeIn(總長 0.25)",
@@ -784,45 +845,47 @@
     "mode(Visitor)": "watch(觀看) | flee(逃走中) | empty(空位, 逃走完)",
     "fleeT,fleeDur": "逃走已過秒數 / 總長 1.5(往觀眾席外側跑出畫面或縮小消失, 越接近 1 越看不到); mode 不是 flee 時為 0 / 1.5, 由 mode 判斷是否在播",
     "x,y,t,dur(LooseFx)": "x,y 為失控那隻的位置(畫爆發特效); 「失控!」橫幅固定在 (640, 300); t/dur 為失控收場已過秒數 / 總長 2.5, 只在播放期間呼叫, 畫在 drawFence / drawVisitor 之上",
-    "fame,gold(ShowResult)": "本場名聲 / 換算後的金幣(最終值)",
-    "tallyT,tallyDur": "金幣數字跳動已過秒數 / 總長 1.5: 畫面上的金幣數 = round(gold × tallyT / tallyDur); 跳完後 tallyT = tallyDur, 才畫「按 Z 繼續」",
+    "sat,gold,fameGain(ShowResult)": "sat: 觀眾滿意度; gold: 換算後的金幣(最終值); fameGain: 加進名聲的量(= sat)",
+    "tallyT,tallyDur": "金幣與名聲數字跳動已過秒數 / 總長 1.5: 畫面上的金幣數 = round(gold × tallyT / tallyDur)、名聲數 = round(fameGain × tallyT / tallyDur); 跳完後 tallyT = tallyDur, 才畫「按 Z 繼續」",
     "bestChain(ShowResult)": "本場最長連鎖段數",
     "loose,timeLeft": "loose: true 表示本場因失控提前結束; timeLeft: 失控時剩餘秒數(整數), 不是失控時為 0",
     "tutorial(ShowResult)": "true 表示是見習日表演",
-    "tab": "char(角色) | show(表演) | monster(怪物)",
+    "tab": "char(角色) | cue(暗號) | program(節目) | monster(怪物); 4 個分頁 220×50, 中心 x 280 / 520 / 760 / 1000、y 85",
     "current(ShopTab)": "true 表示這是目前顯示的分頁",
-    "item": "角色頁: club | sword | spear | whip | attack | armor | ropeBag; 表演頁: cold | red3 | mark3 | chain3 | multi3(以上暗號) | pep | scatter | mob | lull | spot | shuffle(以上節目)。怪物頁不用 drawShopItem, 改用 drawBankSlot",
+    "item": "角色頁: club | sword | spear | whip | attack | armor | ropeBag; 暗號頁: angry1 | cold | angry3 | mark3 | chain3 | multi3 | target1 | half | frozen1 | gain30; 節目頁: ice | pep | tutti | scatter | mob | lull | bull | still | shuffle | cheer。暗號、節目格用 CueRow 同一套圖示, 另畫小標「暗號」或「節目」。怪物頁不用 drawShopItem, 改用 drawBankSlot + drawMonsterInfo",
     "cost": "價格; 已擁有時給 0",
     "level(ShopItem)": "強化已買次數; 武器、暗號、節目為 0",
     "owned": "武器、暗號、節目是否已擁有",
     "equipped": "只對武器有意義",
     "affordable": "true 表示金幣夠(買不起的價格畫灰或紅)",
     "fameReq,fameLocked": "只對暗號、節目有意義: fameReq 為上架名聲門檻(0 表示一開始就上架); fameLocked 為 true 表示名聲還沒到, 整格畫暗並畫「名聲 N 解鎖」; 其他項目為 0 / false",
-    "label": "下一步 | 返回 | 開演 | 離開 | 聲音 開 | 聲音 關",
-    "kind(FloatText)": "gold(地下城打倒金幣) | fame(名聲 +N) | redFame(紅區名聲, 文字含「×2」) | chain(文字含「連鎖 N」) | capture(收服!) | heal(心補滿) | levelUp(升級, 文字「Lv↑」) | unlock(新地下城開放 / 新暗號節目上架提示, 文字如「新地下城開放: 齒輪鐘塔」, 較大、畫在 (640, 110), 總長 1.5)",
+    "label": "下一步 | 回選地點 | 開演 | 返回上一步 | 離開 | 聲音 開 | 聲音 關",
+    "kind(FloatText)": "gold(地下城打倒金幣) | sat(觀眾滿意度, 文字「滿意度 +N」; 原 fame) | angryFame(生氣時表演的滿意度, 文字含「生氣×2」; 原 redFame) | chain(文字含「連鎖 N」) | capture(收服!) | heal(心補滿) | levelUp(升級, 文字「Lv↑」) | unlock(新地下城開放 / 商店上架提示, 文字如「新地下城開放: 齒輪鐘塔」「商店上架新暗號 / 節目」, 較大、畫在 (640, 110), 總長 1.5)。歡呼中的飄字文字另含「×1.5」, kind 不變",
     "t,dur(FloatText)": "飄字已過秒數 / 總長 1(unlock 為 1.5)",
     "bank": "總結算的怪物庫摘要陣列, 每項 { species, count, maxLevel }(只列有的種類)",
-    "days(ResultPanel)": "長度 5 的陣列, 每天去了哪: dungeon | show",
-    "bestChain": "五天中最長的連鎖段數",
+    "days(ResultPanel)": "長度 10 的陣列, 第 i 項(從 0 起算)是第 i+1 天去了哪: dungeon | show",
+    "bestChain": "十天中最長的連鎖段數",
     "stars": "0~3",
     "phase(Hud)": "place | select | dungeon | dresult | setup1 | setup2 | show | sresult | shop | result(開始畫面與日曆過場不呼叫 drawHud)",
-    "day,dayMax(Hud)": "day 0~5(0 畫「見習日」)、dayMax 5",
-    "showFame": "只在 show 顯示: 本場目前累積的名聲(rep 是總名聲, 不含本場)",
-    "hearts,maxHearts,ropes,ropeMax,weapon,xCdLeft,xCdMax": "只在 dungeon 顯示; xCdMax 為 0 表示這把武器沒有 X 技(棍棒)",
+    "day,dayMax(Hud)": "day 0~10(0 畫「見習日」)、dayMax 10",
+    "sat(Hud)": "只在 show 顯示: 本場目前累積的觀眾滿意度(畫「觀眾滿意度 N」; rep 是總名聲, 不含本場)",
+    "cheerLeft,cheerDur": "只在 show 有意義: 節目歡呼剩餘秒數 / 總長 5; 閒置時 0 / 5(cheerLeft 為 0 表示沒在歡呼, 不畫); > 0 時在觀眾滿意度旁畫「歡呼 ×1.5」與剩餘時間小條",
+    "ropes,ropeMax,weapon,xCdLeft,xCdMax": "只在 dungeon 顯示(心不在 HUD, 改由 drawHeartBar 畫); xCdMax 為 0 表示這把武器沒有 X 技(棍棒), 此時整個 X 鍵冷卻格都不畫(免得玩家以為有 X 可按)",
     "timeLeft,timeMax": "本段剩餘秒數 / 總長(地下城 75、表演場 45、見習日表演 30); 見習草地與其他 phase 為 0 / 0(不畫計時)",
     "dungeon(Hud)": "目前地下城代號, 不在地下城時為空字串",
-    "message": "HUD 訊息字串(按鍵提示等), 由 RD 依 spec 數值表「HUD 訊息」給",
-    "stage(Tutorial)": "教學階段編號 1~24(對照 spec「新手教學」表)",
+    "message": "HUD 訊息字串(按鍵提示等), 由 RD 依 spec 數值表「HUD 訊息」給; 地下城的按鍵提示依武器寫出 X 技名(棍棒只有「Z 攻擊」)",
+    "stage(Tutorial)": "教學階段編號 1~26(對照 spec「新手教學」表)",
+    "kind(Tutorial)": "main(主階段, 一次一個) | note(附註, 只有第 6 階段: 指向 HUD 左上捕獸繩列, 和主階段同時呼叫, 畫在 HUD 之上; 樣式比主泡泡小一號、顏色較淡, 看得出是補充說明)",
     "text(Tutorial)": "泡泡裡的一句話, 由 RD 依 spec 表給(含進度如「1/2」)",
-    "keys": "要顯示的按鍵圖示陣列, 依顯示順序: up | down | left | right | z | x | circle(方向鍵繞圈示意, 第 4 階段); 空陣列表示這階段不畫按鍵",
+    "keys": "要顯示的按鍵圖示陣列, 依顯示順序: up | down | left | right | z | x | circle(方向鍵繞圈示意, 第 4 階段); 空陣列表示這階段不畫按鍵(例: 第 3 階段「站到牠身上 別動」只有文字)",
     "pressed": "已按過的鍵陣列(keys 的子集), 這些鍵要畫成亮起 / 打勾; 只有第 1 階段會逐一累積, 其他階段為空陣列",
-    "x,y(Tutorial)": "泡泡尾巴要指向的目標點(畫面座標, 例: 魔物頭頂、按鈕上緣)",
-    "bx,by,side": "bx,by 為泡泡中心(RD 算好、已夾在畫面內); side: up(泡泡在目標上方, 尾巴朝下)| down(泡泡在目標下方, 尾巴朝上)。泡泡本體 320×96 以內, 按鍵圖示 keyCap 34×34 排在泡泡內文字下方或左側",
+    "x,y(Tutorial)": "泡泡尾巴要指向的目標點(畫面座標, 例: 魔物頭頂、按鈕上緣; 第 1、20 階段指向馴獸師心列上方 (馴獸師 x, 馴獸師 y − 60))",
+    "bx,by,side": "bx,by 為泡泡中心(RD 算好、已夾在畫面內; 附註固定 (250, 150)); side: up(泡泡在目標上方, 尾巴朝下)| down(泡泡在目標下方, 尾巴朝上; 附註固定 down)。主泡泡本體 320×96 以內、附註 300×60 以內, 按鍵圖示 keyCap 34×34 排在泡泡內文字下方或左側",
     "phase(Tutorial)": "show(提示中) | done(完成特效播放中, 0.6 秒後 RD 不再呼叫)",
     "appearT,appearDur": "泡泡彈出已過秒數 / 總長 0.25; 彈出完後為 0.25 / 0.25(不在播)",
     "doneT,doneDur": "完成特效已過秒數 / 總長 0.6(打勾 + 星星 / 依階段的特效, 見 spec 表「完成特效」; 美術做一套通用的打勾星星即可); phase 為 show 時為 0.6 / 0.6(不在播), phase 為 done 時從 0 開始",
-    "繪製順序": "開始畫面: drawTitle。日曆過場: drawCalendar。今天去哪: drawBackground → drawPlaceCard × 3 → drawButton(聲音)→ drawFloatText(unlock)→ drawHud → drawTutorial。地下城選擇: drawBackground → drawDungeonCard × 3 → drawHud。地下城: drawBackground → drawTile / drawCrackWall → drawFountain → drawPortal → drawFruitTree → drawFruit → drawHazard(預警與生效)→ drawCaptureRing → drawKeg → drawWildMonster → drawLasso → drawTamer → drawWeaponFx → drawHazard(投射物)→ drawBlast → drawFloatText → drawHud → drawTutorial。地下城結算: 地下城最後一幀不重畫, 改畫 drawBackground → drawDungeonResult → drawHud。布置第 1 步: drawBackground → drawBankSlot × N → drawScrollMark → drawMonsterInfo → drawButton(下一步、返回)→ drawFloatText → drawHud → drawTutorial。布置第 2 步: drawBackground → drawCueRow(row × 6)→ drawButton(開演)→ drawPickerPanel(開著時)→ drawHud → drawTutorial。表演場: drawShowArena → drawHazard(預警與生效)→ drawShowMonster(charge 以外)→ drawHazard(投射物)→ drawBannerFx → drawFence / drawVisitor → drawShowMonster(charge 那隻)→ drawLooseFx → drawCueRow(mini × 6)→ drawFloatText → drawHud → drawTutorial。表演結算: drawBackground → drawShowResult → drawHud。商店: drawBackground → drawShopTab × 3 → drawShopItem × N 或 drawBankSlot × N + drawScrollMark → drawShopDetail → drawButton(離開)→ drawFloatText → drawHud → drawTutorial。總結算: drawBackground → drawResultPanel → drawHud",
-    "rep,goldEarned": "rep: 總名聲(drawHud、drawResultPanel); goldEarned: 5 天(含見習日)累計賺得的金幣(表演結算 + 打倒金幣)"
+    "繪製順序": "開始畫面: drawTitle。日曆過場: drawCalendar。見習過場: drawIntermission。今天去哪: drawBackground → drawPlaceCard × 3 → drawButton(聲音)→ drawFloatText(unlock)→ drawHud → drawTutorial。地下城選擇: drawBackground → drawDungeonCard × 3 → drawHud。地下城: drawBackground → drawTile / drawCrackWall → drawFountain → drawPortal → drawFruitTree → drawFruit → drawHazard(預警與生效)→ drawCaptureRing → drawKeg → drawWildMonster → drawLasso → drawTamer → drawWeaponFx → drawHazard(投射物)→ drawBlast → drawHeartBar → drawFloatText → drawTutorial(main)→ drawHud → drawTutorial(note)。地下城結算: 地下城最後一幀不重畫, 改畫 drawBackground → drawDungeonResult → drawHud。布置第 1 步: drawBackground → drawBankSlot × N → drawScrollMark → drawMonsterInfo → drawButton(下一步; 見習日以外再畫回選地點)→ drawFloatText → drawHud → drawTutorial。布置第 2 步: drawBackground → drawCueRow(row × 6)→ drawButton(開演、返回上一步)→ drawPickerPanel(開著時)→ drawHud → drawTutorial。表演場: drawShowArena → drawHazard(預警與生效)→ drawShowMonster(charge 以外)→ drawHazard(投射物)→ drawBannerFx → drawFence / drawVisitor → drawShowMonster(charge 那隻)→ drawLooseFx → drawCueRow(mini × 6)→ drawFloatText → drawHud → drawTutorial。表演結算: drawBackground → drawShowResult → drawHud。商店: drawBackground → drawShopTab × 4 → drawShopItem × N(角色 / 暗號 / 節目頁)或 drawBankSlot × N + drawScrollMark + drawMonsterInfo(怪物頁)→ drawShopDetail(怪物頁不畫)→ drawButton(離開)→ drawFloatText → drawHud → drawTutorial。總結算: drawBackground → drawResultPanel → drawHud",
+    "rep,goldEarned": "rep: 總名聲(drawHud、drawResultPanel); goldEarned: 10 天(含見習日)累計賺得的金幣(表演結算 + 打倒金幣)"
   },
   "sounds": [
     "ui_move",
@@ -831,6 +894,7 @@
     "ui_denied",
     "title_start",
     "calendar_flip",
+    "intermission",
     "attack",
     "skill",
     "hit_monster",
@@ -855,9 +919,11 @@
     "ignite",
     "calm",
     "special",
-    "red_perform",
+    "angry_perform",
     "chain",
     "cue_fire",
+    "freeze_all",
+    "cheer",
     "mark_add",
     "loose",
     "crowd_flee",

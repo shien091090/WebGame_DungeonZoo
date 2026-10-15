@@ -1,6 +1,6 @@
 # 音效 / 音樂素材來源
 
-授權統計: CC0 51 項(Kenney 45 檔 + OpenGameArt 6 段內嵌)、CC BY 4.0 5 項(背景音樂)。
+授權統計: CC0 55 項(Kenney 46 檔 + OpenGameArt 2 檔 + OpenGameArt 7 段內嵌)、CC BY 4.0 5 項(背景音樂)。
 
 ## 遊戲畫面需要放的署名(CC BY 4.0)
 
@@ -27,7 +27,7 @@ https://creativecommons.org/licenses/by/4.0/
 
 ## 短音效(assets/, CC0)
 
-全部出自 Kenney(https://kenney.nl), 頁面標示 CC0。檔案為原檔直接複製改名, 未剪輯; 音量、音高(播放速度)與截斷長度在 sound.js 裡調。sound.js 另以 base64 內嵌同一份 ogg 供 Web Audio 解碼。
+除最後兩列(OpenGameArt)外全部出自 Kenney(https://kenney.nl), 頁面標示 CC0。檔案為原檔直接複製改名, 未剪輯; 音量、音高(播放速度)與截斷長度在 sound.js 裡調。sound.js 另以 base64 內嵌同一份 ogg 供 Web Audio 解碼。
 
 | 檔名 | 事件 | 原始頁面(原檔名) | 作者 | 授權 | 剪輯 |
 |---|---|---|---|---|---|
@@ -62,7 +62,8 @@ https://creativecommons.org/licenses/by/4.0/
 | sfx_ignite.ogg | ignite | https://kenney.nl/assets/digital-audio (phaserUp2.ogg) | Kenney | CC0 | 無 |
 | sfx_calm.ogg | calm | https://kenney.nl/assets/digital-audio (phaserDown2.ogg) | Kenney | CC0 | 無 |
 | sfx_special.ogg | special | https://kenney.nl/assets/digital-audio (zapTwoTone.ogg) | Kenney | CC0 | 無 |
-| sfx_red_perform.ogg | red_perform | https://kenney.nl/assets/music-jingles (jingles_HIT00.ogg) | Kenney | CC0 | 無 |
+| sfx_angry_perform.ogg | angry_perform(原 red_perform, 打磨第 2 輪改名, 素材不變) | https://kenney.nl/assets/music-jingles (jingles_HIT00.ogg) | Kenney | CC0 | 無 |
+| sfx_freeze_glass.ogg | freeze_all(開頭脆響疊層) | https://kenney.nl/assets/impact-sounds (impactGlass_heavy_001.ogg) | Kenney | CC0 | 無(播放時速度 1.1) |
 | sfx_chain.ogg | chain | https://kenney.nl/assets/interface-sounds (pluck_002.ogg) | Kenney | CC0 | 無(播放時依段數升調) |
 | sfx_cue_fire.ogg | cue_fire | https://kenney.nl/assets/interface-sounds (confirmation_001.ogg) | Kenney | CC0 | 無 |
 | sfx_mark_add.ogg | mark_add | https://kenney.nl/assets/interface-sounds (bong_001.ogg) | Kenney | CC0 | 無(播放時依標記數升調) |
@@ -76,6 +77,8 @@ https://creativecommons.org/licenses/by/4.0/
 | sfx_unlock.ogg | unlock | https://kenney.nl/assets/music-jingles (jingles_STEEL04.ogg) | Kenney | CC0 | 無 |
 | sfx_tutorial_done.ogg | tutorial_done | https://kenney.nl/assets/interface-sounds (maximize_001.ogg) | Kenney | CC0 | 無 |
 | sfx_star.ogg | star | https://kenney.nl/assets/interface-sounds (glass_001.ogg) | Kenney | CC0 | 無(播放時依第幾顆升調) |
+| sfx_intermission.ogg | intermission | https://opengameart.org/content/classic-fanfare-lick (fanfare.ogg) | fvcalderan | CC0 | 無。作者在留言說明是自己用 GarageBand 內建樂器演奏, 非套用現成樂句 |
+| sfx_cheer.ogg | cheer | https://opengameart.org/content/cheers-0 (cheers.ogg) | Nocturnal_Vanguard | CC0 | 無 |
 
 ## 內嵌於 sound.js 的音效(無獨立檔, CC0)
 
@@ -88,8 +91,9 @@ https://creativecommons.org/licenses/by/4.0/
 | attack_spear | attack(weapon: spear) | https://opengameart.org/content/swishes-sound-pack (swish-11.wav) | artisticdude | CC0 | 同上 |
 | attack_whip | attack(weapon: whip) | https://opengameart.org/content/swishes-sound-pack (swish-10.wav) | artisticdude | CC0 | 同上 |
 | skill | skill | https://opengameart.org/content/swishes-sound-pack (swish-7.wav) | artisticdude | CC0 | 同上 |
+| freeze_all | freeze_all | https://opengameart.org/content/freeze-spell-0 (freeze.wav) | artisticdude | CC0 | 去頭尾靜音(從 0.10 秒起)、混成單聲道、48 kHz 降為 24 kHz、尾端淡出 0.25 秒、峰值正規化 −1 dBFS; 播放時 1.6 秒收掉 |
 | show_end | show_end | https://opengameart.org/content/applause-in-a-large-hall-or-church (applause-clapping-church-crowd-immersive.wav) | eXpl0it3r | CC0 | 取全曲最響的 3 秒(4.6~7.6 秒), 淡入 0.03 秒、淡出 0.9 秒, 單聲道 22.05 kHz, 峰值正規化 −1 dBFS |
 
 ## 核對
 
-assets/ 共 50 個檔 = 背景音樂 5 列 + 短音效 45 列; 另 6 段內嵌於 sound.js。沒有未登記的檔。
+assets/ 共 53 個檔 = 背景音樂 5 列 + 短音效 48 列; 另 7 段內嵌於 sound.js。沒有未登記的檔。

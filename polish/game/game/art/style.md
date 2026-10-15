@@ -1,8 +1,8 @@
-# 來動物園看一點大場面(打磨版)— 美術規格(style.md)
+# 來馬戲團看一點大場面(打磨版第 2 輪)— 美術規格(style.md)
 
 > RD 只讀這份。`index.html` 必須宣告 `<meta charset="utf-8">`(art.js 內有中文字串)。
 > 函式名、參數、state 欄位全部照 `interface.json`, 一個不多一個不少。所有函式自己 save / restore; 傳入表外值不會拋錯, 會畫成下表寫的「預設」。
-> 沿用上一版(deepen-5 B 款「暗號節目單」)的色票、形狀語言與物件畫法; 爆炸桶、回復泉、爆炸、果樹、果子、草叢、馴獸師躲藏從 `ref-objects.js` 移植並改成本款的視覺語言(見 §4 最後一條)。上一版的 `drawSpeciesCard`、`drawSpeciesInfo`、`drawGuidePage` 已刪除。
+> 沿用打磨第 1 輪的色票、形狀語言與物件畫法。本輪只改規格「本輪改動」表牽涉到美術的部分: 「紅區」改叫「生氣」、標題、10 天、觀眾滿意度、9 個新暗號 / 節目圖示、商店 4 分頁、選擇面板行高 44、節目單鎖列、見習過場(新)、頭上心列(新)、怪物卡拿掉效果標籤、升級面板結構化、HUD 改版、教學附註泡泡。
 
 ## 1. 邏輯畫布
 
@@ -13,168 +13,181 @@
 | 名稱 | 色碼 | 用途 |
 |---|---|---|
 | bg / bg2 | #141821 / #1c2230 | 背景 |
-| panel / panelHi / line | #232a3a / #2f3a52 / #465372 | 面板底 / 亮一階(上場的格、選中的卡) / 面板框 |
+| panel / panelHi / line | #232a3a / #2f3a52 / #465372 | 面板底 / 亮一階(上台的格、選中的卡) / 面板框 |
 | text / textDim / outline | #eef2f8 / #9aa6bd / #0d1018 | 文字 / 次要字 / 物件與文字的深色描邊 |
 | select | #ffd24a | **游標 / 選擇框**(全遊戲唯一的選擇長相: 金色 4px 框 + 外光) |
 | tamer | #ffd24a | 馴獸師本體、他打出的武器特效、被劍打回去的投射物外環 |
 | hittable | rgba(255,210,74,0.8) 虛線 | **你打得到 / 打得破的場景物**: 裂牆的框、有果子的果樹 |
-| capture | #c6f046 | 只給「可捕捉 / 捕捉進度 / 收服」: 殘血血條、破心、準備捕捉圈、繞圈進度、收服飄字、結算頭像框 |
+| capture | #c6f046 | 只給「可捕捉 / 捕捉進度 / 收服」 |
 | rope | #f0e2b8 | 套索繩 |
-| danger | #ff3b4a | 傷害地形紅框、爆炸桶預警圈、爆炸、失控鋸齒、破損圍欄、紅區 |
-| ignite / calm / special | #ff6a2c / #3fa0ff / #b46cff | 激怒(點燃)/ 冷靜(澆熄)/ 特殊效果(標靶·凍結·變走) |
-| cue / program | #5ad1e6 / #ff8fc8 | 暗號格與圖示 / 節目格與圖示 |
-| gold / rep | #ffc83a / #9fd8ff | 金幣 / 名聲 |
-| rageLow / rageMid / rageRed | #8390aa / #ffb43a / #ff3b4a | 怒氣條: < 50 / 50~紅區下限 / 紅區 |
+| danger | #ff3b4a | 傷害地形紅框、爆炸桶預警圈、爆炸、失控鋸齒、破損圍欄、心列扣血碎片 |
+| ignite / calm / special | #ff6a2c / #3fa0ff / #b46cff | 惹生氣(點燃)/ 冷靜(澆熄)/ 特殊效果(標靶·凍住·變走);說明面板〔 〕標籤也用這三色 |
+| cue / program | #5ad1e6 / #ff8fc8 | 暗號格與圖示 / 節目格與圖示(商店「暗號」「節目」分頁底線也用) |
+| gold / rep | #ffc83a / #9fd8ff | 金幣(錢幣圖示)/ 名聲(星形圖示) |
+| **sat** | #ffd6a8 | **觀眾滿意度**(笑臉圖示): HUD、飄字 kind sat、表演結算、暗號「滿意度 +30」、節目「歡呼」 |
+| rageLow / rageMid / rageRed | #8390aa / #ffb43a / #ff3b4a | 怒氣條: < 50 / 50~生氣門檻 / 生氣段 |
 | ice | #bfeaff | 冰塊、減速霜環 |
 | portal1 / portal2 | #3fe0ff / #ff7ad9 | 傳送陣 1 號 / 2 號 |
 | lily / monkey / beetle / parrot / penguin / tanuki | #8fe3a0 / #e8782c / #2fb8a8 / #ec4f9c / #3a5a9a / #a88a62 | 六種魔物本體主色 |
-| heart | #ff5d7a | 心(HUD、回復泉、補心飄字) |
-| fruit | #ffe34a | 誘餌果子(地上、樹上、魔物嘴邊同一個長相) |
+| heart | #ff5d7a | 心(頭上心列、回復泉、補心飄字) |
+| **heal** | #5cf0a0 | **只給頭上心列的回血光點** |
+| fruit | #ffe34a | 誘餌果子 |
 | bush / bushHi | #2f8a3e / #58c06a | 草叢圓葉、馴獸師躲藏時蓋在身上的葉 |
 | water | #5ab4ff | 回復泉水 |
 | tutorBg / tutorInk / tutorOk | #fff6e0 / #1a2030 / #2fb060 | **只給新手教學泡泡**: 淺紙底、深字、按過 / 完成的綠 |
 
-場所色(場所卡標題帶、日曆 / 總結算的場所圖示): 地下城 #58b86a、表演 #e0a040、商店 #7a9ae8。
+場所色(場所卡、日曆 / 總結算的場所圖示、見習過場的帳篷): 地下城 #58b86a、表演 #e0a040、商店 #7a9ae8。升級面板的「升級後」綠 #7dea8a、Lv 徽章亮黃 #ffe680(只在說明面板)。
 
-**張力(沿用 + 本輪新增, 請製作人用這幾幀驗收)**:
-- 六種魔物色排不開色輪(火柴猴 24° vs 戲法狸 34°)。種類辨識的主通道是**剪影**, 顏色只當第二通道(同上一版)。
-- 回復泉水與傳送陣 1 號都在雪境, 都是冷藍。所以泉水改成較深的天藍 #5ab4ff(不用青), 而且泉的主通道是**石盆 + 浮著的紅心**, 傳送陣是**平地上的環 / 菱形 + 點數**。最難分的一幀: 雪境中房, 泉與 1 號傳送陣同時出現在畫面上。
-- 果子用檸檬黃, 和馴獸師的金色(45°)只差 7°。果子是半徑 10 的小圓加綠葉, 馴獸師是 18 的大圓加披肩加武器, 所以主通道是尺寸與剪影。最難分的一幀: 馴獸師站在剛掉落的果子旁。
+**張力(請製作人用這幾幀驗收)**:
+- 觀眾滿意度(sat 桃色笑臉)與金幣(金色錢幣)色相只差約 13°。主通道是**圖示形狀**(笑臉 vs 錢幣)與明度(桃色明顯較淡),顏色只當第二通道。最難分的一幀: 表演結算, 「觀眾滿意度」與下方「金幣 +N」同一個面板上下排。
+- 觀眾滿意度會「加進名聲」, 但兩者不是同一個數: 名聲 = 星形淡藍, 滿意度 = 笑臉桃色, 長相刻意分開(P3)。
+- 回血光點綠 #5cf0a0 與捕捉萊姆 #c6f046 相隔約 75°; 光點只在馴獸師頭上心列的 0.6 秒特效出現, 不會和魔物身上的捕捉色同位置。
+- 沿用: 六種魔物色排不開色輪(主通道 = 剪影); 泉水 vs 1 號傳送陣(主通道 = 石盆 + 紅心 vs 平地環 + 點數); 果子 vs 馴獸師(主通道 = 尺寸 + 剪影)。
 
 ## 3. 形狀語言
 
-圓潤扁平 + 深色描邊。**尖角 / 鋸齒只給危險**(傷害地形、爆炸桶火焰記號、失控鋸齒、失控橫幅);其他記號一律圓頭,草叢是圓葉、教學鍵帽是圓角。**虛線框 + 由內長大的填色 = 「快生效了」**(冰柱預警、傳送陣啟動、爆炸桶預警圈)。**金色實線框 = 游標**,**金色虛線 = 你打得到的場景物**。馴獸師造成的東西是金白色;會打到人的東西是深色底 + 效果色環。**教學泡泡和全畫面所有面板的明暗相反**(淺紙底 + 深字),這個長相只給教學用。
+圓潤扁平 + 深色描邊。**尖角 / 鋸齒只給危險**(傷害地形、爆炸桶火焰記號、失控鋸齒、失控橫幅、心列扣血的三角碎片);其他記號一律圓頭,草叢是圓葉、教學鍵帽是圓角。**虛線框 + 由內長大的填色 = 「快生效了」**(冰柱預警、傳送陣啟動、爆炸桶預警圈)。**金色實線框 = 游標**,**金色虛線 = 你打得到的場景物**。**白色外擴環 = 表演**(場上表演、暗號「有人表演」、節目「全體表演」、見習過場都用同一個)。**圖示下方一個白點 = 「1 隻」**(任一怪物生氣、有人表演、有人當標靶、有人被凍住)。教學泡泡和全畫面所有面板的明暗相反(淺紙底 + 深字),只給教學用。
 
 ## 4. 理念落實
 
-- P0 辨識度先於好看: 魔物種類靠剪影分,狀態靠方向與外形分,顏色只當第二通道。四座地下城只換皮,危險地形(暗紅底 + 紅框 + 尖物)、減速地形(波浪紋)、草叢(圓葉叢)三套骨架不變。爆炸桶爆掉後畫成平面焦痕,不是立體的桶,一眼看得出「不在了」。
-- P1 視覺權重跟著決策迫切度走: 地下城裡最亮的是會打到你的投射物外環、殘血的捕捉色、冰柱預警和爆炸桶的紅色預警圈;草叢和果樹壓在中明度。表演場地板壓低對比,怒氣條和紅區是場上最飽和的 UI。
-- P2 規則上存在的東西,畫面上就要存在: 投射物、冰柱、武器範圍、爆炸的畫面邊界都等於判定邊界。爆炸桶點燃後畫出半徑 130 的預警圈(上一版經驗提過的缺口,這次介面給了 `fuseRange`)。裂牆 0 道裂痕也有金色虛線框。馴獸師躲草叢時用白虛線圈標出判定圓。果子正在被吃時有剩餘量環。
-- P3 一個意義一種長相: 激怒紅橘 / 冷靜藍 / 特殊紫在怪物庫格子、商店、投射物和場上反應共用一套;暗號青 / 節目粉同理;「場所」三個圖示在場所卡、日曆、總結算長得一樣;果子在樹上、地上、魔物嘴邊是同一個長相;金色虛線只代表「你打得到」(裂牆、有果的樹)。
-- P4 關鍵區分走兩條通道: 傳送陣 1 / 2 號 = 顏色 + 形狀;點燃 / 澆熄 = 顏色 + 方向;殘血 = 血條變捕捉色 + 身上破心 + 下垂眼;上場 = 淺青亮框 + 打勾章(沒上場的頭像 55% 半透明);red1 與 red3 = 一團大火 + 一個點 vs 三團小火。
-- P7 每個元素都要掙得版面: 縮小節目單只畫圖示、不畫字;怒氣條不寫數字;結算面板只放規格點名的項目。
-- P9 以最混亂的那一刻驗收: 二十隻大亂鬥時,所有反應都長在本體框內、只出現 0.5 秒;投射物一律深色底 + 環。失控收場其他魔物一起停住時,每隻都有灰罩、大白眼和驚嘆號,一眼看出全場凍結。
-- P13 事件要排隊: 節目浮字固定在 (640,180),一次一塊;新地下城開放提示固定在 (640,110),和節目浮字不同畫面出現。
-- P15 回饋強度和份量成正比: 單隻反應(0.5 秒、本體框內)< 表演(本體彈一下 + 白環外擴)< 節目發動(全寬浮字)< 爆炸桶(260 圓)< 失控(全畫面橫幅 + 爆發 + 觀眾逃走)。
-- P17 進度的圖形與數字分工: HUD 時間條給「還剩多少」,數字給精確秒數;X 冷卻、等待條、凍結剩餘、套索時限、吃果進度都只畫圖形;表演結算的金幣用跳動數字。
-- P18 重要資訊不能只存在一瞬間: 節目發動只閃 0.8 秒,但縮小節目單的框會停在下一列;每次收服的魔物都留在地下城結算的頭像列;每天去了哪留在日曆和總結算的行程列。
-- P19 資訊貼著物件: 怒氣條、標記、Lv、血條、準備捕捉圈貼在魔物上;教學泡泡的尾巴指著目標(停在目標前 6px,不蓋住目標)。
-- P21 示意圖選對錯理解會分岔的例子: 本輪沒有說明頁,這條不適用。開始畫面的遊行小景只用遊戲內畫法,狀態都合規則(火柴飛 0.7 秒後才折返)。
+- P0 辨識度先於好看: 魔物種類靠剪影分,狀態靠方向與外形分,顏色只當第二通道。四座地下城只換皮,危險地形、減速地形、草叢三套骨架不變。新暗號 / 節目圖示每個都換剪影(火團、半圓、準星、冰塊、笑臉),不靠換色區分。
+- P1 視覺權重跟著決策迫切度走: 頭上心列平時只有 40% 不透明,只在扣血 / 回血那 2 秒轉不透明;地下城裡最亮的仍是會打到你的投射物外環與預警。升級面板裡最亮的是「升級後」綠字與費用徽章,項目名退成灰。
+- P2 規則上存在的東西,畫面上就要存在: 見習日鎖住的 4 列照畫(鎖頭 +「見習後開放」),不是空著;生氣門檻每隻不同,怒氣條上的紅段起點照 angryLow 畫;棍棒沒有 X 技,HUD 整個 X 格不畫。
+- P3 一個意義一種長相: 觀眾滿意度 = 笑臉(HUD、飄字、結算、暗號 gain30、節目 cheer 同一個);標靶 = 紫準星(場上、暗號 target1、節目 bull 同一套路徑);凍住 = 冰塊(場上、frozen1、still);表演 = 白外擴環;帳篷 = 場所卡「表演」圖示(見習過場直接用它)。
+- P4 關鍵區分走兩條通道: 全體表演 vs 大合奏 = 三個灰點白環 vs 紅符頭音符(剪影 + 顏色);angry1 / angry3 / half = 一團大火 + 點 / 三團小火 / 半紅半灰圓;有人被凍住 vs 全場定格 = 小冰塊一隻 + 點 vs 大冰塊三隻;心列扣血 vs 回血 = 紅三角碎片往下 + 整排抖 vs 綠圓光點往上 + 心依序填滿。
+- P7 每個元素都要掙得版面: 怪物格拿掉效果標籤後不另補東西,把頭像放大;縮小節目單只畫圖示;HUD 的歡呼剩餘時間只畫小條、不寫秒數。
+- P9 以最混亂的那一刻驗收: 二十隻大亂鬥時反應都長在本體框內;頭上心列在 0.4 不透明度下壓在魔物、投射物之下(繪製順序在投射物之後,但半透明)。
+- P13 事件要排隊: 節目浮字固定 (640,180)、上架 / 開放提示固定 (640,110),不同畫面出現。
+- P15 回饋強度和份量成正比: 單隻反應 < 表演 < 節目發動 < 爆炸桶 < 失控;心列特效只在心列 240×64 範圍內。
+- P17 進度的圖形與數字分工: 表演結算的金幣、名聲用跳動數字;歡呼、X 冷卻、等待條只畫圖形。HUD 計時條給「剩多少」、數字給精確秒數。
+- P18 重要資訊不能只存在一瞬間: 每天去了哪留在日曆 10 格與總結算 10 格行程;收服留在地下城結算頭像列。
+- P19 資訊貼著物件: 心列從 HUD 搬到馴獸師頭上;教學泡泡尾巴指著目標(停在目標前 6px);附註泡泡尾巴指著捕獸繩列下緣。
+- P21 示意圖選對錯理解會分岔的例子: 本輪沒有說明頁。見習過場的三步圖解用遊戲內畫法(怪物格 + 上台勾、暗號格 → 節目格、表演白環 + 笑臉),狀態都合規則。
 
 ## 5. 物件表
 
-座標一律是**物件中心**(地下城已換算成畫面座標)。例外: `drawButton` 的 x,y 是左上角;固定版位的函式見 §7。
+座標一律是**物件中心**(地下城已換算成畫面座標)。例外: `drawButton` 的 x,y 是左上角;固定版位的函式見 §7。**粗體** = 本輪新增或改過。
 
 | 物件 | 函式 | state 欄位 | 各狀態視覺 |
 |---|---|---|---|
-| 背景 | `drawBackground(ctx, s)` | scene | 深藍黑漸層 + 淡斜紋 + 依場景的淡色光暈(place 琥珀、select 綠、setup 粉 / 青、shop 藍);**dresult / sresult / result 整片壓暗 60% + 暗角**。表外 scene → 不加光暈 |
-| 開始畫面 | `drawTitle(ctx, s)` | t | 全畫面: 夜色舞台 + 擺動聚光燈;遊戲名「來動物園看一點大場面」(74px 金字);六種魔物在舞台上由左往右走(火柴猴每秒跳一次,每 3 秒丟一根迴旋火柴);下方「Z 鍵帽 + 按 Z 開始」,閃爍週期 1 秒(每秒前 0.62 秒顯示) |
-| 日曆過場 | `drawCalendar(ctx, s)` | day, dayMax, t, dur, log | 桌曆: 0~0.6 秒舊的一頁(前一天的字;day 1 的舊頁寫「見習日」,day 0 的舊頁空白)以頂端為軸往上翻走;之後今天的大字「第 N 天」/「見習日」由 1.18 倍縮回 1(0.2 秒)。下方 5 格: 已過的格(index < day−1)畫場所圖示 + 白叉;今天(index = day−1)金框外光脈動 +「今天」;未來暗。右側「共 dayMax 天」。day 0 沒有亮格 |
-| 場所卡 | `drawPlaceCard(ctx, s)` | x, y, place, note, selected | 標題帶(場所色)+ 名稱、中央大場所圖示(地下城另有一隻火柴猴)、底部 note 小字;selected = 底亮一階 + 金框,未選 = 圖示 75%。表外 place → dungeon |
-| 地磚 | `drawTile(ctx, s)` | x, y, dungeon, kind, nest | wall: 凸起石磚;pillar: 圓柱;floor: 平地(四關色不同,見習草地有圓頭小草);hurt: 暗紅底 + 紅框 + 尖物(鐘塔旋轉齒輪刃、雪境冰刺、其他尖刺);slow: 波浪紋;**bush: 地板上一叢 3×3 圓葉 + 淡綠框,葉間留暗縫**;nest = 米色虛線橢圓 + 兩顆蛋。表外 kind → floor;表外 dungeon → lake |
-| 果樹 | `drawFruitTree(ctx, s)` | x, y, dungeon, hasFruit | 樹幹 + 三團圓樹冠(比牆亮、圓);hasFruit = 金色虛線圈 + 大果(打得落);false = 只剩小綠芽 |
-| 果子 | `drawFruit(ctx, s)` | x, y, dungeon, eating, eatT, eatDur | 半徑 10 的黃果 + 綠葉;eating false = 外圈黃虛線慢轉(正在吸引魔物);eating true = 果子縮小(到 30%)+ 兩個咬痕 + 白色剩餘量環 |
-| 爆炸桶 | `drawKeg(ctx, s)` | x, y, dungeon, mode, fuseT, fuseDur, radius | ok = 木桶(寬 44 = 判定直徑)+ 黑底火焰記號 + 引信;**fuse = 半徑 radius 的紅虛線預警圈(虛線流動)+ 紅色由中心長大,長滿 = 爆炸**,桶紅褐交替閃、抖、引信燒短冒火花;**gone = 平面焦痕 + 四片碎木(沒有立體的桶)**。表外 mode → ok |
-| 爆炸 | `drawBlast(ctx, s)` | x, y, radius, t, dur | 半徑 radius 紅色實心圓(外緣 = 判定)+ 白外環 + 黃色核心外擴 + 十道放射線,0.3 秒淡出 |
-| 回復泉 | `drawFountain(ctx, s)` | x, y, dungeon, full | full = 灰石盆 + 藍水 + 兩道噴泉 + 上下浮動的紅心;false = 暗石盆 + 泥色乾底 + 裂紋,沒有心 |
-| 傳送陣 | `drawPortal(ctx, s)` | x, y, dungeon, id, charge, cooling | 1 號 = 青圓環 + 1 點;2 號 = 粉菱形環 + 2 點;charge 0~1 由中心長大的亮面;cooling = 40% + 灰虛線框。表外 id → 1 |
-| 裂牆 | `drawCrackWall(ctx, s)` | x, y, dungeon, cracks | 暖色砌磚 + 金色虛線框;0 = 淡細縫、1 = 粗裂、2 = 十字裂 + 缺塊 + 碎屑 |
-| 馴獸師 | `drawTamer(ctx, s)` | x, y, facing, weapon, dashing, blink, lassoing, slowed, hidden | 金色身體圓(半徑 18 = 判定)+ 白披肩 + 頭 + 武器朝面向;dashing = 殘影 + 淺青環;blink = 每 100ms 閃 30%;lassoing = 腰上萊姆繩圈;slowed = 冰色虛線環 + 雪花;**hidden = 本體 45% 透明 + 腳邊蓋五片圓葉 + 白虛線判定圓** |
-| 野生魔物 | `drawWildMonster(ctx, s)` | x, y, species, hp, maxHp, hit, weak, stunLeft, stunDur, lassoed, casting, move, moveT, moveDur, dir | 剪影同上一版;hit = 整隻閃白;weak = 灰罩 + 下垂眼 + 破心 + 血條變捕捉色;stunLeft > 0 或 lassoed = 漩渦眼 + 三顆黃星繞頭;lassoed 另有腰間繩圈;casting = 紅橘虛線環 + 怒眉;hop / swoop / fadeOut / fadeIn 同上一版;**eat = 瞇眼 + 嘴邊一顆小果子**(暈眩時改畫暈眩)。表外 species → lily |
-| 準備捕捉圈 | `drawCaptureRing(ctx, s)` | x, y, t, dur | 半徑 40 的環,捕捉色由 12 點鐘方向順時針填到 t/dur;上方寫「準備捕捉」 |
-| 套索 | `drawLasso(ctx, s)` | x1, y1, x2, y2, progress, t, limit, len, maxLen | 同上一版: 繩越長越直,超過 75% 轉橘、超過 90% 變紅虛線;進度環半徑 42;時限白環半徑 49(剩不到 30% 轉紅) |
-| 技能 | `drawHazard(ctx, s)` | x, y, kind, phase, radius, angle, length, width, t, dur, returning, reflected | 同上一版。投射物 = 判定圓內深底 + 效果色環;returning = 內圈白虛線;reflected = 外環金;icebeam warn = 紫虛線長方形 + 冰色由施放者往外長;active = 冰白光束。表外 kind → pollen |
-| 武器特效 | `drawWeaponFx(ctx, s)` | x, y, weapon, move, shape, angle, spread, radius, length, width, t, dur | 同上一版(範圍 = 判定範圍;normal 米白、skill 金) |
-| 地下城卡 | `drawDungeonCard(ctx, s)` | x, y, dungeon, open, condition, selected | 主題色標題帶 + 名稱、地格小景(鏡湖畫草叢、鐘塔 / 雪境畫傷害地形)、住民頭像 + 名;open = 萊姆勾 +「已開放」;未開放 = 頭像 45% + 鎖頭 + condition(最多兩行);selected = 金框。meadow 只畫一隻火柴猴 |
-| 地下城結算 | `drawDungeonResult(ctx, s)` | reason, captures, kills, gold | 固定 (640,390) 760×460。標題: time「時間到」(白)/ down「倒下了」(粉紅)/ tutorial「見習完成!」(金);「收服」+ 頭像列(每格半徑 29、捕捉色框,10 個以上換第二排,最多 20 個);沒有收服時寫「這趟沒有收服」;「打倒 N 隻」「金幣 +N」;「按 Z 繼續」閃爍。表外 reason → time |
-| 怪物庫格 | `drawBankSlot(ctx, s)` | x, y, species, num, level, effect, onStage, selected, canUpgrade | 頭像、「N 號」(左下)、「Lv N」(右下)、效果膠囊(底部);**onStage = 底亮一階 + 淺青框 + 左上淺青打勾章**;未上場 = 頭像 55%、暗框;canUpgrade = 右上金色圓圈 + 往上箭頭;level 3 = 右上金底「MAX」小標(取代箭頭)+ Lv 字變金;selected = 金框。effect 表外 → 用該種預設效果 |
-| 說明面板 | `drawMonsterInfo(ctx, s)` | x, y, species, num, desc, total, totalMax, lines | 840×170。左邊: 「種類名 N 號」、desc(最多兩行)、「上場 total / totalMax」(滿額時變金);直線分隔;右邊: lines 逐行(最多 4 行,第 1 行較大) |
-| 捲動記號 | `drawScrollMark(ctx, s)` | x, y, dir | 40×14 圓角小三角,up 朝上 / down 朝下 |
-| 節目單一列 | `drawCueRow(ctx, s)` | x, y, style, index, cue, program, complete, selCell, current, t, dur, switching | 同上一版;**新增 red1 圖示 = 一團大火 + 下方一個白點**(red3 = 三團小火);刪除 loose 圖示 |
-| 選擇面板 | `drawPickerPanel(ctx, s)` | layer, options, index | 同上一版 |
-| 節目浮字 | `drawBannerFx(ctx, s)` | x, y, cue, program, t, dur | 同上一版 |
+| 背景 | `drawBackground(ctx, s)` | scene | 深藍黑漸層 + 淡斜紋 + 依場景的淡色光暈;dresult / sresult / result 整片壓暗 60% + 暗角。自己 clip 在畫布內 |
+| **開始畫面** | `drawTitle(ctx, s)` | t | 同上一版,**遊戲名改「來馬戲團看一點大場面」**;「Z 鍵帽 + 按 Z 開始」閃爍週期 1 秒(每秒前 0.62 秒顯示) |
+| **日曆過場** | `drawCalendar(ctx, s)` | day, dayMax, t, dur, log | 桌曆翻頁同上一版。**下方 10 格排一排**(格 92×84、中心 x = 112 + 102i、y 610): 已過(i < day−1)= 場所圖示 + 白叉;今天(i = day−1)= 金框外光脈動 +「今天」;未來暗。右側 (1170, 610)「共 10 天」。day 0 沒有亮格 |
+| **見習過場(新)** | `drawIntermission(ctx, s)` | t, ready, monsters | 全畫面夜色。大字「見習表演」(640,66)、一句「把剛抓到的火柴猴帶上台表演給觀眾看!」(640,128);中央帳篷(= 場所卡表演圖示)+ 舞台;monsters 每隻從畫面左外以 220 px/s 走到舞台前排好(火柴猴每秒跳一次),到了之後每 2 秒冒一次表演白環;下方三塊步驟卡(中心 x 222 / 640 / 1058、y 568,各 396×116): ① 怪物格 + 上台勾 / ② 暗號格 → 節目格 / ③ 表演白環 + 笑臉,下面寫三句固定字串;**ready 為 true 才畫**「Z 鍵帽 + 按 Z 繼續」(640 附近、y 674,閃爍週期 1 秒)。最多畫 6 隻;自己 clip 在畫布內 |
+| 場所卡 | `drawPlaceCard(ctx, s)` | x, y, place, note, selected | 同上一版 |
+| 地磚 | `drawTile(ctx, s)` | x, y, dungeon, kind, nest | 同上一版(見習草地無特殊地形) |
+| 果樹 / 果子 / 爆炸桶 / 爆炸 / 回復泉 / 傳送陣 / 裂牆 | `drawFruitTree` / `drawFruit` / `drawKeg` / `drawBlast` / `drawFountain` / `drawPortal` / `drawCrackWall` | 同 interface | 同上一版(見上一版說明:有果 = 金虛線圈 + 大果;fuse = 半徑 radius 紅虛線預警圈;gone = 平面焦痕;full = 石盆藍水 + 浮心;1 號圓環 / 2 號菱形;cracks 0~2) |
+| 馴獸師 | `drawTamer(ctx, s)` | x, y, facing, weapon, dashing, blink, lassoing, slowed, hidden | 同上一版 |
+| **頭上心列(新)** | `drawHeartBar(ctx, s)` | x, y, hearts, maxHearts, fx, fxT, fxDur, delta | 一排心以 (x,y) 置中,每顆 14×13、間距 16(maxHearts > 12 時 13;仍超過 200 寬就再壓縮);**滿 = 粉紅實心 + 深描邊;少掉 = 深底 + 粉紅細框(空心)**。不透明度: fx none 或 fxT ≥ fxDur → 0.4;fxT < 0.75·fxDur(=1.5 秒)→ 1;之後線性淡回 0.4。**hurt**(前 0.5 秒): 第 hearts ~ hearts+delta−1 顆各噴 4 片紅色三角碎片往下掉並淡出,整排左右抖(±3,漸弱);**heal**(前 0.6 秒): 第 hearts−delta ~ hearts−1 顆依序(每顆晚 0.12 秒)從空變滿並彈一下,每顆冒 3 顆綠色圓光點往上飄。表外 fx → none |
+| 野生魔物 | `drawWildMonster(ctx, s)` | x, y, species, hp, maxHp, hit, weak, stunLeft, stunDur, lassoed, casting, move, moveT, moveDur, dir | 同上一版(stunDur 不影響畫面,只看 stunLeft > 0) |
+| 準備捕捉圈 / 套索 / 技能 / 武器特效 | `drawCaptureRing` / `drawLasso` / `drawHazard` / `drawWeaponFx` | 同 interface | 同上一版 |
+| 地下城卡 / 地下城結算 | `drawDungeonCard` / `drawDungeonResult` | 同 interface | 同上一版 |
+| **怪物庫格** | `drawBankSlot(ctx, s)` | x, y, species, num, level, onStage, selected, canUpgrade | **效果標籤拿掉,頭像放大(半徑 29,中心 y−10)**;「N 號」左下、「Lv N」右下(y+38);onStage = 底亮一階 + 淺青框 + 左上淺青打勾章;未上台 = 頭像 55%;canUpgrade = 右上金圈往上箭頭;level 3 = 右上金底「MAX」+ Lv 字變金;selected = 金框 |
+| **說明面板** | `drawMonsterInfo(ctx, s)` | x, y, where, species, num, level, desc, effect, total, totalMax, upgrade | 840×170。**左半**(x−420~x−120): 頭像圓 (x−378, y−44) 半徑 32、「種類名 N 號」(x−336, y−60)、下方亮黃「Lv N」徽章;desc 從 (x−408, y+10) 起最多 2 行(行高 26、寬 280),**〔 〕裡的字畫成圓角標籤(底色依 effect: ignite 紅橘、calm 藍、其他紫;白字;〔 〕不畫)**;where setup 時 (x−408, y+66)「上台 total / totalMax」(滿額變金),shop 不畫。x−120 一條直分隔線。**右半升級面板**: 標頭列 y−62 — 未滿級:「升級」(x−100)+ 亮黃「Lv a → Lv b」徽章(x−44 起)+ 金色費用膠囊(錢幣 +「N 金」;affordable false 時紅框紅字);maxed:金底「已滿級」徽章 + 「Lv N」徽章,不畫費用。表格 3 列(y−26 / y+4 / y+34,列間淡分隔線): label 灰(x−100);before 白(x+40);before 與 after 都有字 → 灰「→」(x+178)+ after 綠(x+200);before 空 → 綠向上箭頭(x+48)+ after 綠從 x+62 起;note 非空 → 整列只畫 note 灰字(x+40)。底部 (x−100, y+68): 鍵帽 + 「升級這隻」(setup 鍵帽 X、shop 鍵帽 Z);**不能升(maxed 或 affordable false)整組 40% 灰** |
+| 捲動記號 | `drawScrollMark(ctx, s)` | x, y, dir | 同上一版 |
+| **節目單一列** | `drawCueRow(ctx, s)` | x, y, style, index, cue, program, complete, selCell, current, t, dur, switching, locked | 同上一版。**locked(row 樣式)= 整列極暗底 + 灰虛線框 + 灰「第 N 個」+ 灰鎖頭 +「見習後開放」,不畫暗號格 / 節目格**。圖示換成新代號(見 §6.1);表外代號畫虛線空框 |
+| **選擇面板** | `drawPickerPanel(ctx, s)` | layer, options, index | 固定 x 760~1220,標題列 y 60~110(「什麼時候?」/「演什麼?」),**第 i 行 y 110 + 44i ~ 154 + 44i**: 左邊圖示(x 792)、name 17px(上)+ desc 13px 灰(下);desc 空時 name 單行置中;clear 畫灰叉。選中行金框。最多 13 行,最下緣 y 682 |
+| 節目浮字 | `drawBannerFx(ctx, s)` | x, y, cue, program, t, dur | 同上一版(用新代號的名稱與圖示) |
 | 表演場 | `drawShowArena(ctx)` | — | 同上一版 |
-| 表演魔物 | `drawShowMonster(ctx, s)` | x, y, species, level, rage, redLow, marks, markLeft, markDur, mode, target, frozenLeft, frozenDur, performing, performT, performDur, fx, fxT, fxDur, looseT, looseDur, move, moveT, moveDur, dir | 同上一版(program 粉虛線地環、hold 粉雙環、target 紫準星、冰塊、表演白環、ignited / doused / special 反應)。**charge = 紅鋸齒外圈 + 怒眉 + 抖動,不畫標記;looseT < 1.0 時身後畫三條紅色速度線(y < 356 線在下方,否則在上方),1.0 秒後抖得更大。stopped = 灰罩 30% + 大白眼小瞳孔 + 頭邊白色驚嘆號形狀**(怒氣條和標記照畫) |
-| 圍欄 | `drawFence(ctx, s)` | x, y, side, broken | 同上一版 |
-| 觀眾 | `drawVisitor(ctx, s)` | x, y, side, mode, fleeT, fleeDur | 座椅常駐;watch = 坐著(上側看得到臉、下側看到後腦);**flee = 舉雙手 + 驚嚇線 + 張嘴,隨 fleeT/fleeDur 往外側移、縮到 35%、淡到 0,全程不出 56×76 框**;empty = 只剩座椅。表外 mode → empty |
-| 失控演出 | `drawLooseFx(ctx, s)` | x, y, t, dur | 在 x,y 畫爆發: 0~0.5 秒紅鋸齒圈外擴(30→75)、全程紅鋸齒脈動圈(半徑約 42)、1.0~1.5 秒撞破圍欄時再一次黃白爆開。固定在 (640,300) 畫「失控!」鋸齒邊暗紅橫幅(76px 白字):前 0.15 秒由 0.8 倍長大,最後 0.3 秒淡出 |
-| 表演結算 | `drawShowResult(ctx, s)` | fame, gold, tallyT, tallyDur, bestChain, loose, timeLeft, tutorial | 固定 (640,390) 760×460。標題: loose → 暗紅底「失控! 表演提前結束」+「剩 N 秒」;否則「收場!」;tutorial 加前綴「見習 」。「本場名聲 N」→ 向下箭頭 →「金幣 +N」(N = round(gold × tallyT / tallyDur),跳動中數字會脈動)、「最長連鎖 N」;tallyT ≥ tallyDur 才畫「按 Z 繼續」(閃爍) |
-| 商店分頁 | `drawShopTab(ctx, s)` | x, y, tab, current, selected | 同上一版 |
-| 商店項目 | `drawShopItem(ctx, s)` | x, y, item, cost, level, owned, equipped, affordable, selected, fameReq, fameLocked | 380×90。左邊 70×70 圖示框(武器 / 強化 / 暗號 / 節目圖示)、名稱、說明(美術依 item 內建規格第 84 條的文字);暗號另有青色「暗號」小標,節目另有粉色「節目」小標。右下: 裝備中(金)/ 已擁有 / 否則「N 金」(買不起時紅字);強化 level > 0 時左下加「已買 N」。**fameLocked = 整格 40% 暗 + 圖示上鎖頭 + 右下名聲星 +「名聲 N 解鎖」(名聲色)**;selected = 金框 |
-| 商店說明列 | `drawShopDetail(ctx, s)` | x, y, lines | 1080×70,置中逐行(1~3 行,行數越多字越小);空陣列只畫底 |
-| 按鈕 | `drawButton(ctx, s)` | x, y, w, h, label, selected | 圓角鈕;selected = 金底深字 |
-| 飄字 | `drawFloatText(ctx, s)` | x, y, text, kind, t, dur | 上浮 32px,後 40% 淡出;gold 金 18px;fame 名聲色 18px;redFame 淡粉字 + 紅底框 22px;chain 淺青 22px;capture 萊姆勾章 + 萊姆字 24px;heal 紅心 + 粉字 20px;levelUp 淡金字 22px(前 15% 由 0.7 倍彈大);**unlock = 深底藍框大膠囊 + 兩側名聲星 + 26px 白字,前 10% 彈出、只上浮 8px、後 30% 淡出**。表外 kind → gold |
-| 總結算 | `drawResultPanel(ctx, s)` | rep, goldEarned, bestChain, days, bank, stars | 固定 (640,390) 800×560:「五天結算」、3 顆星(亮 stars 顆)、總名聲 / 累計賺得金幣 / 最長連鎖 N 段、行程 5 格(第 N 天 + 場所圖示 + 名)、怪物庫(頭像 ×count +「最高 Lv maxLevel」,最多 6 種)、「按 Z 重來」閃爍 |
-| HUD | `drawHud(ctx, s)` | phase, day, dayMax, gold, rep, showFame, hearts, maxHearts, ropes, ropeMax, weapon, xCdLeft, xCdMax, timeLeft, timeMax, dungeon, message | 見 §8 |
-| 新手教學 | `drawTutorial(ctx, s)` | stage, text, keys, pressed, x, y, bx, by, side, phase, appearT, appearDur, doneT, doneDur | 見 §9 |
+| **表演魔物** | `drawShowMonster(ctx, s)` | x, y, species, level, rage, **angryLow**, marks, markLeft, markDur, mode, target, frozenLeft, frozenDur, performing, performT, performDur, fx, fxT, fxDur, looseT, looseDur, move, moveT, moveDur, dir | 同上一版;怒氣條紅段起點改讀 **angryLow**(怒氣 ≥ angryLow 整條變紅)。looseDur 不影響畫面(只看 looseT < 1.0 畫速度線) |
+| 圍欄 / 觀眾 / 失控演出 | `drawFence` / `drawVisitor` / `drawLooseFx` | 同 interface | 同上一版 |
+| **表演結算** | `drawShowResult(ctx, s)` | sat, gold, fameGain, tallyT, tallyDur, bestChain, loose, timeLeft, tutorial | 固定 (640,390) 760×460。標題同上一版(loose →「失控! 表演提前結束」+「剩 N 秒」;否則「收場!」;tutorial 加「見習 」)。**笑臉 +「觀眾滿意度」+ 右側 sat(桃色 34px);一條豎線分岔箭頭到兩列: 錢幣「金幣」+N(金,40px)、星「名聲」+N(淡藍,40px),兩個 N 都 = round(值 × tallyT / tallyDur),跳動中一起脈動**;分隔線下「最長連鎖 N」;跳完才畫「按 Z 繼續」 |
+| **商店分頁** | `drawShopTab(ctx, s)` | x, y, tab, current, selected | **tab: char 角色 / cue 暗號 / program 節目 / monster 怪物**;current = 亮底 + 底線(暗號頁青、節目頁粉、其他白);selected = 金框 |
+| **商店項目** | `drawShopItem(ctx, s)` | x, y, item, cost, level, owned, equipped, affordable, selected, fameReq, fameLocked | 同上一版版面;item 換成新清單(暗號 10、節目 10),說明文字照規格第 58、59 條表與第 84 條(棍棒「Z 敲擊」) |
+| 商店說明列 / 按鈕 | `drawShopDetail` / `drawButton` | 同 interface | 同上一版 |
+| **飄字** | `drawFloatText(ctx, s)` | x, y, text, kind, t, dur | 同上一版;**kind sat = 桃色 18px(原 fame);angryFame = 淡粉字 + 紅底框 22px(原 redFame)**;表外 kind → gold |
+| **總結算** | `drawResultPanel(ctx, s)` | rep, goldEarned, bestChain, days, bank, stars | 同上一版,**標題「十天結算」;行程 10 格一排**(每格 62×72、中心 x = 640 − 306 + 68i: 上方天數數字 + 場所圖示,沒有的畫「—」) |
+| **HUD** | `drawHud(ctx, s)` | phase, day, dayMax, gold, rep, **sat, cheerLeft, cheerDur**, ropes, ropeMax, weapon, xCdLeft, xCdMax, timeLeft, timeMax, dungeon, message | 見 §8 |
+| **新手教學** | `drawTutorial(ctx, s)` | stage, **kind**, text, keys, pressed, x, y, bx, by, side, phase, appearT, appearDur, doneT, doneDur | 見 §9。stage 不影響畫面(所有階段同一套) |
 
 **畫面文字歸屬**(照介面): 除了新手教學以外,所有字都由美術在上表的函式裡畫,RD 不要另外畫字。新手教學泡泡的文字、按鍵圖示、打勾也全部由美術畫(RD 只傳 state)。
+
+### 5.1 暗號 / 節目圖示(新代號)
+
+| 代號 | 圖示 |
+|---|---|
+| wait 過 6 秒 | 時鐘 |
+| **perf1 有人表演** | 灰點 + 白色表演環 + 下方白點 |
+| **angry1 任一怪物生氣**(原 red1) | 一團大火 + 下方白點 |
+| **angry3 三隻怪物生氣**(原 red3) | 三團小火 |
+| **half 一半生氣** | 圓左半生氣紅、右半灰 |
+| cold / mark3 / chain3 / multi3 | 同上一版 |
+| **target1 有人當標靶** | 紫準星 + 下方白點 |
+| **frozen1 有人被凍住** | 小冰塊包一隻 + 下方白點 |
+| **gain30 滿意度 +30** | 笑臉 + 往上箭頭 |
+| **all 全體表演** | 三個灰點各帶白色表演環 |
+| spot / ice / pep / scatter / mob / lull / shuffle | 同上一版 |
+| **tutti 大合奏** | 音符,**符頭改成生氣紅**(和全體表演分開) |
+| **bull 標靶秀** | 藍點(冷靜那隻)套紫準星 |
+| **still 全場定格** | 大冰塊包三隻 |
+| **cheer 歡呼** | 笑臉 + 一圈放射短線 |
 
 ## 6. 尺寸表
 
 | 物件 | 尺寸(以中心為準) | 備註 |
 |---|---|---|
-| Title / Calendar | 1280×720 全畫面 | Title 自己 clip 在畫布內(遊行魔物從畫面外走進來) |
+| Title / Calendar / Intermission | 1280×720 全畫面 | Title、Intermission 自己 clip(魔物從畫面外走進來) |
 | PlaceCard | 360×420 | |
-| Tile / Portal / CrackWall / FruitTree / Fountain | 60×60 | 草叢圓葉最遠 ±27.6 |
-| Fruit | 30×30;果半徑 10、剩餘量環 / 吸引圈半徑 13.5 | |
-| Keg 本體 | 60×60;桶寬 44(= 判定半徑 22) | fuse 抖動 ±1.5,火花最高到 y − 29 |
-| Keg 預警圈 | 260×260;半徑 = radius(外緣) | 只有 fuse 時畫 |
-| Blast | 260×260;半徑 = radius(外緣) | |
-| Tamer | 64×64;身體圓半徑 18 | hidden 的白虛線圈 = 判定圓 |
-| WildMonster 本體 | 72×72(戲法狸 90×90);身體圓半徑 26(狸 27) | eat 的嘴邊果子半徑 6,在本體框內 |
-| WildMonster 血條 | 56×6,中心 (x, y − 46)(狸 y − 55) | 在本體框外的頭上 |
-| CaptureRing | 110×110;環半徑 40;字中心 y − 47 | |
-| DungeonCard / DungeonResult / ShowResult | 360×440 / 760×460 / 760×460 | 結算固定在 (640,390) |
-| BankSlot | 104×110 | 上場勾章 (−38,−41) 半徑 10;升級箭頭 / MAX 在右上 |
-| MonsterInfo | 840×170 | |
-| ScrollMark | 40×14(三角 30×10 + 線寬) | |
-| CueRow row / mini | 680×64 / 200×46 | 同上一版 |
-| PickerPanel | 460 × (50 + 52 × 選項數) | x 760~1220,y 60 起 |
-| ShowMonster 本體 | 64×64(戲法狸 80×80);身體圓半徑 24 | stopped 的驚嘆號在 (21, −31~−14),本體框內,不碰怒氣條 |
-| ShowMonster 怒氣條 / 標記 / Lv | 同上一版 | |
-| Fence / Visitor | 136×14 / 56×76 | flee 全程在框內 |
-| LooseFx | 橫幅 600×140,固定在 (640,300)(鋸齒邊最遠 ±292 × ±68);爆發 160×160,以 x,y 為中心(最遠半徑約 77) | |
+| Tile / Portal / CrackWall / FruitTree / Fountain | 60×60 | |
+| Fruit | 30×30 | |
+| Keg 本體 / 預警圈 | 60×60 / 260×260 | |
+| Blast | 260×260 | |
+| Tamer | 64×64;身體圓半徑 18 | |
+| **HeartBar** | 心 14×13,間距 16(>12 顆 13);整排 ≤ 200×16;特效範圍 240×64(以 (x,y) 為中心) | 扣血碎片最低到 y+29,回血光點最高到 y−28 |
+| WildMonster 本體 / 血條 | 72×72(戲法狸 90×90)/ 56×6 | |
+| CaptureRing | 110×110 | |
+| DungeonCard / DungeonResult / ShowResult | 360×440 / 760×460 / 760×460 | |
+| **BankSlot** | 104×110;頭像圓半徑 29 中心 (0,−10) | 上台勾章 (−38,−41) 半徑 10 |
+| **MonsterInfo** | 840×170;左半 300×170、右半 540×170 | 表格列中心 y−26 / y+4 / y+34,列高 30 |
+| ScrollMark | 40×14 | |
+| **CueRow** row / mini | 680×64 / 200×46 | locked 也在 680×64 內 |
+| **PickerPanel** | 460 × (50 + 44 × 選項數) | x 760~1220,y 60 起,13 行時到 y 682 |
+| ShowMonster 本體 / 怒氣條 / 標記 / Lv | 同上一版 | |
+| Fence / Visitor | 136×14 / 56×76 | |
+| LooseFx | 橫幅 600×140 @ (640,300);爆發 160×160 | |
 | ShopTab / ShopItem / ShopDetail | 220×50 / 380×90 / 1080×70 | |
-| ResultPanel | 800×560,中心 (640,390) | |
+| ResultPanel | 800×560 @ (640,390) | |
 | Hud | 地下城 1280×100;其他 1280×50 | |
-| Tutorial 泡泡 | 316×92 本體(在 320×96 內)+ 尾巴;鍵帽 34×34,間距 8 | 尾巴根部夾在 bx ± 130 |
+| **Tutorial** 主泡泡 / 附註 | 主: 本體 316×92(在 320×96 內)+ 尾巴;附註: 本體 296×56(在 300×60 內)+ 尾巴;鍵帽 34×34,間距 8 | 尾巴根部夾在 bx ± 130(附註 ± 120) |
 
-自測: 假 ctx 會追蹤變換矩陣,arc 照實際角度取樣,也追蹤 clip。所有有 size 的函式都跑了全部狀態組合,加上 24 個教學階段 × 出現 / 完成各進度,總共 18836 次呼叫。外接框都在框內(沒算線寬),save/restore 都成對,餵壞狀態不會拋錯。唯一的例外是戲法狸 + swoop + charge 抖動的組合會超出約 1px,但規則上戲法狸不會撲擊,不會出現。
+自測: 假 ctx 追蹤變換矩陣與 arc 實際角度,算外接框。每個 interface 函式都呼叫(含 26 個教學階段 × 出現 / 完成各進度、附註泡泡、心列 hurt / heal 每 0.05 秒、每個新暗號 / 節目圖示、locked 列、每種 upgrade 組合),共 3352 次: 不拋錯、save/restore 成對、有 size 的都在框內,壞狀態(空物件、NaN、表外字串)也不拋錯。另外掃過 interface 每個 state 欄位都有被讀到(只有 WildMonster.stunDur、ShowMonster.looseDur、Tutorial.stage 刻意不用,見上表)。
 
 ## 7. 固定版位(照介面 notes)
 
-- drawTitle、drawCalendar 畫滿全畫面(這兩個畫面不畫 HUD)。
+- drawTitle、drawCalendar、**drawIntermission** 畫滿全畫面(這三個畫面不畫 HUD)。
 - drawDungeonResult、drawShowResult 固定在 (640,390) 760×460;drawResultPanel 固定在 (640,390) 800×560。
-- drawPickerPanel 固定在 x 760~1220,標題列 y 60~110,第 i 行 y 110 + 52i。
+- drawPickerPanel 固定在 x 760~1220,標題列 y 60~110,**第 i 行 y 110 + 44i**。
 - drawLooseFx 的「失控!」橫幅固定在 (640,300);爆發畫在傳入的 x,y。
 - drawFloatText 的 kind unlock 由 RD 傳 (640,110)。
+- **drawHeartBar 由 RD 傳 (馴獸師 x, 馴獸師 y − 46)**。
 
 ## 8. HUD 版面
 
-- 上排(y 25),每個 phase 都有: 左邊是天數(day 0 寫金色「見習日」,其他寫「第 N / dayMax 天」);timeMax > 0 時中間 x 470~730 畫時間條 +「N 秒」(剩不到 20% 轉紅);右邊是金幣 x 1000、名聲 x 1132。
-- phase = show 時,上排 x 182 多畫名聲星 +「本場名聲 N」(名聲色)。
-- 地下城(高 100): 上排另有地下城名 x 160(主題色;見習草地是淡綠);下排(y 74)畫心(最多 14 顆)、繩圈(最多 10 條)、武器框 x 634~814(圖示 + 名 + X 鍵帽: 冷卻中用深色扇形蓋住剩餘、可用時白框、xCdMax 0 時是灰鍵),message 置中在 x 1040(含「繞」「站住」時用萊姆色)。
+- 上排(y 25),每個 phase: 左邊天數(day 0 金色「見習日」,其他「第 N / dayMax 天」);timeMax > 0 時 x 470~730 時間條 +「N 秒」(剩不到 20% 轉紅);右邊金幣 x 1000、名聲 x 1132。
+- **phase = show**: 上排 x 182 笑臉 +「觀眾滿意度 N」(桃色,最寬 160);**cheerLeft > 0 時緊接在右邊畫桃色膠囊「歡呼 ×1.5」+ 膠囊下方剩餘時間小條(80×5,cheerLeft / cheerDur)**,整組不超過 x 470。
+- **地下城(高 100)**: 上排另有地下城名 x 160。**下排不再畫心**: 捕獸繩第 k 條圓圈中心 (40 + 22k, 74)(有的亮、用掉的暗,最多 10 條);武器框 x 634~814、y 56~92(圖示 + 名稱;**xCdMax > 0 時才在 x 780 畫 X 鍵冷卻格**: 冷卻中深色扇形蓋住剩餘、可用時白框;棍棒整格不畫);message 置中在 (1040, 74)(含「繞」「站住」時用捕捉萊姆色)。
 - 其他 phase(高 50): message 置中在 x 640(有時間條時移到 x 880)。
 
 ## 9. 新手教學泡泡(drawTutorial)
 
-- 長相: 淺紙底 #fff6e0 + 3px 深墨框 + 深字(不描邊),整體和全畫面所有深色面板明暗相反,一眼分得出「這是教學」。這套教學色只給教學用。
-- 位置: 泡泡本體以 (bx,by) 為中心,316×92;side up 時尾巴從泡泡下緣出發,down 時從上緣出發。尾巴根部的 x 夾在 bx ± 130,尖端停在目標 (x,y) 前 6px,不蓋住目標。如果目標在泡泡錯的那一側(RD 算錯),尾巴會改成垂直短尾,不會反折。
-- 內容: 有 keys 時文字在上 (by − 21)、鍵帽一列在下 (by + 22) 置中;沒有 keys 時文字置中。文字最寬 296px,超過會縮字。
-- 鍵帽 34×34: up / down / left / right 是圓角箭頭;z / x 是字母;circle 是繞圈箭頭(第 4 階段)。pressed 裡的鍵畫成綠底白字 + 右上白底綠勾。表外 key 不畫。最多 6 個。
-- 彈出(appearT/appearDur): 以尾巴根部為錨點,從 0.6 倍放大到 1 倍並帶一點回彈,透明度 0.4 → 1。appearDur 是 0 時直接完整顯示。
-- 完成特效(phase done,doneT/doneDur,所有階段共用一套): 泡泡蒙一層淡綠;鍵帽依序跳一下(每個晚 0.08 秒;第 1 階段就是「四鍵依序跳一下」);右上角的綠色打勾章在前 30% 由小彈大;第 10%~80% 六顆金星從勾章噴開(夾在泡泡框內);最後 35% 整個泡泡淡出。spec 表裡各階段的專屬特效(繩圈閃、「收服!」放大、卡片彈一下等)本輪統一用這一套,物件本身的反應交給各物件既有的回饋(例如收服飄字)。
+- **主泡泡(kind main)**: 淺紙底 #fff6e0 + 3px 深墨框 + 深字 20px;本體以 (bx,by) 為中心 316×92。有 keys 時文字在上 (by − 21)、鍵帽一列在下 (by + 22);沒有 keys 時文字置中。文字最寬 296px,超過會縮字。
+- **附註泡泡(kind note,第 6 階段)**: 比主泡泡小一號、顏色較淡 — 本體 296×56、淡紙底 92% 不透明、2px 灰墨框 #5a6274、灰字 15px、陰影較淺;**不畫按鍵**(就算 keys 有東西也不畫)。RD 固定傳 bx,by = (250,150)、x,y = (130,92)、side down,尾巴從上緣指向捕獸繩列下緣。畫在 HUD 之上。
+- 尾巴: side up 從下緣出發,down 從上緣出發;根部 x 夾在 bx ± 130(附註 ± 120),尖端停在目標前 6px。目標在錯的一側時改成垂直短尾,不反折。
+- 鍵帽 34×34: up / down / left / right 圓角箭頭;z / x 字母;circle 繞圈箭頭。pressed 裡的鍵 = 綠底白字 + 右上白底綠勾。最多 6 個。
+- 彈出(appearT/appearDur): 以尾巴根部為錨,0.6 倍放大到 1 倍(ease-out,**不過衝**,全程不超出 320×96 / 300×60),透明度 0.4 → 1。
+- 完成特效(phase done,所有階段共用): 泡泡蒙淡綠;鍵帽依序跳一下(每個晚 0.08 秒);綠色打勾章前 30% 由小彈大(主泡泡在右上 (bx+132, by−20),附註縮成 0.72 倍在右側 (bx+126, by));10%~80% 六顆金星從勾章噴開(夾在泡泡框內);最後 35% 整個淡出。spec 表各階段的專屬特效(繩列閃、「收服!」放大等)統一用這一套,物件本身的反應交給各物件既有回饋。
 
 ## 10. 判讀約定(請 RD 照這個傳)
 
-- Hazard 投射物的 radius = 判定半徑(外緣);icebeam 從施放者中心起算,width 以中線左右各半。爆炸桶 radius、爆炸 radius = 外緣。
-- WildMonster: stunLeft > 0 或 lassoed 都畫暈眩;move eat 加上暈眩時畫暈眩。
-- ShowMonster: mode 是 charge 時不畫標記(規則上已經失控);stopped 照畫怒氣條和標記(停在當下的樣子)。charge 那隻照介面畫在 Fence / Visitor 之後(介面已排好順序,上一版的繪製順序缺口已解決)。
-- Calendar: 今天的格是 index = day − 1(第 i 項 = 第 i+1 天);day 0 沒有亮格。已過的格要畫圖示,log[i] 必須是 dungeon / show;空字串只畫叉。
-- 動畫小細節(齒輪刃旋轉、暈眩星、虛線流動、無敵閃爍、開始畫面整段動畫的相位除外)用 `performance.now()`,RD 不用傳時間。開始畫面的動畫全部由 t 驅動。
-- 時長常數(一次性特效都由傳入的 t/dur 決定,美術不寫死): 節目浮字 0.8、飄字 1(unlock 1.5)、反應 0.5、表演 0.5、冰柱預警 0.7 / 生效 0.2、引信 0.6、爆炸 0.3、失控收場 2.5(衝欄 0~1.0、破欄 1.0)、觀眾逃走 1.5、教學出現 0.25 / 完成 0.6、日曆翻頁 0.6(美術自訂,取自規格的「0~0.6 秒翻頁」)、閃爍「按 Z」週期 1 秒(開始畫面)/ 0.7 秒亮 0.3 秒暗(結算畫面的「按 Z」,美術自訂)。
+- Hazard 投射物 radius = 判定半徑(外緣);icebeam 從施放者中心起算,width 以中線左右各半。爆炸桶 / 爆炸 radius = 外緣。
+- WildMonster: stunLeft > 0 或 lassoed 都畫暈眩;eat + 暈眩時畫暈眩。
+- ShowMonster: charge 不畫標記;stopped 照畫怒氣條和標記。**怒氣門檻欄位是 angryLow(舊名 redLow 已不讀)**。
+- HeartBar: delta 是正整數;hurt 時 hearts 已是扣完的值,heal 時 hearts 已是補完的值。fxDur 傳 2.0(美術用 0.75·fxDur 當 1.5 秒點)。
+- MonsterInfo: upgrade.rows 固定 3 項;字串全由 RD 組好,美術不組字。〔 〕標籤顏色看 effect,沒傳時用該種預設效果。
+- Calendar: 今天 = 第 day−1 格;day 0 沒有亮格;log[i] 是 dungeon / show 才畫圖示,空字串只畫叉(已過的格)。
+- 動畫小細節(齒輪刃旋轉、暈眩星、虛線流動、無敵閃爍、結算「按 Z」閃爍)用 `performance.now()`;開始畫面與見習過場的動畫全部由 t 驅動。
+- 時長常數(一次性特效都由傳入的 t/dur 決定): 節目浮字 0.8、飄字 1(unlock 1.5)、反應 0.5、表演 0.5、冰柱預警 0.7 / 生效 0.2、引信 0.6、爆炸 0.3、失控收場 2.5、觀眾逃走 1.5、教學出現 0.25 / 完成 0.6、日曆翻頁 0.6、心列特效 2.0(扣血 0.5、回血 0.6)、閃爍「按 Z」週期 1 秒(開始畫面、見習過場)/ 0.7 秒亮 0.3 秒暗(結算畫面)。
 
 ## 11. 繪製層級(照介面「繪製順序」,美術沒有額外要求)
 
-地下城的順序: 地磚 / 裂牆 → 回復泉 → 傳送陣 → 果樹 → 果子 → 技能預警 → 準備捕捉圈 → 爆炸桶(含預警圈,所以預警圈壓在魔物下面、不蓋住魔物)→ 野生魔物 → 套索 → 馴獸師 → 武器特效 → 投射物 → 爆炸 → 飄字 → HUD → 教學泡泡。
+地下城: 地磚 / 裂牆 → 回復泉 → 傳送陣 → 果樹 → 果子 → 技能預警 → 準備捕捉圈 → 爆炸桶 → 野生魔物 → 套索 → 馴獸師 → 武器特效 → 投射物 → 爆炸 → **頭上心列** → 飄字 → 教學主泡泡 → HUD → **教學附註泡泡**。

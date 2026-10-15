@@ -2,7 +2,7 @@
 
 ## 聲音風格
 
-輕快的卡通馬戲團: 撥弦(pizzicato)/ 鋼鼓短樂句當成就音, 木頭、布料、軟撞擊當動作音, 少量電子音只用在「魔法 / 怪事」(傳送、點燃、澆熄、特殊效果)。
+輕快的卡通馬戲團: 撥弦(pizzicato)/ 鋼鼓短樂句當成就音, 木頭、布料、軟撞擊當動作音, 少量電子音只用在「魔法 / 怪事」(傳送、惹生氣、冷靜、特殊效果)。spec 指定音色的三個新事件例外: 見習過場用馬戲團小號、全場定格用冰裂聲、歡呼用人聲。
 
 ## 接法
 
@@ -20,11 +20,12 @@
 | 事件名 | spec 音效清單 | 何時呼叫 | opts | 素材 | 相對音量 | 間隔 |
 |---|---|---|---|---|---|---|
 | ui_move | ui_move | 任何選單游標移動(含場所卡、格子、列、分頁、面板行) | — | sfx_ui_move.ogg | 0.45 | 0.03 秒 |
-| ui_confirm | ui_confirm | 選單按 Z 確定: 進入場所 / 地下城、上場、填格、面板確定、下一步、開演前的確定、結算按 Z 繼續 | — | sfx_ui_confirm.ogg | 0.6 | 0.03 |
-| ui_cancel | ui_cancel | 按 X 返回 / 關閉面板 / 清空格子 / 讓魔物下場 | — | sfx_ui_cancel.ogg | 0.5 | 0.03 |
-| ui_denied | ui_denied | 金幣不夠、未開放的地下城、不能買、上場已滿 20、上場 0 隻按下一步 | — | sfx_ui_denied.ogg | 0.55 | 0.08 |
+| ui_confirm | ui_confirm | 選單按 Z 確定: 進入場所 / 地下城、上台、填格、見習過場按 Z 繼續、面板確定、下一步、開演前的確定、結算按 Z 繼續 | — | sfx_ui_confirm.ogg | 0.6 | 0.03 |
+| ui_cancel | ui_cancel | 按 X 返回 / 關閉面板 / 清空格子 / 讓魔物下台; 按「返回上一步」「回選地點」 | — | sfx_ui_cancel.ogg | 0.5 | 0.03 |
+| ui_denied | ui_denied | 金幣不夠、未開放的地下城、不能買、上台已滿 20、上台 0 隻按下一步、游標撞到鎖住的列(見習日第 3~6 列) | — | sfx_ui_denied.ogg | 0.55 | 0.08 |
 | title_start | title_start | 開始畫面按 Z(緊接在 init 之後) | — | sfx_title_start.ogg | 0.7 | — |
 | calendar_flip | calendar_flip | 日曆過場開始(翻頁動畫 0~0.6 秒那段的起點) | — | sfx_calendar_flip.ogg | 0.7 | 0.2 |
+| intermission | intermission(新) | 見習過場畫面出現的那一刻(只呼叫一次; 按 Z 離開時不用呼叫, 照常播 ui_confirm) | — | sfx_intermission.ogg(小號 fanfare, 2.9 秒) | 0.7 | 0.5 |
 | attack | attack | Z 普攻揮出的那一刻(不論有沒有打中) | `weapon`: `'club'`/`'sword'`/`'spear'`/`'whip'`, 省略當 club | 內嵌 PCM(四種武器各一個揮動聲) | 0.5~0.6 | 0.04 |
 | skill | skill | X 武器技發動的那一刻 | `weapon`: 同上(影響音高) | 內嵌 PCM(較重的揮動聲, 放慢) | 0.8 | 0.08 |
 | hit_monster | hit_monster | 馴獸師的普攻 / 武器技打中魔物(每次命中) | — | sfx_hit_monster.ogg | 0.6 | 0.04 |
@@ -48,10 +49,12 @@
 | perform | perform | 表演場魔物放技能; 同一幀多隻只呼叫一次 | — | sfx_perform.ogg(每次音高微亂) | 0.22 | 0.07 |
 | ignite | ignite | 點燃型技能打中別隻 | — | sfx_ignite.ogg(上揚) | 0.3 | 0.06 |
 | calm | calm | 澆熄型技能打中別隻 | — | sfx_calm.ogg(下降) | 0.3 | 0.06 |
-| special | special | 特殊效果打中(標靶 / 凍結 / 變走) | — | sfx_special.ogg | 0.35 | 0.08 |
-| red_perform | red_perform | 魔物在紅區表演(名聲 ×2) | — | sfx_red_perform.ogg | 0.45 | 0.1 |
+| special | special | 特殊效果打中(標靶 / 凍住 / 變走) | — | sfx_special.ogg | 0.35 | 0.08 |
+| angry_perform | angry_perform(原 red_perform, 改名) | 魔物在生氣時表演(滿意度 ×2) | — | sfx_angry_perform.ogg(素材同上一版) | 0.45 | 0.1 |
 | chain | chain | 連鎖段數 ≥ 2 的那次表演 | `chain`: 目前段數(整數 ≥ 2); 每升一段升兩個半音, 第 14 段起封頂 | sfx_chain.ogg | 0.45 | 0.04 |
-| cue_fire | cue_fire | 暗號成立、節目發動 | — | sfx_cue_fire.ogg | 0.6 | 0.1 |
+| cue_fire | cue_fire | 暗號成立、節目發動(任何節目都呼叫, 含全場定格、歡呼) | — | sfx_cue_fire.ogg | 0.6 | 0.1 |
+| freeze_all | freeze_all(新) | 節目「全場定格」發動, 與 cue_fire 同一幀呼叫 | — | sfx_freeze_glass.ogg(玻璃脆響, 立刻出聲)+ 內嵌 PCM 冰裂聲(1.6 秒內自己收掉) | 0.4 + 0.55 | 0.3 |
+| cheer | cheer(新) | 節目「歡呼」發動, 與 cue_fire 同一幀呼叫; 歡呼中再發動照樣呼叫 | — | sfx_cheer.ogg(一群人「耶—」, 2 秒) | 0.6 | 0.3 |
 | mark_add | mark_add | 某隻魔物失控標記 +1 | `marks`: 加完後的標記數 1~5; 越多越高、越大聲, 4 個以上連響兩下 | sfx_mark_add.ogg | 0.48~0.8 | 0.08 |
 | loose | loose | 失控的那一刻(同一刻請 `stopMusic()`) | — | sfx_loose.ogg + sfx_boom_low.ogg 疊層 | 0.9 + 0.7 | 0.5 |
 | crowd_flee | crowd_flee | 觀眾開始逃走(失控後, 可與 loose 同一刻) | — | sfx_crowd_step_1~3.ogg 錯開排成約 1.2 秒的一陣腳步 | 0.25~0.4 | 0.5 |
@@ -71,7 +74,7 @@
 |---|---|---|---|---|---|
 | title | 開始畫面、日曆過場、今天去哪 | 進開始畫面、日曆過場、今天去哪、地下城選擇時 | music_title.mp3(Waunobe March 截段) | 70.6 秒 | 0.40 |
 | dungeon | 地下城(含見習草地) | 進地下城地圖時 | music_dungeon.mp3(Monster Promenade 截段) | 73.8 秒 | 0.30 |
-| setup | 布置第 1、2 步、商店 | 進布置第 1 步、商店時 | music_setup.mp3(Easy Lemon 60 秒版) | 62.5 秒 | 0.35 |
+| setup | 見習過場、布置第 1、2 步、商店 | 進見習過場、布置第 1 步、商店時 | music_setup.mp3(Easy Lemon 60 秒版) | 62.5 秒 | 0.35 |
 | show | 表演場 | 開演進表演場時; 失控那一刻呼叫 `stopMusic()` | music_show.mp3(Four Beers' Polka 截段) | 73.6 秒 | 0.30 |
 | result | 地下城結算、表演結算、總結算 | 進任一結算畫面時 | music_result.mp3(Happy Boy End Theme) | 53.9 秒 | 0.40 |
 
@@ -83,8 +86,10 @@
 
 | 同一刻可能一起發生 | 處理 |
 |---|---|
-| 表演場 perform / ignite / calm / special / red_perform / chain 大量重疊 | 各自有最短間隔與同時聲部上限(perform 4、chain 3、red_perform 2), 不會疊成噪音牆。perform 音量最低, 讓 chain(依段數升調)與 red_perform 浮在上面 |
-| loose 與上面那批 | loose 一響, 那批正在響的立刻 0.05 秒淡掉, 之後 1.5 秒內不再出聲; crowd_flee、mark_add、cue_fire 不受影響 |
+| 表演場 perform / ignite / calm / special / angry_perform / chain 大量重疊 | 各自有最短間隔與同時聲部上限(perform 4、chain 3、angry_perform 2), 不會疊成噪音牆。perform 音量最低, 讓 chain(依段數升調)與 red_perform 浮在上面 |
+| loose 與上面那批 | loose 一響, 那批正在響的立刻 0.05 秒淡掉, 之後 1.5 秒內不再出聲; crowd_flee、mark_add、cue_fire、freeze_all、cheer 不受影響 |
+| cue_fire + freeze_all / cheer | 同一幀一起呼叫(spec: cue_fire 照播再疊上)。cue_fire 是短促的確認音(0.3 秒), freeze_all 的玻璃脆響在高頻、冰裂聲墊在後面; cheer 是人聲, 跟 cue_fire 音色錯開, 都聽得到 |
+| intermission + playMusic('setup') | 同一刻呼叫即可; 音樂淡入 0.5 秒, 小號先出頭 |
 | loose + crowd_flee + stopMusic | 三個可以同一幀呼叫; 腳步聲自帶錯開, 不會跟鐘聲擠在同一點 |
 | tutorial_done 撞上 capture / cue_fire / unlock / show_start / upgrade | 那幾個剛響過(0.2 秒內)時, tutorial_done 自動延後 0.5 秒, 讓主事件先講完(例: 教學「看暗號」以第一次節目發動為完成條件, cue_fire 先、tutorial_done 後) |
 | hit_monster + kill + monster_weak | 都會響; kill 是錢幣聲、monster_weak 是高音叮, 跟打擊聲頻段錯開 |
@@ -98,3 +103,6 @@
 - 背景音樂找現成整首截段、不自己合成, 每首循環 54~74 秒(約 27~38 小節), 避免「短循環聽到膩」
 - incompetech 的 pieces.json 用來篩曲風、拍速與長度; 署名照 incompetech 授權頁格式抄進 credits.md, 並提醒製作人遊戲畫面要放署名
 - 短音效以 base64 內嵌、頁面載入時用 OfflineAudioContext 先解碼, 第一次按鍵就有現成 buffer 可播
+- 「刻意漸強的音要有立即出聲的層墊著」: freeze_all 的冰裂聲從開頭到峰值一成要 0.13 秒, 所以疊一層立刻出聲的玻璃脆響, 前面還有同一幀的 cue_fire
+- 本機只有 Node 可用(Python 被權限擋): 新素材優先挑 WAV(冰裂聲)以便量起音與剪長度; ogg 素材(小號、歡呼)只能量長度, 起音與音量待試玩
+- 沿用上一版所有素材與音量; 新增的三個事件挑「撥弦 / 鋼鼓 / 木頭」之外, 照 spec 指定的音色(小號、冰、人聲歡呼), 音量對齊同類事件(intermission 比照 title_start 0.7、cheer 比照 cue_fire 0.6)
