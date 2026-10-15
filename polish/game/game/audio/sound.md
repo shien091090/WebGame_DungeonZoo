@@ -13,7 +13,7 @@
 - `setMuted(bool)` 同時關音樂、音效與觀眾聲; `isMuted()` 給「聲音 開 / 關」按鈕顯示用
 - 事件名照 interface.json(底線小寫), 不是小駝峰; 這是 interface.json 已定死的名稱, 這裡沿用
 
-### 本輪新增的兩個介面(契約外, 需要 RD 接)
+### 契約外的兩個介面(打磨第 3 輪新增, 沿用不變)
 
 | 介面 | 用途 | 何時呼叫 |
 |---|---|---|
@@ -48,7 +48,7 @@
 | kill | kill | 魔物被打倒(任何方式) | — | sfx_kill.ogg | 0.7 | 0.06 |
 | bush_hide | bush_hide | 馴獸師進入草叢格(從非草叢走進草叢的那一刻) | — | sfx_bush_hide.ogg | 0.7 | 0.2 |
 | fruit_drop | fruit_drop | 果子被打落 | — | sfx_fruit_drop.ogg | 0.8 | 0.1 |
-| keg_fuse | keg_fuse | 爆炸桶被點燃、引信開始(聲音自己在 0.6 秒後收掉) | — | sfx_keg_fuse.ogg(只放前 0.6 秒) | 0.45 | 0.1 |
+| keg_fuse | keg_fuse | 爆炸桶被點燃、引信開始(聲音自己在 0.95 秒收掉, 趕在 1.0 秒爆炸前結束; 本輪由 0.6 拉長) | — | sfx_keg_fuse.ogg(只放前 0.95 秒, 最後 0.06 秒淡出) | 0.45 | 0.1 |
 | keg_blast | keg_blast | 爆炸桶爆炸(含連鎖引爆的每一個) | — | sfx_keg_blast.ogg + sfx_boom_low.ogg 疊層 | 0.85 + 0.8 | 0.05 |
 | wall_crack | wall_crack | 裂牆被打、裂痕 +1(第 1、2 下) | — | sfx_wall_crack.ogg | 0.7 | 0.06 |
 | wall_break | wall_break | 裂牆第 3 下碎掉(只呼叫這個, 不要同時呼叫 wall_crack) | — | sfx_wall_break.ogg + sfx_wall_crack.ogg 疊層 | 0.6 + 0.5 | 0.1 |
@@ -73,6 +73,7 @@
 | mark_add | mark_add | 某隻魔物失控標記 +1 | `marks`: 加完後的標記數 1~5; 越多越高、越大聲, 4 個以上連響兩下 | sfx_mark_add.ogg | 0.48~0.8 | 0.08 |
 | loose | loose | 失控的那一刻(同一刻請 `stopMusic()`; 觀眾聲自動 0.3 秒淡出) | — | sfx_loose.ogg + sfx_boom_low.ogg 疊層 | 0.9 + 0.7 | 0.5 |
 | crowd_flee | crowd_flee | 觀眾開始逃走(失控後, 可與 loose 同一刻) | — | sfx_crowd_step_1~3.ogg 錯開排成約 1.2 秒的一陣腳步 | 0.25~0.4 | 0.5 |
+| clock_tick | clock_tick(本輪新增) | 表演時鐘最後 5 秒, 每跨過一個整數秒呼叫一次(剩 5、4、3、2、1 秒各一聲; 跟時鐘「彈一下」同一幀)。失控後時鐘停住, 不要再呼叫 | — | 內嵌 PCM(真實時鐘的「喀」, 0.135 秒, 2 毫秒內出聲) | 0.4 | 0.3 |
 | show_end | show_end | 表演時間到、正常收場(失控收場不要呼叫; 觀眾聲自動 0.3 秒淡出) | — | 內嵌 PCM(掌聲 3 秒) | 0.6 | 0.5 |
 | coin_tally | coin_tally | 結算畫面數字每跳一次(可每幀呼叫, 間隔會自動擋) | — | sfx_coin_tally.ogg | 0.4 | 0.06 |
 | buy | buy | 商店購買 / 裝備成功 | — | sfx_buy.ogg | 0.7 | 0.1 |
@@ -108,6 +109,8 @@
 | cheer(節目)+ crowd_cheer / crowd_frenzy(底層) | 兩者可以同時響(spec)。cheer 是一次性「耶—」浮在上面, 底層照常循環 |
 | heat_warn + setCrowd('frenzy') + mark_add | 同一幀呼叫即可。heat_warn 是高低兩音的電子警報, mark_add 是鐘聲, 沸騰觀眾聲在底下; 三者音色不同。heat_warn 間隔 1 秒, 熱度在門檻上下抖動也不會連響 |
 | loose 與上面那批 | loose 一響, 表演音效立刻 0.05 秒淡掉、之後 1.5 秒內不再出聲; 觀眾聲 0.3 秒淡出。crowd_flee、mark_add、cue_fire、freeze_all、cheer 不受影響 |
+| clock_tick + 表演音效 + 觀眾聲 | 最後 5 秒滴答時表演音效照常響。滴答是 0.135 秒的木頭「喀」, 跟撥弦(perform / chain)、電子音(ignite / calm / special)、群眾聲的質感都不同, 音量 0.4 低於 chain、angry_perform 的主旋律感; 只在整數秒出現、間隔 1 秒, 規律性本身就是辨識點。不屬於表演低優先音, 不會被 loose 壓掉(失控後 RD 本來就不會再呼叫) |
+| clock_tick(剩 1 秒)接 show_end | 最後一聲滴答 1 秒後時間到, show_end 的掌聲接上; 滴答 0.135 秒早已結束, 不重疊 |
 | show_end + 觀眾聲 | 觀眾聲 0.3 秒淡出, show_end 的收場掌聲接上 |
 | cue_fire + freeze_all / cheer | 同一幀一起呼叫(spec: cue_fire 照播再疊上)。cue_fire 是短促的確認音(0.3 秒), freeze_all 的玻璃脆響在高頻、冰裂聲墊在後面; cheer 是人聲, 跟 cue_fire 音色錯開, 都聽得到 |
 | exit_prompt + 背景音樂 | 門鈴響的同時 dungeon 音樂 0.2 秒內降到一半, 門鈴浮在上面; 選完(ui_confirm / ui_cancel)恢復 |
@@ -127,3 +130,4 @@
 - 短音效以 base64 內嵌、頁面載入時用 OfflineAudioContext 先解碼, 第一次按鍵就有現成 buffer 可播; 觀眾聲的 mp3 / ogg 同樣內嵌, 解碼後在執行時把尾段交叉淡化進開頭做成無縫循環(本機沒有解碼器, 無法離線處理)
 - 本機只有 Node 可用(Python、PowerShell、tar 都被權限擋): 照經驗優先挑 WAV(門鈴、掌聲)以便量起音、音高與長度; mp3 不重新編碼、依音框邊界截段, 並用音框側資訊的增益值粗估整首音量起伏, 挑平穩段落; ogg 依頁截短。mp3 / ogg 素材的實際響度量不到, 觀眾聲與表演音效的輕重比例待試玩確認
 - 沿用上一版所有素材與音量; 只動了規格有改的: player_hurt 加重(spec 改成 3 顆心「要更有警覺感」)、拿掉 upgrade 與長鞭
+- 打磨第 4 輪: 其他事件的素材與音量全部沿用, 只做兩處。(1) 新增 clock_tick: 照「先挑 WAV」與「量出到峰值一成的時間」兩條挑素材, 比過 OpenGameArt 兩個 CC0 時鐘包, 選雜訊底 −61 dB、峰值前只有 5 毫秒起音的單拍; 剪掉開頭 32 毫秒靜音後內嵌, 2 毫秒內出聲, 跟時鐘彈跳同一幀。另一包是作者自稱爛麥克風錄的(雜訊底 −47 dB、峰值 −22 dB), 不用。(2) keg_fuse 跟著 spec 的引信 1.0 秒, 從播 0.6 秒改成 0.95 秒, 收尾淡出在爆炸前結束

@@ -1,0 +1,3267 @@
+{
+ "game": "WebGame_DungeonZoo",
+ "build": "polish-3",
+ "startedAt": "2026-10-15T15:26:20.176Z",
+ "finished": true,
+ "events": [
+  {
+   "t": 0,
+   "type": "session_start",
+   "replay": false
+  },
+  {
+   "t": 0,
+   "type": "day_start",
+   "day": 0
+  },
+  {
+   "t": 1.99,
+   "type": "dungeon_start",
+   "day": 0,
+   "dungeon": "meadow",
+   "weapon": "club",
+   "hearts": 3,
+   "ropes": 4
+  },
+  {
+   "t": 1.99,
+   "type": "tutorial_show",
+   "stage": 1,
+   "day": 0,
+   "scene": "dungeon"
+  },
+  {
+   "t": 3.02,
+   "type": "tutorial_done",
+   "stage": 1,
+   "day": 0,
+   "took": 1
+  },
+  {
+   "t": 3.62,
+   "type": "tutorial_show",
+   "stage": 2,
+   "day": 0,
+   "scene": "dungeon"
+  },
+  {
+   "t": 7.14,
+   "type": "tutorial_done",
+   "stage": 2,
+   "day": 0,
+   "took": 3.5
+  },
+  {
+   "t": 7.75,
+   "type": "tutorial_show",
+   "stage": 3,
+   "day": 0,
+   "scene": "dungeon"
+  },
+  {
+   "t": 7.75,
+   "type": "tutorial_show",
+   "stage": 6,
+   "day": 0,
+   "scene": "dungeon"
+  },
+  {
+   "t": 8.78,
+   "type": "tutorial_done",
+   "stage": 3,
+   "day": 0,
+   "took": 1
+  },
+  {
+   "t": 9.39,
+   "type": "tutorial_show",
+   "stage": 4,
+   "day": 0,
+   "scene": "dungeon"
+  },
+  {
+   "t": 9.77,
+   "type": "capture",
+   "dungeon": "meadow",
+   "species": "monkey",
+   "num": 1,
+   "elapsed": 7.8,
+   "x": 105,
+   "y": 90
+  },
+  {
+   "t": 9.77,
+   "type": "tutorial_done",
+   "stage": 4,
+   "day": 0,
+   "took": 0.4
+  },
+  {
+   "t": 10.37,
+   "type": "tutorial_show",
+   "stage": 5,
+   "day": 0,
+   "scene": "dungeon"
+  },
+  {
+   "t": 16.5,
+   "type": "capture",
+   "dungeon": "meadow",
+   "species": "monkey",
+   "num": 2,
+   "elapsed": 14.5,
+   "x": 1230,
+   "y": 90
+  },
+  {
+   "t": 16.5,
+   "type": "tutorial_done",
+   "stage": 6,
+   "day": 0,
+   "took": 8.7
+  },
+  {
+   "t": 16.5,
+   "type": "tutorial_done",
+   "stage": 5,
+   "day": 0,
+   "took": 6.1
+  },
+  {
+   "t": 17.19,
+   "type": "dungeon_end",
+   "day": 0,
+   "dungeon": "meadow",
+   "reason": "tutorial",
+   "dur": 15.2,
+   "captures": [
+    "monkey",
+    "monkey"
+   ],
+   "kills": 0,
+   "heartsLost": 0,
+   "gold": 0
+  },
+  {
+   "t": 17.89,
+   "type": "intermission",
+   "action": "show"
+  },
+  {
+   "t": 18.73,
+   "type": "intermission",
+   "action": "leave",
+   "took": 0.8
+  },
+  {
+   "t": 18.73,
+   "type": "tutorial_show",
+   "stage": 7,
+   "day": 0,
+   "scene": "setup1"
+  },
+  {
+   "t": 19.85,
+   "type": "tutorial_done",
+   "stage": 7,
+   "day": 0,
+   "took": 1.1
+  },
+  {
+   "t": 20.46,
+   "type": "tutorial_show",
+   "stage": 8,
+   "day": 0,
+   "scene": "setup1"
+  },
+  {
+   "t": 20.53,
+   "type": "tutorial_done",
+   "stage": 8,
+   "day": 0,
+   "took": 0.1
+  },
+  {
+   "t": 21.13,
+   "type": "tutorial_show",
+   "stage": 9,
+   "day": 0,
+   "scene": "setup2"
+  },
+  {
+   "t": 21.73,
+   "type": "tutorial_done",
+   "stage": 9,
+   "day": 0,
+   "took": 0.6
+  },
+  {
+   "t": 22.33,
+   "type": "tutorial_show",
+   "stage": 10,
+   "day": 0,
+   "scene": "setup2"
+  },
+  {
+   "t": 23.15,
+   "type": "tutorial_done",
+   "stage": 10,
+   "day": 0,
+   "took": 0.8
+  },
+  {
+   "t": 23.76,
+   "type": "tutorial_show",
+   "stage": 11,
+   "day": 0,
+   "scene": "setup2"
+  },
+  {
+   "t": 25.21,
+   "type": "tutorial_done",
+   "stage": 11,
+   "day": 0,
+   "took": 1.5
+  },
+  {
+   "t": 25.81,
+   "type": "tutorial_show",
+   "stage": 12,
+   "day": 0,
+   "scene": "setup2"
+  },
+  {
+   "t": 26.39,
+   "type": "setup_done",
+   "day": 0,
+   "roster": [
+    {
+     "species": "monkey",
+     "num": 1
+    },
+    {
+     "species": "monkey",
+     "num": 2
+    }
+   ],
+   "rows": [
+    {
+     "cue": "perf1",
+     "program": "all"
+    },
+    {
+     "cue": "perf1",
+     "program": "spot"
+    },
+    {
+     "cue": "",
+     "program": ""
+    },
+    {
+     "cue": "",
+     "program": ""
+    }
+   ]
+  },
+  {
+   "t": 26.39,
+   "type": "heat_tier",
+   "day": 0,
+   "tier": "cheer",
+   "heat": 75,
+   "elapsed": 0
+  },
+  {
+   "t": 26.41,
+   "type": "tutorial_done",
+   "stage": 12,
+   "day": 0,
+   "took": 0.6
+  },
+  {
+   "t": 26.97,
+   "type": "program_fire",
+   "day": 0,
+   "row": 0,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 0.6,
+   "targets": 2
+  },
+  {
+   "t": 27,
+   "type": "tutorial_show",
+   "stage": 13,
+   "day": 0,
+   "scene": "show"
+  },
+  {
+   "t": 27.01,
+   "type": "tutorial_done",
+   "stage": 13,
+   "day": 0,
+   "took": 0
+  },
+  {
+   "t": 27.39,
+   "type": "heat_tier",
+   "day": 0,
+   "tier": "clap",
+   "heat": 73,
+   "elapsed": 1
+  },
+  {
+   "t": 27.61,
+   "type": "tutorial_show",
+   "stage": 14,
+   "day": 0,
+   "scene": "show"
+  },
+  {
+   "t": 28.48,
+   "type": "program_fire",
+   "day": 0,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 2.1,
+   "targets": 1
+  },
+  {
+   "t": 28.48,
+   "type": "tutorial_done",
+   "stage": 14,
+   "day": 0,
+   "took": 0.9
+  },
+  {
+   "t": 29.08,
+   "type": "tutorial_show",
+   "stage": 15,
+   "day": 0,
+   "scene": "show"
+  },
+  {
+   "t": 29.98,
+   "type": "program_fire",
+   "day": 0,
+   "row": 0,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 3.6,
+   "targets": 2
+  },
+  {
+   "t": 31.49,
+   "type": "program_fire",
+   "day": 0,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 5.1,
+   "targets": 1
+  },
+  {
+   "t": 32.99,
+   "type": "program_fire",
+   "day": 0,
+   "row": 0,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 6.6,
+   "targets": 2
+  },
+  {
+   "t": 33.09,
+   "type": "tutorial_done",
+   "stage": 15,
+   "day": 0,
+   "took": 4
+  },
+  {
+   "t": 34.5,
+   "type": "program_fire",
+   "day": 0,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 8.1,
+   "targets": 1
+  },
+  {
+   "t": 36.01,
+   "type": "program_fire",
+   "day": 0,
+   "row": 0,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 9.6,
+   "targets": 2
+  },
+  {
+   "t": 37.51,
+   "type": "program_fire",
+   "day": 0,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 11.1,
+   "targets": 1
+  },
+  {
+   "t": 39.02,
+   "type": "program_fire",
+   "day": 0,
+   "row": 0,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 12.6,
+   "targets": 2
+  },
+  {
+   "t": 39.89,
+   "type": "heat_tier",
+   "day": 0,
+   "tier": "quiet",
+   "heat": 48,
+   "elapsed": 13.5
+  },
+  {
+   "t": 40.53,
+   "type": "program_fire",
+   "day": 0,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 14.1,
+   "targets": 1
+  },
+  {
+   "t": 42.03,
+   "type": "program_fire",
+   "day": 0,
+   "row": 0,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 15.6,
+   "targets": 2
+  },
+  {
+   "t": 43.54,
+   "type": "program_fire",
+   "day": 0,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 17.1,
+   "targets": 1
+  },
+  {
+   "t": 45.05,
+   "type": "program_fire",
+   "day": 0,
+   "row": 0,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 18.7,
+   "targets": 2
+  },
+  {
+   "t": 46.55,
+   "type": "program_fire",
+   "day": 0,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 20.2,
+   "targets": 1
+  },
+  {
+   "t": 48.06,
+   "type": "program_fire",
+   "day": 0,
+   "row": 0,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 21.7,
+   "targets": 2
+  },
+  {
+   "t": 49.57,
+   "type": "program_fire",
+   "day": 0,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 23.2,
+   "targets": 1
+  },
+  {
+   "t": 51.08,
+   "type": "program_fire",
+   "day": 0,
+   "row": 0,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 24.7,
+   "targets": 2
+  },
+  {
+   "t": 52.58,
+   "type": "program_fire",
+   "day": 0,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 26.2,
+   "targets": 1
+  },
+  {
+   "t": 54.09,
+   "type": "program_fire",
+   "day": 0,
+   "row": 0,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 27.7,
+   "targets": 2
+  },
+  {
+   "t": 55.6,
+   "type": "program_fire",
+   "day": 0,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 29.2,
+   "targets": 1
+  },
+  {
+   "t": 56.4,
+   "type": "show_end",
+   "day": 0,
+   "reason": "time",
+   "dur": 30,
+   "satisfaction": 50,
+   "gold": 77,
+   "fameGain": 50,
+   "bestChain": 1,
+   "performs": 51,
+   "angryPerforms": 0,
+   "heatAvg": 45,
+   "heatMax": 75,
+   "tierSec": {
+    "quiet": 16.5,
+    "clap": 12.5,
+    "cheer": 1,
+    "frenzy": 0
+   }
+  },
+  {
+   "t": 58.4,
+   "type": "day_start",
+   "day": 1
+  },
+  {
+   "t": 60.4,
+   "type": "tutorial_show",
+   "stage": 19,
+   "day": 1,
+   "scene": "place"
+  },
+  {
+   "t": 114.03,
+   "type": "place_choose",
+   "day": 1,
+   "place": "shop"
+  },
+  {
+   "t": 114.03,
+   "type": "tutorial_done",
+   "stage": 19,
+   "day": 1,
+   "took": 53.6
+  },
+  {
+   "t": 114.64,
+   "type": "tutorial_show",
+   "stage": 20,
+   "day": 1,
+   "scene": "shop"
+  },
+  {
+   "t": 115.14,
+   "type": "tutorial_done",
+   "stage": 20,
+   "day": 1,
+   "took": 0.5
+  },
+  {
+   "t": 126.15,
+   "type": "shop_buy",
+   "day": 1,
+   "item": "ropeBag",
+   "cost": 40,
+   "goldLeft": 67
+  },
+  {
+   "t": 132.74,
+   "type": "shop_buy",
+   "day": 1,
+   "item": "ropeBag",
+   "cost": 60,
+   "goldLeft": 7
+  },
+  {
+   "t": 134.58,
+   "type": "place_choose",
+   "day": 1,
+   "place": "dungeon"
+  },
+  {
+   "t": 135.81,
+   "type": "dungeon_start",
+   "day": 1,
+   "dungeon": "lake",
+   "weapon": "club",
+   "hearts": 3,
+   "ropes": 6
+  },
+  {
+   "t": 136.82,
+   "type": "tutorial_show",
+   "stage": 21,
+   "day": 1,
+   "scene": "dungeon"
+  },
+  {
+   "t": 137.4,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 599,
+   "y": 692
+  },
+  {
+   "t": 137.4,
+   "type": "tutorial_done",
+   "stage": 21,
+   "day": 1,
+   "took": 0.6
+  },
+  {
+   "t": 138,
+   "type": "tutorial_show",
+   "stage": 22,
+   "day": 1,
+   "scene": "dungeon"
+  },
+  {
+   "t": 138.08,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 452,
+   "y": 781
+  },
+  {
+   "t": 139.79,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "fruit",
+   "action": "drop",
+   "x": 450,
+   "y": 690
+  },
+  {
+   "t": 139.79,
+   "type": "tutorial_done",
+   "stage": 22,
+   "day": 1,
+   "took": 1.8
+  },
+  {
+   "t": 144.23,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 439,
+   "y": 781
+  },
+  {
+   "t": 145.05,
+   "type": "capture",
+   "dungeon": "lake",
+   "species": "lily",
+   "num": 1,
+   "elapsed": 9.2,
+   "x": 366,
+   "y": 734
+  },
+  {
+   "t": 146.51,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 228,
+   "y": 359
+  },
+  {
+   "t": 150.32,
+   "type": "capture",
+   "dungeon": "lake",
+   "species": "lily",
+   "num": 2,
+   "elapsed": 14.5,
+   "x": 283,
+   "y": 124
+  },
+  {
+   "t": 151.81,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 541,
+   "y": 209
+  },
+  {
+   "t": 152.5,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 721,
+   "y": 181
+  },
+  {
+   "t": 154.13,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1200,
+   "y": 206
+  },
+  {
+   "t": 155.21,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1501,
+   "y": 264
+  },
+  {
+   "t": 158.56,
+   "type": "player_hit",
+   "dungeon": "lake",
+   "source": "match",
+   "x": 1779,
+   "y": 82,
+   "heartsLeft": 2,
+   "elapsed": 22.8
+  },
+  {
+   "t": 159.57,
+   "type": "capture",
+   "dungeon": "lake",
+   "species": "monkey",
+   "num": 3,
+   "elapsed": 23.8,
+   "x": 1794,
+   "y": 90
+  },
+  {
+   "t": 164.95,
+   "type": "capture",
+   "dungeon": "lake",
+   "species": "monkey",
+   "num": 4,
+   "elapsed": 29.1,
+   "x": 1781,
+   "y": 587
+  },
+  {
+   "t": 166.45,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1592,
+   "y": 358
+  },
+  {
+   "t": 171.67,
+   "type": "kill",
+   "dungeon": "lake",
+   "species": "monkey",
+   "by": "weapon",
+   "x": 1759,
+   "y": 90
+  },
+  {
+   "t": 173.1,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1619,
+   "y": 287
+  },
+  {
+   "t": 179.08,
+   "type": "capture",
+   "dungeon": "lake",
+   "species": "monkey",
+   "num": 5,
+   "elapsed": 43.3,
+   "x": 1609,
+   "y": 870
+  },
+  {
+   "t": 181.26,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1580,
+   "y": 359
+  },
+  {
+   "t": 185.72,
+   "type": "capture",
+   "dungeon": "lake",
+   "species": "monkey",
+   "num": 6,
+   "elapsed": 49.9,
+   "x": 1636,
+   "y": 90
+  },
+  {
+   "t": 186.56,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1574,
+   "y": 242
+  },
+  {
+   "t": 188.14,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1259,
+   "y": 208
+  },
+  {
+   "t": 189.56,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 837,
+   "y": 220
+  },
+  {
+   "t": 190.35,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 600,
+   "y": 220
+  },
+  {
+   "t": 192.45,
+   "type": "kill",
+   "dungeon": "lake",
+   "species": "lily",
+   "by": "weapon",
+   "x": 296,
+   "y": 221
+  },
+  {
+   "t": 192.73,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 299,
+   "y": 268
+  },
+  {
+   "t": 195.45,
+   "type": "kill",
+   "dungeon": "lake",
+   "species": "lily",
+   "by": "weapon",
+   "x": 286,
+   "y": 839
+  },
+  {
+   "t": 197.89,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 540,
+   "y": 688
+  },
+  {
+   "t": 199.3,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 962,
+   "y": 692
+  },
+  {
+   "t": 199.49,
+   "type": "tutorial_show",
+   "stage": 23,
+   "day": 1,
+   "scene": "dungeon"
+  },
+  {
+   "t": 200.1,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1201,
+   "y": 692
+  },
+  {
+   "t": 203.83,
+   "type": "kill",
+   "dungeon": "lake",
+   "species": "monkey",
+   "by": "weapon",
+   "x": 1830,
+   "y": 719
+  },
+  {
+   "t": 205.5,
+   "type": "tutorial_done",
+   "stage": 23,
+   "day": 1,
+   "took": 6
+  },
+  {
+   "t": 207.07,
+   "type": "kill",
+   "dungeon": "lake",
+   "species": "monkey",
+   "by": "weapon",
+   "x": 1698,
+   "y": 289
+  },
+  {
+   "t": 207.57,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1619,
+   "y": 325
+  },
+  {
+   "t": 208.93,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1259,
+   "y": 208
+  },
+  {
+   "t": 210.34,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 838,
+   "y": 208
+  },
+  {
+   "t": 210.81,
+   "type": "dungeon_end",
+   "day": 1,
+   "dungeon": "lake",
+   "reason": "time",
+   "dur": 75,
+   "captures": [
+    "lily",
+    "lily",
+    "monkey",
+    "monkey",
+    "monkey",
+    "monkey"
+   ],
+   "kills": 5,
+   "heartsLost": 1,
+   "gold": 15
+  },
+  {
+   "t": 212.57,
+   "type": "day_start",
+   "day": 2
+  },
+  {
+   "t": 215.63,
+   "type": "place_choose",
+   "day": 2,
+   "place": "show"
+  },
+  {
+   "t": 228.95,
+   "type": "setup_done",
+   "day": 2,
+   "roster": [
+    {
+     "species": "lily",
+     "num": 1
+    },
+    {
+     "species": "lily",
+     "num": 2
+    },
+    {
+     "species": "monkey",
+     "num": 1
+    },
+    {
+     "species": "monkey",
+     "num": 2
+    },
+    {
+     "species": "monkey",
+     "num": 3
+    },
+    {
+     "species": "monkey",
+     "num": 4
+    },
+    {
+     "species": "monkey",
+     "num": 5
+    },
+    {
+     "species": "monkey",
+     "num": 6
+    }
+   ],
+   "rows": [
+    {
+     "cue": "perf1",
+     "program": "all"
+    },
+    {
+     "cue": "perf1",
+     "program": "spot"
+    },
+    {
+     "cue": "",
+     "program": ""
+    },
+    {
+     "cue": "",
+     "program": ""
+    }
+   ]
+  },
+  {
+   "t": 228.95,
+   "type": "heat_tier",
+   "day": 2,
+   "tier": "clap",
+   "heat": 60,
+   "elapsed": 0
+  },
+  {
+   "t": 229.5,
+   "type": "program_fire",
+   "day": 2,
+   "row": 0,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 0.5,
+   "targets": 8
+  },
+  {
+   "t": 231,
+   "type": "program_fire",
+   "day": 2,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 2.1,
+   "targets": 1
+  },
+  {
+   "t": 232.51,
+   "type": "program_fire",
+   "day": 2,
+   "row": 0,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 3.6,
+   "targets": 8
+  },
+  {
+   "t": 233.29,
+   "type": "tutorial_show",
+   "stage": 17,
+   "day": 2,
+   "scene": "show"
+  },
+  {
+   "t": 233.51,
+   "type": "heat_tier",
+   "day": 2,
+   "tier": "quiet",
+   "heat": 48,
+   "elapsed": 4.6
+  },
+  {
+   "t": 234.01,
+   "type": "program_fire",
+   "day": 2,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 5.1,
+   "targets": 1
+  },
+  {
+   "t": 235.52,
+   "type": "program_fire",
+   "day": 2,
+   "row": 0,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 6.6,
+   "targets": 8
+  },
+  {
+   "t": 237.03,
+   "type": "program_fire",
+   "day": 2,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 8.1,
+   "targets": 1
+  },
+  {
+   "t": 237.29,
+   "type": "tutorial_done",
+   "stage": 17,
+   "day": 2,
+   "took": 4
+  },
+  {
+   "t": 237.9,
+   "type": "tutorial_show",
+   "stage": 18,
+   "day": 2,
+   "scene": "show"
+  },
+  {
+   "t": 238.54,
+   "type": "program_fire",
+   "day": 2,
+   "row": 0,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 9.6,
+   "targets": 8
+  },
+  {
+   "t": 240.04,
+   "type": "program_fire",
+   "day": 2,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 11.1,
+   "targets": 1
+  },
+  {
+   "t": 241.55,
+   "type": "program_fire",
+   "day": 2,
+   "row": 0,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 12.6,
+   "targets": 8
+  },
+  {
+   "t": 241.9,
+   "type": "mark_peak",
+   "day": 2,
+   "species": "lily",
+   "num": 1,
+   "marks": 3,
+   "elapsed": 13
+  },
+  {
+   "t": 242.9,
+   "type": "tutorial_done",
+   "stage": 18,
+   "day": 2,
+   "took": 5
+  },
+  {
+   "t": 243.06,
+   "type": "program_fire",
+   "day": 2,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 14.1,
+   "targets": 1
+  },
+  {
+   "t": 244.56,
+   "type": "program_fire",
+   "day": 2,
+   "row": 0,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 15.6,
+   "targets": 8
+  },
+  {
+   "t": 244.98,
+   "type": "mark_peak",
+   "day": 2,
+   "species": "lily",
+   "num": 1,
+   "marks": 4,
+   "elapsed": 16
+  },
+  {
+   "t": 246.07,
+   "type": "program_fire",
+   "day": 2,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 17.1,
+   "targets": 1
+  },
+  {
+   "t": 247.57,
+   "type": "program_fire",
+   "day": 2,
+   "row": 0,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 18.6,
+   "targets": 8
+  },
+  {
+   "t": 249.08,
+   "type": "program_fire",
+   "day": 2,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 20.1,
+   "targets": 1
+  },
+  {
+   "t": 250.59,
+   "type": "program_fire",
+   "day": 2,
+   "row": 0,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 21.6,
+   "targets": 8
+  },
+  {
+   "t": 252.09,
+   "type": "program_fire",
+   "day": 2,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 23.1,
+   "targets": 1
+  },
+  {
+   "t": 253.59,
+   "type": "program_fire",
+   "day": 2,
+   "row": 0,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 24.6,
+   "targets": 8
+  },
+  {
+   "t": 255.09,
+   "type": "program_fire",
+   "day": 2,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 26.1,
+   "targets": 1
+  },
+  {
+   "t": 256.6,
+   "type": "program_fire",
+   "day": 2,
+   "row": 0,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 27.7,
+   "targets": 8
+  },
+  {
+   "t": 258.11,
+   "type": "program_fire",
+   "day": 2,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 29.2,
+   "targets": 1
+  },
+  {
+   "t": 259.61,
+   "type": "program_fire",
+   "day": 2,
+   "row": 0,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 30.7,
+   "targets": 8
+  },
+  {
+   "t": 260.17,
+   "type": "mark_peak",
+   "day": 2,
+   "species": "lily",
+   "num": 1,
+   "marks": 3,
+   "elapsed": 31.2
+  },
+  {
+   "t": 261.12,
+   "type": "program_fire",
+   "day": 2,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 32.2,
+   "targets": 1
+  },
+  {
+   "t": 262.62,
+   "type": "program_fire",
+   "day": 2,
+   "row": 0,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 33.7,
+   "targets": 8
+  },
+  {
+   "t": 263.63,
+   "type": "mark_peak",
+   "day": 2,
+   "species": "lily",
+   "num": 1,
+   "marks": 4,
+   "elapsed": 34.7
+  },
+  {
+   "t": 264.13,
+   "type": "program_fire",
+   "day": 2,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 35.2,
+   "targets": 1
+  },
+  {
+   "t": 265.63,
+   "type": "program_fire",
+   "day": 2,
+   "row": 0,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 36.7,
+   "targets": 8
+  },
+  {
+   "t": 265.85,
+   "type": "mark_peak",
+   "day": 2,
+   "species": "lily",
+   "num": 1,
+   "marks": 5,
+   "elapsed": 36.9
+  },
+  {
+   "t": 268.35,
+   "type": "show_end",
+   "day": 2,
+   "reason": "loose",
+   "dur": 36.9,
+   "satisfaction": 354,
+   "gold": 171,
+   "fameGain": 354,
+   "bestChain": 2,
+   "performs": 152,
+   "angryPerforms": 54,
+   "heatAvg": 32,
+   "heatMax": 60,
+   "tierSec": {
+    "quiet": 32.3,
+    "clap": 4.6,
+    "cheer": 0,
+    "frenzy": 0
+   },
+   "looseSpecies": "lily",
+   "looseNum": 1,
+   "looseX": 165,
+   "looseY": 572
+  },
+  {
+   "t": 268.35,
+   "type": "dungeon_unlock",
+   "day": 2,
+   "dungeon": "tower",
+   "fame": 404
+  },
+  {
+   "t": 271.03,
+   "type": "day_start",
+   "day": 3
+  },
+  {
+   "t": 274.79,
+   "type": "place_choose",
+   "day": 3,
+   "place": "shop"
+  },
+  {
+   "t": 280.49,
+   "type": "shop_buy",
+   "day": 3,
+   "item": "mark3",
+   "cost": 30,
+   "goldLeft": 163
+  },
+  {
+   "t": 285,
+   "type": "shop_buy",
+   "day": 3,
+   "item": "lull",
+   "cost": 40,
+   "goldLeft": 123
+  },
+  {
+   "t": 301.33,
+   "type": "shop_buy",
+   "day": 3,
+   "item": "bull",
+   "cost": 40,
+   "goldLeft": 83
+  },
+  {
+   "t": 307.09,
+   "type": "shop_buy",
+   "day": 3,
+   "item": "armor",
+   "cost": 40,
+   "goldLeft": 43
+  },
+  {
+   "t": 311.4,
+   "type": "place_choose",
+   "day": 3,
+   "place": "dungeon"
+  },
+  {
+   "t": 313.59,
+   "type": "dungeon_start",
+   "day": 3,
+   "dungeon": "tower",
+   "weapon": "club",
+   "hearts": 4,
+   "ropes": 6
+  },
+  {
+   "t": 315.74,
+   "type": "object_use",
+   "dungeon": "tower",
+   "object": "crackwall",
+   "action": "break",
+   "x": 570,
+   "y": 690
+  },
+  {
+   "t": 317.7,
+   "type": "object_use",
+   "dungeon": "tower",
+   "object": "keg",
+   "action": "blast",
+   "x": 450,
+   "y": 630
+  },
+  {
+   "t": 317.7,
+   "type": "player_hit",
+   "dungeon": "tower",
+   "source": "blast",
+   "x": 577,
+   "y": 702,
+   "heartsLeft": 3,
+   "elapsed": 4.1
+  },
+  {
+   "t": 320.57,
+   "type": "player_hit",
+   "dungeon": "tower",
+   "source": "gear",
+   "x": 338,
+   "y": 764,
+   "heartsLeft": 2,
+   "elapsed": 7
+  },
+  {
+   "t": 322.23,
+   "type": "object_use",
+   "dungeon": "tower",
+   "object": "keg",
+   "action": "blast",
+   "x": 210,
+   "y": 870
+  },
+  {
+   "t": 322.23,
+   "type": "player_hit",
+   "dungeon": "tower",
+   "source": "blast",
+   "x": 299,
+   "y": 790,
+   "heartsLeft": 1,
+   "elapsed": 8.6
+  },
+  {
+   "t": 322.23,
+   "type": "lasso_break",
+   "dungeon": "tower",
+   "species": "beetle",
+   "reason": "hit",
+   "x": 299,
+   "y": 790
+  },
+  {
+   "t": 324.93,
+   "type": "capture",
+   "dungeon": "tower",
+   "species": "beetle",
+   "num": 1,
+   "elapsed": 11.3,
+   "x": 167,
+   "y": 836
+  },
+  {
+   "t": 336.91,
+   "type": "object_use",
+   "dungeon": "tower",
+   "object": "keg",
+   "action": "blast",
+   "x": 330,
+   "y": 210
+  },
+  {
+   "t": 340.71,
+   "type": "capture",
+   "dungeon": "tower",
+   "species": "beetle",
+   "num": 2,
+   "elapsed": 27.1,
+   "x": 244,
+   "y": 141
+  },
+  {
+   "t": 351.73,
+   "type": "player_hit",
+   "dungeon": "tower",
+   "source": "gear",
+   "x": 470,
+   "y": 587,
+   "heartsLeft": 0,
+   "elapsed": 38.1
+  },
+  {
+   "t": 351.73,
+   "type": "player_down",
+   "dungeon": "tower",
+   "x": 470,
+   "y": 587,
+   "elapsed": 38.1
+  },
+  {
+   "t": 351.74,
+   "type": "dungeon_end",
+   "day": 3,
+   "dungeon": "tower",
+   "reason": "down",
+   "dur": 38.1,
+   "captures": [
+    "beetle",
+    "beetle"
+   ],
+   "kills": 0,
+   "heartsLost": 4,
+   "gold": 0
+  },
+  {
+   "t": 353.25,
+   "type": "day_start",
+   "day": 4
+  },
+  {
+   "t": 356.17,
+   "type": "place_choose",
+   "day": 4,
+   "place": "show"
+  },
+  {
+   "t": 384.12,
+   "type": "setup_done",
+   "day": 4,
+   "roster": [
+    {
+     "species": "lily",
+     "num": 2
+    },
+    {
+     "species": "monkey",
+     "num": 1
+    },
+    {
+     "species": "monkey",
+     "num": 2
+    },
+    {
+     "species": "monkey",
+     "num": 3
+    },
+    {
+     "species": "monkey",
+     "num": 4
+    },
+    {
+     "species": "monkey",
+     "num": 5
+    },
+    {
+     "species": "monkey",
+     "num": 6
+    },
+    {
+     "species": "beetle",
+     "num": 1
+    },
+    {
+     "species": "beetle",
+     "num": 2
+    }
+   ],
+   "rows": [
+    {
+     "cue": "perf1",
+     "program": "bull"
+    },
+    {
+     "cue": "perf1",
+     "program": "spot"
+    },
+    {
+     "cue": "perf1",
+     "program": "all"
+    },
+    {
+     "cue": "mark3",
+     "program": "lull"
+    }
+   ]
+  },
+  {
+   "t": 384.12,
+   "type": "heat_tier",
+   "day": 4,
+   "tier": "clap",
+   "heat": 60,
+   "elapsed": 0
+  },
+  {
+   "t": 384.91,
+   "type": "program_fire",
+   "day": 4,
+   "row": 0,
+   "cue": "perf1",
+   "program": "bull",
+   "elapsed": 0.8,
+   "targets": 1
+  },
+  {
+   "t": 386.42,
+   "type": "program_fire",
+   "day": 4,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 2.3,
+   "targets": 1
+  },
+  {
+   "t": 387.92,
+   "type": "program_fire",
+   "day": 4,
+   "row": 2,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 3.8,
+   "targets": 9
+  },
+  {
+   "t": 407.74,
+   "type": "mark_peak",
+   "day": 4,
+   "species": "monkey",
+   "num": 6,
+   "marks": 3,
+   "elapsed": 23.6
+  },
+  {
+   "t": 407.75,
+   "type": "program_fire",
+   "day": 4,
+   "row": 3,
+   "cue": "mark3",
+   "program": "lull",
+   "elapsed": 23.6,
+   "targets": 3
+  },
+  {
+   "t": 409.25,
+   "type": "program_fire",
+   "day": 4,
+   "row": 0,
+   "cue": "perf1",
+   "program": "bull",
+   "elapsed": 25.1,
+   "targets": 1
+  },
+  {
+   "t": 410.76,
+   "type": "program_fire",
+   "day": 4,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 26.6,
+   "targets": 1
+  },
+  {
+   "t": 412.26,
+   "type": "program_fire",
+   "day": 4,
+   "row": 2,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 28.1,
+   "targets": 9
+  },
+  {
+   "t": 416.07,
+   "type": "mark_peak",
+   "day": 4,
+   "species": "lily",
+   "num": 2,
+   "marks": 3,
+   "elapsed": 32
+  },
+  {
+   "t": 416.08,
+   "type": "program_fire",
+   "day": 4,
+   "row": 3,
+   "cue": "mark3",
+   "program": "lull",
+   "elapsed": 32,
+   "targets": 4
+  },
+  {
+   "t": 417.58,
+   "type": "program_fire",
+   "day": 4,
+   "row": 0,
+   "cue": "perf1",
+   "program": "bull",
+   "elapsed": 33.5,
+   "targets": 1
+  },
+  {
+   "t": 419.09,
+   "type": "program_fire",
+   "day": 4,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 35,
+   "targets": 1
+  },
+  {
+   "t": 420.55,
+   "type": "mark_peak",
+   "day": 4,
+   "species": "monkey",
+   "num": 6,
+   "marks": 3,
+   "elapsed": 36.4
+  },
+  {
+   "t": 420.59,
+   "type": "program_fire",
+   "day": 4,
+   "row": 2,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 36.5,
+   "targets": 9
+  },
+  {
+   "t": 422.09,
+   "type": "program_fire",
+   "day": 4,
+   "row": 3,
+   "cue": "mark3",
+   "program": "lull",
+   "elapsed": 38,
+   "targets": 4
+  },
+  {
+   "t": 423.61,
+   "type": "program_fire",
+   "day": 4,
+   "row": 0,
+   "cue": "perf1",
+   "program": "bull",
+   "elapsed": 39.5,
+   "targets": 1
+  },
+  {
+   "t": 425.1,
+   "type": "program_fire",
+   "day": 4,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 41,
+   "targets": 1
+  },
+  {
+   "t": 426.61,
+   "type": "program_fire",
+   "day": 4,
+   "row": 2,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 42.5,
+   "targets": 9
+  },
+  {
+   "t": 429.12,
+   "type": "show_end",
+   "day": 4,
+   "reason": "time",
+   "dur": 45,
+   "satisfaction": 499,
+   "gold": 199,
+   "fameGain": 499,
+   "bestChain": 5,
+   "performs": 185,
+   "angryPerforms": 89,
+   "heatAvg": 59,
+   "heatMax": 69,
+   "tierSec": {
+    "quiet": 0,
+    "clap": 45,
+    "cheer": 0,
+    "frenzy": 0
+   }
+  },
+  {
+   "t": 431.49,
+   "type": "day_start",
+   "day": 5
+  },
+  {
+   "t": 437.52,
+   "type": "place_choose",
+   "day": 5,
+   "place": "shop"
+  },
+  {
+   "t": 444.53,
+   "type": "shop_buy",
+   "day": 5,
+   "item": "pep",
+   "cost": 20,
+   "goldLeft": 222
+  },
+  {
+   "t": 453.94,
+   "type": "place_choose",
+   "day": 5,
+   "place": "dungeon"
+  },
+  {
+   "t": 460.24,
+   "type": "place_choose",
+   "day": 5,
+   "place": "shop"
+  },
+  {
+   "t": 462.03,
+   "type": "shop_buy",
+   "day": 5,
+   "item": "sword",
+   "cost": 60,
+   "goldLeft": 162
+  },
+  {
+   "t": 462.52,
+   "type": "shop_buy",
+   "day": 5,
+   "item": "armor",
+   "cost": 60,
+   "goldLeft": 102
+  },
+  {
+   "t": 466.41,
+   "type": "place_choose",
+   "day": 5,
+   "place": "dungeon"
+  },
+  {
+   "t": 468.53,
+   "type": "dungeon_start",
+   "day": 5,
+   "dungeon": "tower",
+   "weapon": "sword",
+   "hearts": 5,
+   "ropes": 6
+  },
+  {
+   "t": 470.91,
+   "type": "object_use",
+   "dungeon": "tower",
+   "object": "crackwall",
+   "action": "break",
+   "x": 570,
+   "y": 690
+  },
+  {
+   "t": 475.51,
+   "type": "capture",
+   "dungeon": "tower",
+   "species": "beetle",
+   "num": 3,
+   "elapsed": 7,
+   "x": 478,
+   "y": 786
+  },
+  {
+   "t": 478.23,
+   "type": "object_use",
+   "dungeon": "tower",
+   "object": "keg",
+   "action": "blast",
+   "x": 450,
+   "y": 630
+  },
+  {
+   "t": 478.24,
+   "type": "player_hit",
+   "dungeon": "tower",
+   "source": "blast",
+   "x": 571,
+   "y": 687,
+   "heartsLeft": 4,
+   "elapsed": 9.7
+  },
+  {
+   "t": 482.29,
+   "type": "object_use",
+   "dungeon": "tower",
+   "object": "keg",
+   "action": "blast",
+   "x": 210,
+   "y": 870
+  },
+  {
+   "t": 489.92,
+   "type": "object_use",
+   "dungeon": "tower",
+   "object": "keg",
+   "action": "blast",
+   "x": 330,
+   "y": 210
+  },
+  {
+   "t": 493.44,
+   "type": "capture",
+   "dungeon": "tower",
+   "species": "beetle",
+   "num": 4,
+   "elapsed": 24.9,
+   "x": 293,
+   "y": 114
+  },
+  {
+   "t": 498.96,
+   "type": "player_hit",
+   "dungeon": "tower",
+   "source": "hurt",
+   "x": 287,
+   "y": 589,
+   "heartsLeft": 3,
+   "elapsed": 30.4
+  },
+  {
+   "t": 498.97,
+   "type": "lasso_break",
+   "dungeon": "tower",
+   "species": "beetle",
+   "reason": "hit",
+   "x": 287,
+   "y": 589
+  },
+  {
+   "t": 500.69,
+   "type": "player_hit",
+   "dungeon": "tower",
+   "source": "hurt",
+   "x": 284,
+   "y": 594,
+   "heartsLeft": 2,
+   "elapsed": 32.2
+  },
+  {
+   "t": 502.69,
+   "type": "capture",
+   "dungeon": "tower",
+   "species": "beetle",
+   "num": 5,
+   "elapsed": 34.2,
+   "x": 306,
+   "y": 683
+  },
+  {
+   "t": 509.25,
+   "type": "capture",
+   "dungeon": "tower",
+   "species": "beetle",
+   "num": 6,
+   "elapsed": 40.7,
+   "x": 504,
+   "y": 147
+  },
+  {
+   "t": 510.39,
+   "type": "object_use",
+   "dungeon": "tower",
+   "object": "crackwall",
+   "action": "break",
+   "x": 570,
+   "y": 210
+  },
+  {
+   "t": 513.38,
+   "type": "object_use",
+   "dungeon": "tower",
+   "object": "crackwall",
+   "action": "break",
+   "x": 1230,
+   "y": 210
+  },
+  {
+   "t": 519.64,
+   "type": "capture",
+   "dungeon": "tower",
+   "species": "parrot",
+   "num": 1,
+   "elapsed": 51.1,
+   "x": 1667,
+   "y": 185
+  },
+  {
+   "t": 525.42,
+   "type": "capture",
+   "dungeon": "tower",
+   "species": "parrot",
+   "num": 2,
+   "elapsed": 56.9,
+   "x": 1443,
+   "y": 602
+  },
+  {
+   "t": 527.92,
+   "type": "object_use",
+   "dungeon": "tower",
+   "object": "crackwall",
+   "action": "break",
+   "x": 1230,
+   "y": 690
+  },
+  {
+   "t": 530.4,
+   "type": "exit_prompt",
+   "dungeon": "tower",
+   "action": "show",
+   "elapsed": 61.9,
+   "captures": 6,
+   "heartsLeft": 2
+  },
+  {
+   "t": 531.38,
+   "type": "exit_prompt",
+   "dungeon": "tower",
+   "action": "leave",
+   "elapsed": 61.9,
+   "captures": 6,
+   "heartsLeft": 2
+  },
+  {
+   "t": 531.38,
+   "type": "dungeon_end",
+   "day": 5,
+   "dungeon": "tower",
+   "reason": "exit",
+   "dur": 61.9,
+   "captures": [
+    "beetle",
+    "beetle",
+    "beetle",
+    "beetle",
+    "parrot",
+    "parrot"
+   ],
+   "kills": 0,
+   "heartsLost": 3,
+   "gold": 0
+  },
+  {
+   "t": 531.38,
+   "type": "dungeon_unlock",
+   "day": 5,
+   "dungeon": "snow",
+   "fame": 903
+  },
+  {
+   "t": 532.21,
+   "type": "day_start",
+   "day": 6
+  },
+  {
+   "t": 535.8,
+   "type": "place_choose",
+   "day": 6,
+   "place": "show"
+  },
+  {
+   "t": 543.17,
+   "type": "setup_back",
+   "day": 6,
+   "from": "setup2",
+   "to": "setup1"
+  },
+  {
+   "t": 544.19,
+   "type": "setup_back",
+   "day": 6,
+   "from": "setup1",
+   "to": "place"
+  },
+  {
+   "t": 544.77,
+   "type": "place_choose",
+   "day": 6,
+   "place": "shop"
+  },
+  {
+   "t": 558.98,
+   "type": "place_choose",
+   "day": 6,
+   "place": "show"
+  },
+  {
+   "t": 571.7,
+   "type": "setup_done",
+   "day": 6,
+   "roster": [
+    {
+     "species": "lily",
+     "num": 2
+    },
+    {
+     "species": "monkey",
+     "num": 1
+    },
+    {
+     "species": "monkey",
+     "num": 2
+    },
+    {
+     "species": "monkey",
+     "num": 3
+    },
+    {
+     "species": "monkey",
+     "num": 4
+    },
+    {
+     "species": "monkey",
+     "num": 5
+    },
+    {
+     "species": "monkey",
+     "num": 6
+    },
+    {
+     "species": "beetle",
+     "num": 1
+    },
+    {
+     "species": "beetle",
+     "num": 2
+    },
+    {
+     "species": "beetle",
+     "num": 3
+    },
+    {
+     "species": "beetle",
+     "num": 4
+    },
+    {
+     "species": "beetle",
+     "num": 5
+    },
+    {
+     "species": "beetle",
+     "num": 6
+    },
+    {
+     "species": "parrot",
+     "num": 1
+    },
+    {
+     "species": "parrot",
+     "num": 2
+    }
+   ],
+   "rows": [
+    {
+     "cue": "perf1",
+     "program": "pep"
+    },
+    {
+     "cue": "perf1",
+     "program": "spot"
+    },
+    {
+     "cue": "perf1",
+     "program": "all"
+    },
+    {
+     "cue": "mark3",
+     "program": "lull"
+    }
+   ]
+  },
+  {
+   "t": 571.7,
+   "type": "heat_tier",
+   "day": 6,
+   "tier": "clap",
+   "heat": 60,
+   "elapsed": 0
+  },
+  {
+   "t": 572.27,
+   "type": "program_fire",
+   "day": 6,
+   "row": 0,
+   "cue": "perf1",
+   "program": "pep",
+   "elapsed": 0.6,
+   "targets": 0
+  },
+  {
+   "t": 573.78,
+   "type": "program_fire",
+   "day": 6,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 2.1,
+   "targets": 1
+  },
+  {
+   "t": 575.29,
+   "type": "program_fire",
+   "day": 6,
+   "row": 2,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 3.6,
+   "targets": 15
+  },
+  {
+   "t": 577.34,
+   "type": "heat_tier",
+   "day": 6,
+   "tier": "cheer",
+   "heat": 75,
+   "elapsed": 5.6
+  },
+  {
+   "t": 577.95,
+   "type": "mark_peak",
+   "day": 6,
+   "species": "parrot",
+   "num": 2,
+   "marks": 3,
+   "elapsed": 6.2
+  },
+  {
+   "t": 577.96,
+   "type": "program_fire",
+   "day": 6,
+   "row": 3,
+   "cue": "mark3",
+   "program": "lull",
+   "elapsed": 6.3,
+   "targets": 1
+  },
+  {
+   "t": 579.47,
+   "type": "program_fire",
+   "day": 6,
+   "row": 0,
+   "cue": "perf1",
+   "program": "pep",
+   "elapsed": 7.8,
+   "targets": 0
+  },
+  {
+   "t": 580.97,
+   "type": "program_fire",
+   "day": 6,
+   "row": 1,
+   "cue": "perf1",
+   "program": "spot",
+   "elapsed": 9.3,
+   "targets": 1
+  },
+  {
+   "t": 581.11,
+   "type": "mark_peak",
+   "day": 6,
+   "species": "monkey",
+   "num": 3,
+   "marks": 3,
+   "elapsed": 9.4
+  },
+  {
+   "t": 582.16,
+   "type": "mark_peak",
+   "day": 6,
+   "species": "monkey",
+   "num": 1,
+   "marks": 3,
+   "elapsed": 10.5
+  },
+  {
+   "t": 582.2,
+   "type": "mark_peak",
+   "day": 6,
+   "species": "monkey",
+   "num": 4,
+   "marks": 3,
+   "elapsed": 10.5
+  },
+  {
+   "t": 582.28,
+   "type": "heat_tier",
+   "day": 6,
+   "tier": "frenzy",
+   "heat": 91,
+   "elapsed": 10.6
+  },
+  {
+   "t": 582.3,
+   "type": "tutorial_show",
+   "stage": 16,
+   "day": 6,
+   "scene": "show"
+  },
+  {
+   "t": 582.47,
+   "type": "program_fire",
+   "day": 6,
+   "row": 2,
+   "cue": "perf1",
+   "program": "all",
+   "elapsed": 10.8,
+   "targets": 15
+  },
+  {
+   "t": 582.47,
+   "type": "mark_peak",
+   "day": 6,
+   "species": "monkey",
+   "num": 3,
+   "marks": 4,
+   "elapsed": 10.8
+  },
+  {
+   "t": 583.17,
+   "type": "mark_peak",
+   "day": 6,
+   "species": "beetle",
+   "num": 6,
+   "marks": 3,
+   "elapsed": 11.5
+  },
+  {
+   "t": 583.61,
+   "type": "mark_peak",
+   "day": 6,
+   "species": "monkey",
+   "num": 3,
+   "marks": 5,
+   "elapsed": 11.9
+  },
+  {
+   "t": 586.12,
+   "type": "show_end",
+   "day": 6,
+   "reason": "loose",
+   "dur": 11.9,
+   "satisfaction": 230,
+   "gold": 141,
+   "fameGain": 230,
+   "bestChain": 5,
+   "performs": 106,
+   "angryPerforms": 57,
+   "heatAvg": 74,
+   "heatMax": 93,
+   "tierSec": {
+    "quiet": 0,
+    "clap": 5.6,
+    "cheer": 4.9,
+    "frenzy": 1.3
+   },
+   "looseSpecies": "monkey",
+   "looseNum": 3,
+   "looseX": 573,
+   "looseY": 572
+  },
+  {
+   "t": 591.64,
+   "type": "day_start",
+   "day": 7
+  },
+  {
+   "t": 595.36,
+   "type": "place_choose",
+   "day": 7,
+   "place": "show"
+  },
+  {
+   "t": 608.6,
+   "type": "setup_back",
+   "day": 7,
+   "from": "setup2",
+   "to": "setup1"
+  },
+  {
+   "t": 609.88,
+   "type": "setup_back",
+   "day": 7,
+   "from": "setup1",
+   "to": "place"
+  },
+  {
+   "t": 610.61,
+   "type": "place_choose",
+   "day": 7,
+   "place": "shop"
+  },
+  {
+   "t": 622.22,
+   "type": "shop_buy",
+   "day": 7,
+   "item": "ice",
+   "cost": 20,
+   "goldLeft": 223
+  },
+  {
+   "t": 624.14,
+   "type": "place_choose",
+   "day": 7,
+   "place": "show"
+  },
+  {
+   "t": 633.45,
+   "type": "setup_done",
+   "day": 7,
+   "roster": [
+    {
+     "species": "lily",
+     "num": 2
+    },
+    {
+     "species": "monkey",
+     "num": 1
+    },
+    {
+     "species": "monkey",
+     "num": 2
+    },
+    {
+     "species": "monkey",
+     "num": 3
+    },
+    {
+     "species": "monkey",
+     "num": 4
+    },
+    {
+     "species": "monkey",
+     "num": 5
+    },
+    {
+     "species": "monkey",
+     "num": 6
+    },
+    {
+     "species": "beetle",
+     "num": 1
+    },
+    {
+     "species": "beetle",
+     "num": 2
+    },
+    {
+     "species": "beetle",
+     "num": 3
+    },
+    {
+     "species": "beetle",
+     "num": 4
+    },
+    {
+     "species": "beetle",
+     "num": 5
+    },
+    {
+     "species": "beetle",
+     "num": 6
+    },
+    {
+     "species": "parrot",
+     "num": 1
+    },
+    {
+     "species": "parrot",
+     "num": 2
+    }
+   ],
+   "rows": [
+    {
+     "cue": "perf1",
+     "program": "pep"
+    },
+    {
+     "cue": "mark3",
+     "program": "lull"
+    },
+    {
+     "cue": "mark3",
+     "program": "ice"
+    },
+    {
+     "cue": "",
+     "program": ""
+    }
+   ]
+  },
+  {
+   "t": 633.45,
+   "type": "heat_tier",
+   "day": 7,
+   "tier": "clap",
+   "heat": 60,
+   "elapsed": 0
+  },
+  {
+   "t": 633.76,
+   "type": "tutorial_done",
+   "stage": 16,
+   "day": 7,
+   "took": 51.5
+  },
+  {
+   "t": 633.98,
+   "type": "program_fire",
+   "day": 7,
+   "row": 0,
+   "cue": "perf1",
+   "program": "pep",
+   "elapsed": 0.5,
+   "targets": 0
+  },
+  {
+   "t": 642.72,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "parrot",
+   "num": 2,
+   "marks": 3,
+   "elapsed": 9.3
+  },
+  {
+   "t": 642.72,
+   "type": "program_fire",
+   "day": 7,
+   "row": 1,
+   "cue": "mark3",
+   "program": "lull",
+   "elapsed": 9.3,
+   "targets": 2
+  },
+  {
+   "t": 644.2,
+   "type": "heat_tier",
+   "day": 7,
+   "tier": "cheer",
+   "heat": 76,
+   "elapsed": 10.7
+  },
+  {
+   "t": 646.35,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "parrot",
+   "num": 2,
+   "marks": 3,
+   "elapsed": 12.9
+  },
+  {
+   "t": 646.36,
+   "type": "program_fire",
+   "day": 7,
+   "row": 2,
+   "cue": "mark3",
+   "program": "ice",
+   "elapsed": 12.9,
+   "targets": 11
+  },
+  {
+   "t": 647.55,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "parrot",
+   "num": 2,
+   "marks": 3,
+   "elapsed": 14.1
+  },
+  {
+   "t": 647.86,
+   "type": "program_fire",
+   "day": 7,
+   "row": 0,
+   "cue": "perf1",
+   "program": "pep",
+   "elapsed": 14.4,
+   "targets": 2
+  },
+  {
+   "t": 648.89,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "beetle",
+   "num": 5,
+   "marks": 3,
+   "elapsed": 15.4
+  },
+  {
+   "t": 649.01,
+   "type": "heat_tier",
+   "day": 7,
+   "tier": "frenzy",
+   "heat": 90,
+   "elapsed": 15.6
+  },
+  {
+   "t": 649.36,
+   "type": "program_fire",
+   "day": 7,
+   "row": 1,
+   "cue": "mark3",
+   "program": "lull",
+   "elapsed": 15.9,
+   "targets": 8
+  },
+  {
+   "t": 650.03,
+   "type": "heat_tier",
+   "day": 7,
+   "tier": "cheer",
+   "heat": 82,
+   "elapsed": 16.6
+  },
+  {
+   "t": 651.53,
+   "type": "heat_tier",
+   "day": 7,
+   "tier": "frenzy",
+   "heat": 90,
+   "elapsed": 18.1
+  },
+  {
+   "t": 652.72,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "lily",
+   "num": 2,
+   "marks": 3,
+   "elapsed": 19.3
+  },
+  {
+   "t": 652.73,
+   "type": "program_fire",
+   "day": 7,
+   "row": 2,
+   "cue": "mark3",
+   "program": "ice",
+   "elapsed": 19.3,
+   "targets": 13
+  },
+  {
+   "t": 653.72,
+   "type": "heat_tier",
+   "day": 7,
+   "tier": "cheer",
+   "heat": 86,
+   "elapsed": 20.3
+  },
+  {
+   "t": 654.24,
+   "type": "program_fire",
+   "day": 7,
+   "row": 0,
+   "cue": "perf1",
+   "program": "pep",
+   "elapsed": 20.8,
+   "targets": 0
+  },
+  {
+   "t": 654.49,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "monkey",
+   "num": 1,
+   "marks": 3,
+   "elapsed": 21
+  },
+  {
+   "t": 654.63,
+   "type": "heat_tier",
+   "day": 7,
+   "tier": "frenzy",
+   "heat": 90,
+   "elapsed": 21.2
+  },
+  {
+   "t": 655.2,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "monkey",
+   "num": 3,
+   "marks": 3,
+   "elapsed": 21.8
+  },
+  {
+   "t": 655.26,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "lily",
+   "num": 2,
+   "marks": 3,
+   "elapsed": 21.8
+  },
+  {
+   "t": 655.74,
+   "type": "program_fire",
+   "day": 7,
+   "row": 1,
+   "cue": "mark3",
+   "program": "lull",
+   "elapsed": 22.3,
+   "targets": 7
+  },
+  {
+   "t": 656.73,
+   "type": "heat_tier",
+   "day": 7,
+   "tier": "cheer",
+   "heat": 88,
+   "elapsed": 23.3
+  },
+  {
+   "t": 657.24,
+   "type": "heat_tier",
+   "day": 7,
+   "tier": "frenzy",
+   "heat": 90,
+   "elapsed": 23.8
+  },
+  {
+   "t": 658.67,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "parrot",
+   "num": 2,
+   "marks": 3,
+   "elapsed": 25.2
+  },
+  {
+   "t": 658.68,
+   "type": "program_fire",
+   "day": 7,
+   "row": 2,
+   "cue": "mark3",
+   "program": "ice",
+   "elapsed": 25.2,
+   "targets": 14
+  },
+  {
+   "t": 659.67,
+   "type": "heat_tier",
+   "day": 7,
+   "tier": "cheer",
+   "heat": 88,
+   "elapsed": 26.2
+  },
+  {
+   "t": 659.96,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "beetle",
+   "num": 4,
+   "marks": 3,
+   "elapsed": 26.5
+  },
+  {
+   "t": 660.18,
+   "type": "program_fire",
+   "day": 7,
+   "row": 0,
+   "cue": "perf1",
+   "program": "pep",
+   "elapsed": 26.7,
+   "targets": 0
+  },
+  {
+   "t": 660.38,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "monkey",
+   "num": 2,
+   "marks": 3,
+   "elapsed": 26.9
+  },
+  {
+   "t": 660.45,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "monkey",
+   "num": 4,
+   "marks": 3,
+   "elapsed": 27
+  },
+  {
+   "t": 660.51,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "parrot",
+   "num": 2,
+   "marks": 3,
+   "elapsed": 27.1
+  },
+  {
+   "t": 661.17,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "monkey",
+   "num": 5,
+   "marks": 3,
+   "elapsed": 27.7
+  },
+  {
+   "t": 661.32,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "beetle",
+   "num": 4,
+   "marks": 4,
+   "elapsed": 27.9
+  },
+  {
+   "t": 661.5,
+   "type": "heat_tier",
+   "day": 7,
+   "tier": "frenzy",
+   "heat": 90,
+   "elapsed": 28
+  },
+  {
+   "t": 661.54,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "monkey",
+   "num": 2,
+   "marks": 4,
+   "elapsed": 28.1
+  },
+  {
+   "t": 661.67,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "monkey",
+   "num": 4,
+   "marks": 4,
+   "elapsed": 28.2
+  },
+  {
+   "t": 661.69,
+   "type": "program_fire",
+   "day": 7,
+   "row": 1,
+   "cue": "mark3",
+   "program": "lull",
+   "elapsed": 28.2,
+   "targets": 9
+  },
+  {
+   "t": 662.68,
+   "type": "heat_tier",
+   "day": 7,
+   "tier": "cheer",
+   "heat": 82,
+   "elapsed": 29.2
+  },
+  {
+   "t": 664.91,
+   "type": "heat_tier",
+   "day": 7,
+   "tier": "frenzy",
+   "heat": 90,
+   "elapsed": 31.5
+  },
+  {
+   "t": 665.11,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "monkey",
+   "num": 1,
+   "marks": 3,
+   "elapsed": 31.7
+  },
+  {
+   "t": 665.11,
+   "type": "program_fire",
+   "day": 7,
+   "row": 2,
+   "cue": "mark3",
+   "program": "ice",
+   "elapsed": 31.7,
+   "targets": 11
+  },
+  {
+   "t": 666.11,
+   "type": "heat_tier",
+   "day": 7,
+   "tier": "cheer",
+   "heat": 89,
+   "elapsed": 32.7
+  },
+  {
+   "t": 666.63,
+   "type": "program_fire",
+   "day": 7,
+   "row": 0,
+   "cue": "perf1",
+   "program": "pep",
+   "elapsed": 33.2,
+   "targets": 0
+  },
+  {
+   "t": 667.04,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "lily",
+   "num": 2,
+   "marks": 3,
+   "elapsed": 33.6
+  },
+  {
+   "t": 667.4,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "monkey",
+   "num": 1,
+   "marks": 3,
+   "elapsed": 33.9
+  },
+  {
+   "t": 667.45,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "monkey",
+   "num": 2,
+   "marks": 3,
+   "elapsed": 34
+  },
+  {
+   "t": 667.93,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "monkey",
+   "num": 3,
+   "marks": 3,
+   "elapsed": 34.5
+  },
+  {
+   "t": 668.05,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "beetle",
+   "num": 3,
+   "marks": 3,
+   "elapsed": 34.6
+  },
+  {
+   "t": 668.13,
+   "type": "program_fire",
+   "day": 7,
+   "row": 1,
+   "cue": "mark3",
+   "program": "lull",
+   "elapsed": 34.7,
+   "targets": 8
+  },
+  {
+   "t": 670.54,
+   "type": "heat_tier",
+   "day": 7,
+   "tier": "frenzy",
+   "heat": 90,
+   "elapsed": 37.1
+  },
+  {
+   "t": 672.02,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "beetle",
+   "num": 4,
+   "marks": 3,
+   "elapsed": 38.6
+  },
+  {
+   "t": 672.03,
+   "type": "program_fire",
+   "day": 7,
+   "row": 2,
+   "cue": "mark3",
+   "program": "ice",
+   "elapsed": 38.6,
+   "targets": 14
+  },
+  {
+   "t": 673.46,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "beetle",
+   "num": 4,
+   "marks": 3,
+   "elapsed": 40
+  },
+  {
+   "t": 673.53,
+   "type": "program_fire",
+   "day": 7,
+   "row": 0,
+   "cue": "perf1",
+   "program": "pep",
+   "elapsed": 40.1,
+   "targets": 0
+  },
+  {
+   "t": 674.5,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "beetle",
+   "num": 2,
+   "marks": 3,
+   "elapsed": 41
+  },
+  {
+   "t": 674.62,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "beetle",
+   "num": 6,
+   "marks": 3,
+   "elapsed": 41.2
+  },
+  {
+   "t": 674.78,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "beetle",
+   "num": 4,
+   "marks": 4,
+   "elapsed": 41.3
+  },
+  {
+   "t": 674.87,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "beetle",
+   "num": 3,
+   "marks": 3,
+   "elapsed": 41.4
+  },
+  {
+   "t": 674.88,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "lily",
+   "num": 2,
+   "marks": 3,
+   "elapsed": 41.4
+  },
+  {
+   "t": 675.04,
+   "type": "program_fire",
+   "day": 7,
+   "row": 1,
+   "cue": "mark3",
+   "program": "lull",
+   "elapsed": 41.6,
+   "targets": 11
+  },
+  {
+   "t": 676.03,
+   "type": "heat_tier",
+   "day": 7,
+   "tier": "cheer",
+   "heat": 83,
+   "elapsed": 42.6
+  },
+  {
+   "t": 676.39,
+   "type": "heat_tier",
+   "day": 7,
+   "tier": "frenzy",
+   "heat": 90,
+   "elapsed": 42.9
+  },
+  {
+   "t": 678.22,
+   "type": "mark_peak",
+   "day": 7,
+   "species": "lily",
+   "num": 2,
+   "marks": 3,
+   "elapsed": 44.8
+  },
+  {
+   "t": 678.23,
+   "type": "program_fire",
+   "day": 7,
+   "row": 2,
+   "cue": "mark3",
+   "program": "ice",
+   "elapsed": 44.8,
+   "targets": 15
+  },
+  {
+   "t": 678.46,
+   "type": "show_end",
+   "day": 7,
+   "reason": "time",
+   "dur": 45,
+   "satisfaction": 1734,
+   "gold": 353,
+   "fameGain": 1734,
+   "bestChain": 8,
+   "performs": 387,
+   "angryPerforms": 281,
+   "heatAvg": 82,
+   "heatMax": 97,
+   "tierSec": {
+    "quiet": 0,
+    "clap": 10.7,
+    "cheer": 16.6,
+    "frenzy": 17.7
+   }
+  },
+  {
+   "t": 682.78,
+   "type": "game_end",
+   "fame": 2867,
+   "stars": 3,
+   "goldEarned": 956,
+   "bestChain": 8,
+   "days": [
+    "dungeon",
+    "show",
+    "dungeon",
+    "show",
+    "dungeon",
+    "show",
+    "show"
+   ],
+   "bankSize": 16
+  }
+ ]
+}

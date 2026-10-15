@@ -1,6 +1,8 @@
 # 音效 / 音樂素材來源
 
-授權統計: CC0 56 項(Kenney 45 檔 + OpenGameArt 3 檔 + OpenGameArt 8 段內嵌)、CC BY 4.0 7 項(背景音樂 5 檔 + 觀眾歡呼 2 檔)。另有 1 個程式產生的音效(heat_warn, 無外部素材, 不列)。
+授權統計: CC0 57 項(Kenney 45 檔 + OpenGameArt 3 檔 + OpenGameArt 9 段內嵌)、CC BY 4.0 7 項(背景音樂 5 檔 + 觀眾歡呼 2 檔)。另有 1 個程式產生的音效(heat_warn, 無外部素材, 不列)。
+
+打磨第 4 輪異動: 新增內嵌段 clock_tick(bart 的 CC0 時鐘單拍)。keg_fuse 素材不變, 只把播放長度從 0.6 秒改成 0.95 秒。
 
 打磨第 3 輪異動: 拿掉 sfx_upgrade.ogg(個別升級移除)與長鞭普攻的內嵌段 attack_whip(長鞭移除); 新增 sfx_crowd_cheer.mp3、sfx_crowd_frenzy.mp3、sfx_crowd_unrest.ogg 與內嵌段 exit_prompt、crowd_clap。
 
@@ -60,7 +62,7 @@ Licensed under CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
 | sfx_kill.ogg | kill | https://kenney.nl/assets/rpg-audio (handleCoins2.ogg) | Kenney | CC0 | 無 |
 | sfx_bush_hide.ogg | bush_hide | https://kenney.nl/assets/impact-sounds (footstep_grass_001.ogg) | Kenney | CC0 | 無 |
 | sfx_fruit_drop.ogg | fruit_drop | https://kenney.nl/assets/impact-sounds (impactSoft_medium_001.ogg) | Kenney | CC0 | 無 |
-| sfx_keg_fuse.ogg | keg_fuse | https://kenney.nl/assets/sci-fi-sounds (thrusterFire_000.ogg) | Kenney | CC0 | 檔案未剪; 播放時只放前 0.6 秒並淡出 |
+| sfx_keg_fuse.ogg | keg_fuse | https://kenney.nl/assets/sci-fi-sounds (thrusterFire_000.ogg) | Kenney | CC0 | 檔案未剪(原長 5.0 秒); 播放時只放前 0.95 秒並淡出 |
 | sfx_keg_blast.ogg | keg_blast | https://kenney.nl/assets/sci-fi-sounds (explosionCrunch_000.ogg) | Kenney | CC0 | 無 |
 | sfx_boom_low.ogg | keg_blast、loose(低頻疊層) | https://kenney.nl/assets/sci-fi-sounds (lowFrequency_explosion_001.ogg) | Kenney | CC0 | 無 |
 | sfx_wall_crack.ogg | wall_crack、wall_break(疊層) | https://kenney.nl/assets/impact-sounds (impactMining_000.ogg) | Kenney | CC0 | 無 |
@@ -107,6 +109,8 @@ Licensed under CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
 | exit_prompt | exit_prompt | https://opengameart.org/content/doorbell (doorbell.wav) | frosty ham | CC0 | 混成單聲道、48 kHz 降為 22.05 kHz、剪掉尾端 −50 dB 以下、淡出 0.15 秒、峰值正規化 −1 dBFS(0.93 秒, C5 → A4 兩音) |
 | crowd_clap | crowd_clap(循環) | https://opengameart.org/content/applause-in-a-large-hall-or-church (applause-clapping-church-crowd-immersive.wav) | eXpl0it3r | CC0 | 從掌聲漸弱的尾段(33.0~36.8 秒)切出 16 個單拍, 以 5 人各自節奏、拍一陣停一下的方式重新散佈成 6 秒首尾相接的循環(約每秒 10 拍), 單聲道 22.05 kHz, 峰值正規化 −3 dBFS |
 
+| clock_tick | clock_tick | https://opengameart.org/content/ticking-clock (ticks.zip 內的 ticking clock - tick1.wav) | bart | CC0 | 剪掉開頭 32 毫秒靜音、取 0.135 秒、淡入 1 毫秒、淡出 20 毫秒, 混成單聲道 44.1 kHz 16-bit, 峰值正規化 −1 dBFS。作者表示樂見署名但不強制 |
+
 ## 核對
 
-assets/ 共 55 個檔 = 背景音樂 5 列 + 觀眾歡呼 2 列 + 短音效 48 列; 另 8 段內嵌於 sound.js(heat_warn 為程式產生, 不在此表)。沒有未登記的檔。
+assets/ 共 55 個檔 = 背景音樂 5 列 + 觀眾歡呼 2 列 + 短音效 48 列; 另 9 段內嵌於 sound.js(heat_warn 為程式產生, 不在此表)。沒有未登記的檔。

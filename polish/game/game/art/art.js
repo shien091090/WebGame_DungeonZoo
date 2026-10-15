@@ -1,4 +1,4 @@
-// 來馬戲團看一點大場面(打磨版第 3 輪)— 美術(Canvas 2D 幾何繪製, 無外部資源)
+// 來馬戲團看一點大場面(打磨版第 4 輪)— 美術(Canvas 2D 幾何繪製, 無外部資源)
 // 契約見 style.md / interface.json。全域物件 window.Art, 不用 ES module。
 (function () {
   'use strict';
@@ -842,7 +842,8 @@
   function drawKeg(ctx, s) {
     // 炸掉後 RD 不再呼叫(本輪拿掉 gone 焦痕); 表外 mode 一律畫成 ok
     var mode = S(s.mode, 'ok') === 'fuse' ? 'fuse' : 'ok';
-    var p = mode === 'fuse' ? p01(s.fuseT, N(s.fuseDur, 0.6) || 0.6) : 0;
+    // 引信總長由 fuseDur 傳(本輪 1.0); 所有動畫都用 fuseT / fuseDur 比例, 不寫死秒數
+    var p = mode === 'fuse' ? p01(s.fuseT, N(s.fuseDur, 1.0) || 1.0) : 0;
     var R = Math.max(1, N(s.radius, 130) || 130);
     ctx.translate(N(s.x, 0), N(s.y, 0));
     if (mode === 'fuse') {
@@ -911,7 +912,7 @@
   // ───────────── 出口(鏡湖 / 鐘塔 / 雪境各一) ─────────────
   // 60×60 格內: 地板 + 石砌拱門框 + 門洞裡往上的台階與外頭的天光 + 白色圓頭往上箭頭(= 往外走)
   // 和牆(整塊實心)、傳送陣(地上的環 + 點數)、草叢(圓葉)分開: 只有出口是「拱門 + 亮的門洞 + 箭頭」
-  // armed false(剛選留下、還沒走開 60): 門洞變暗、箭頭變灰、門框不發光 → 看得出暫時不會再問
+  // armed false(剛選留下、還沒走開 150): 門洞變暗、箭頭變灰、門框不發光 → 看得出暫時不會再問
   var EXIT_SKY = '#ffeebb';
   function drawExit(ctx, s) {
     var d = dunKey(s.dungeon), armed = B(s.armed);
@@ -1837,8 +1838,8 @@
     rr(ctx, -198, -17, 396, 34, 10); ctx.strokeStyle = fr ? 'rgba(255,59,74,' + (0.5 + 0.5 * pulse).toFixed(3) + ')' : '#3a4256'; ctx.lineWidth = fr ? 2 + 1 * pulse : 1.5; ctx.stroke();
     T(ctx, '熱度', -188, 1, { size: 15, align: 'left', color: P.textDim });
     T(ctx, Math.round(heat) + '%', -150, 1, { size: 23, align: 'left', color: tc, maxW: 60 });
-    // 橫條 x −84 ~ 100(184 寬)
-    var bx = -84, bw = 184, by = -6, bh = 12;
+    // 橫條 x −84 ~ 52(136 寬; 本輪讓出右端給最高標記 4 格)
+    var bx = -84, bw = 136, by = -6, bh = 12;
     var segs = [[0, 50, 'quiet'], [50, 75, 'clap'], [75, 90, 'cheer'], [90, 100, 'frenzy']];
     rr(ctx, bx - 2, by - 2, bw + 4, bh + 4, 4); ctx.fillStyle = '#0a0d14'; ctx.fill();
     ctx.save(); ctx.globalAlpha *= 0.22;
@@ -1853,9 +1854,53 @@
     for (var k = 0; k < 3; k++) { var tx = bx + bw * [50, 75, 90][k] / 100; ctx.fillRect(tx - 0.75, by - 4, 1.5, bh + 8); }
     rr(ctx, bx - 2, by - 2, bw + 4, bh + 4, 4); ctx.strokeStyle = 'rgba(230,236,248,0.55)'; ctx.lineWidth = 1; ctx.stroke();
     // 段名(換段時自己再多彈一點)
-    ctx.save(); ctx.translate(152, 1); ctx.scale(1 + 0.2 * bq, 1 + 0.2 * bq);
-    T(ctx, TIER[tier].name, 0, 0, { size: 21, color: tc, maxW: 82 });
+    ctx.save(); ctx.translate(92, 1); ctx.scale(1 + 0.2 * bq, 1 + 0.2 * bq);
+    T(ctx, TIER[tier].name, 0, 0, { size: 21, color: tc, maxW: 54 });
     ctx.restore();
+    // 最高標記(場上標記最多那隻): 細分隔線 + 4 顆圓點, 長相 = 魔物頭上的失控標記(橘點白邊), 同一本字典
+    // 1~2 顆亮橘; ≥ 3 顆全部轉危險紅並閃(週期 0.5 秒, 讀 t); 沒亮的是暗底灰邊空位(空位本身在講「上限 4 格, 再一個就失控」)
+    var mm = clamp(Math.floor(N(s.maxMarks, 0)), 0, 4), hot = mm >= 3;
+    var blinkOn = hot ? ((t % 0.5) < 0.25) : true;
+    ctx.fillStyle = '#3a4256'; ctx.fillRect(132, -11, 1.5, 22);
+    for (var m = 0; m < 4; m++) {
+      var mx = 149 + 13 * m;
+      circle(ctx, mx, 1, 5);
+      if (m < mm) {
+        ctx.fillStyle = hot ? (blinkOn ? P.danger : '#7a1a24') : P.ignite; ctx.fill();
+        ctx.strokeStyle = hot && !blinkOn ? '#ff9aa4' : '#ffffff'; ctx.lineWidth = 1.2; ctx.stroke();
+      } else {
+        ctx.fillStyle = '#0a0d14'; ctx.fill(); ctx.strokeStyle = 'rgba(230,236,248,0.35)'; ctx.lineWidth = 1; ctx.stroke();
+      }
+    }
+  }
+  // 表演時鐘(新): 48×48 圓, 中心 (x,y)。剩餘比例 = 從 12 點方向順時針張開的一塊扇形(時間越少扇形越小, 縮的方向是順時針);
+  // 已過去的部分畫暗。正中間一塊深色圓墊 + 粗體秒數 ceil(timeLeft), 字壓在扇形之上也讀得到。
+  // timeLeft ≤ 10: 扇形與數字轉紅。running 且剛跨過整數秒 0.15 秒內: 整個放大到 1.1 倍再回來(sin 曲線, 最大 53×53)
+  function drawShowClock(ctx, s) {
+    var tl = Math.max(0, N(s.timeLeft, 0)), tm = N(s.timeMax, 0);
+    var f = tm > 0 ? clamp(tl / tm, 0, 1) : 0;
+    var red = tl <= 10;
+    var sec = Math.ceil(tl);
+    var sc = 1;
+    if (B(s.running) && tl > 0) { var since = sec - tl; if (since < 0.15) sc = 1 + 0.1 * Math.sin(Math.PI * since / 0.15); }
+    ctx.translate(N(s.x, 900), N(s.y, 25)); ctx.scale(sc, sc);
+    var R = 22, col = red ? P.danger : '#7ab0ff';
+    // 鐘面底(已過去 = 暗)
+    circle(ctx, 0, 0, R); ctx.fillStyle = '#0a0d14'; ctx.fill();
+    circle(ctx, 0, 0, R - 2); ctx.fillStyle = '#1e2433'; ctx.fill();
+    // 剩餘扇形
+    if (f > 0) {
+      ctx.beginPath(); ctx.moveTo(0, 0);
+      if (f >= 1) ctx.arc(0, 0, R - 2, 0, TAU); else ctx.arc(0, 0, R - 2, -Math.PI / 2, -Math.PI / 2 + TAU * f, false);
+      ctx.closePath(); ctx.fillStyle = col; ctx.fill();
+    }
+    // 12 點起點短刻度
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(-1, -R + 1, 2, 5);
+    // 外框
+    circle(ctx, 0, 0, R); ctx.strokeStyle = red ? '#ffd0d4' : 'rgba(230,236,248,0.8)'; ctx.lineWidth = 2; ctx.stroke();
+    // 中央深色圓墊 + 秒數
+    circle(ctx, 0, 0, 13); ctx.fillStyle = 'rgba(10,13,20,0.88)'; ctx.fill();
+    T(ctx, String(sec), 0, 1, { size: sec >= 100 ? 14 : 18, color: red ? '#ff6b78' : '#ffffff', maxW: 24 });
   }
   // 沸騰警示: 畫面四周 40px 紅色脈動邊(由外往內淡出), 週期 0.8 秒; 不碰場地中央
   function drawHeatAlert(ctx, s) {
@@ -2208,12 +2253,10 @@
     var tmax = N(s.timeMax, 0), tl = N(s.timeLeft, 0);
     var msg = S(s.message, '');
     if (show) {
-      // 表演: 計時移到熱度表右邊(x 872~988, 上: 時間條 + 秒數; 下: 訊息小字)
-      if (tmax > 0) {
-        timeBar(ctx, 872, 7, 70, 14, tl, tmax);
-        T(ctx, Math.ceil(Math.max(0, tl)) + ' 秒', 948, 14, { size: 16, align: 'left', color: tl / tmax < 0.2 ? '#ff8a8a' : P.text, maxW: 40 });
-      }
-      if (msg) T(ctx, msg, 930, 37, { size: 14, color: P.textDim, maxW: 116 });
+      // 表演: 倒數改由 drawShowClock 畫在 (900,25)(x 872~924 留給時鐘, 這裡不畫時間條與秒數, 就算有傳 timeLeft 也不畫);
+      // message 小字靠左畫在 x 932~994
+      // 字太長會先縮字(最小 9px), 仍超出就剪在 994, 不碰右邊的金幣
+      if (msg) { ctx.save(); ctx.beginPath(); ctx.rect(932, 0, 62, 50); ctx.clip(); T(ctx, msg, 932, 25, { size: 14, align: 'left', color: P.textDim, maxW: 62 }); ctx.restore(); }
       return;
     }
     if (tmax > 0) {
@@ -2243,7 +2286,9 @@
       if (xl > 0) { var f = p01(xl, xm); ctx.beginPath(); ctx.moveTo(kx, ky); ctx.arc(kx, ky, 11, -Math.PI / 2, -Math.PI / 2 + TAU * f); ctx.closePath(); ctx.fillStyle = 'rgba(10,13,20,0.75)'; ctx.fill(); }
       T(ctx, 'X', kx, ky + 1, { size: 15, color: xl > 0 ? P.textDim : '#ffffff' });
     }
-    if (msg) T(ctx, msg, 1040, 74, { size: 19, color: (msg.indexOf('繞') >= 0 || msg.indexOf('站住') >= 0) ? P.capture : '#d8e0ee', maxW: 440 });
+    // 訊息色: 捕捉相關 = 捕捉萊姆; 「爆炸桶要爆了 快跑!」= 危險紅(和預警圈同一個意思); 其他 = 淡白
+    var mcol = msg.indexOf('爆炸桶') >= 0 ? '#ff6b78' : ((msg.indexOf('繞') >= 0 || msg.indexOf('站住') >= 0) ? P.capture : '#d8e0ee');
+    if (msg) T(ctx, msg, 1040, 74, { size: 19, color: mcol, maxW: 440 });
   }
 
   // ───────────── 開始畫面 ─────────────
@@ -2490,9 +2535,10 @@
     var keys = (Array.isArray(s.keys) ? s.keys : []).filter(function (k) { return KEY_OK[k]; }).slice(0, 6);
     var pressed = Array.isArray(s.pressed) ? s.pressed : [];
     var text = S(s.text, '');
-    // 附註(note): 比主泡泡小一號(296×56, 在 300×60 內)、顏色較淡(淡紙底 + 灰墨細框 + 灰字), 不畫按鍵
+    // 附註(note): 單行扁泡泡(338×38, 含 2px 框線剛好在 noteBubble 340×40 內)、顏色較淡(淡紙底 + 灰墨細框 + 灰字), 不畫按鍵;
+    // RD 固定傳 bx,by = (186,26)、side up: 泡泡整個在 HUD 帶 y 6~46 內, 尾巴從下緣朝下指向繩列正中央, 根部 x 跟著尖端 x
     var note = S(s.kind, 'main') === 'note';
-    var HW = note ? 148 : 158, HH = note ? 28 : 46;
+    var HW = note ? 169 : 158, HH = note ? 19 : 46;
     var INK = note ? '#5a6274' : P.tutorInk, BG = note ? 'rgba(255,250,236,0.92)' : P.tutorBg, LW = note ? 2 : 3;
     if (note) keys = [];
     // 彈出: 以尾巴根部為錨, 0.6 → 1 帶一點回彈
@@ -2500,10 +2546,10 @@
     var sc = ap >= 1 ? 1 : 0.6 + 0.4 * (1 - Math.pow(1 - ap, 3)); // 不過衝: 全程不超出 320×96
     var alpha = done && dq > 0.65 ? Math.max(0, 1 - (dq - 0.65) / 0.35) : 1;
     ctx.globalAlpha *= alpha * (ap >= 1 ? 1 : 0.4 + 0.6 * ap);
-    var TB = HW - 28; // 尾巴根部可移動範圍(bx ± 130; 附註 ± 120)
+    var TB = note ? HW - 22 : HW - 28; // 尾巴根部可移動範圍(主 bx ± 130; 附註 bx ± 147 → 附註根部 x 幾乎都直接等於尖端 x)
     ctx.translate(clamp(tx, bx - TB, bx + TB), baseY); ctx.scale(sc, sc); ctx.translate(-clamp(tx, bx - TB, bx + TB), -baseY);
     // 尾巴: 從泡泡邊緣指向目標(停在目標前 6px, 不蓋住目標)
-    var tb = clamp(tx, bx - TB, bx + TB), tw0 = note ? 10 : 13;
+    var tb = clamp(tx, bx - TB, bx + TB), tw0 = note ? 8 : 13;
     var dxv = tx - tb, dyv = ty - baseY, dl = Math.sqrt(dxv * dxv + dyv * dyv) || 1;
     var tipX = tx - dxv / dl * 6, tipY = ty - dyv / dl * 6;
     if ((up && tipY < baseY + 6) || (!up && tipY > baseY - 6)) { tipX = tb; tipY = baseY + (up ? 14 : -14); }
@@ -2512,13 +2558,14 @@
     tail(); ctx.fillStyle = BG; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = LW; ctx.stroke();
     // 泡泡本體(主 316×92 / 附註 296×56)
     ctx.save(); ctx.shadowColor = 'rgba(0,0,0,' + (note ? 0.3 : 0.45) + ')'; ctx.shadowBlur = note ? 6 : 10;
-    rr(ctx, bx - HW, by - HH, HW * 2, HH * 2, note ? 12 : 16); ctx.fillStyle = BG; ctx.fill(); ctx.restore();
-    rr(ctx, bx - HW, by - HH, HW * 2, HH * 2, note ? 12 : 16); ctx.strokeStyle = INK; ctx.lineWidth = LW; ctx.stroke();
+    rr(ctx, bx - HW, by - HH, HW * 2, HH * 2, note ? 10 : 16); ctx.fillStyle = BG; ctx.fill(); ctx.restore();
+    rr(ctx, bx - HW, by - HH, HW * 2, HH * 2, note ? 10 : 16); ctx.strokeStyle = INK; ctx.lineWidth = LW; ctx.stroke();
     tail(); ctx.fillStyle = BG; ctx.fill(); // 蓋掉接縫
-    if (done) { rr(ctx, bx - HW, by - HH, HW * 2, HH * 2, note ? 12 : 16); ctx.fillStyle = 'rgba(47,176,96,' + (0.18 * (1 - dq)).toFixed(2) + ')'; ctx.fill(); }
+    if (done) { rr(ctx, bx - HW, by - HH, HW * 2, HH * 2, note ? 10 : 16); ctx.fillStyle = 'rgba(47,176,96,' + (0.18 * (1 - dq)).toFixed(2) + ')'; ctx.fill(); }
     // 文字 + 按鍵
     var hasK = keys.length > 0;
-    T(ctx, text, bx, hasK ? by - 21 : by, { size: note ? 15 : 20, color: note ? '#3a4254' : P.tutorInk, stroke: false, maxW: note ? (done ? 236 : 280) : (done ? 250 : 296) });
+    // 附註完成時字往左讓 14px、縮到 270 寬, 讓右端的打勾章不壓字
+    T(ctx, text, note && done ? bx - 14 : bx, hasK ? by - 21 : by, { size: note ? 15 : 20, color: note ? '#3a4254' : P.tutorInk, stroke: false, maxW: note ? (done ? 270 : 318) : (done ? 250 : 296) });
     if (hasK) {
       var gap = 8, tw = keys.length * 34 + (keys.length - 1) * gap, k0 = bx - tw / 2 + 17;
       for (var i = 0; i < keys.length; i++) {
@@ -2594,6 +2641,7 @@
     drawFence: wrap(drawFence),
     drawVisitor: wrap(drawVisitor),
     drawHeatMeter: wrap(drawHeatMeter),
+    drawShowClock: wrap(drawShowClock),
     drawHeatAlert: wrap(drawHeatAlert),
     drawLooseFx: wrap(drawLooseFx),
     drawShowResult: wrap(drawShowResult),

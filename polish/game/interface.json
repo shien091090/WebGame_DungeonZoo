@@ -583,11 +583,26 @@
         "tier",
         "t",
         "tierT",
-        "tierDur"
+        "tierDur",
+        "maxMarks"
       ],
       "size": [
         420,
         42
+      ]
+    },
+    {
+      "name": "drawShowClock",
+      "state": [
+        "x",
+        "y",
+        "timeLeft",
+        "timeMax",
+        "running"
+      ],
+      "size": [
+        48,
+        48
       ]
     },
     {
@@ -777,6 +792,10 @@
           320,
           96
         ],
+        "noteBubble": [
+          340,
+          40
+        ],
         "keyCap": [
           34,
           34
@@ -786,8 +805,8 @@
   ],
   "notes": {
     "x,y": "皆為物件中心點(畫面座標; 地下城已由 RD 換算成畫面座標 = 世界 − 鏡頭 + (0, 100), 畫面外的不呼叫); 例外: drawButton 的 x,y 為左上角、w,h 為寬高",
-    "固定版位": "drawTitle、drawCalendar、drawIntermission 畫滿全畫面 1280×720(呼叫時不畫 HUD); drawPickerPanel 固定畫在 x 760~1220, 標題列 y 60~110, 第 i 行(i 從 0 起算)y 110 + 44i ~ 154 + 44i(由美術依 options 長度畫, 最多 13 行, 最下緣 y 682); drawDungeonResult、drawShowResult 固定畫在畫面中央 (640, 390), 760×460; drawResultPanel 固定畫在 (640, 390), 800×560; drawExitPrompt 固定: 全畫面壓暗 1280×720 + 面板 560×240 中心 (640, 400), 「離開」「留下」兩鈕各 180×56 中心 (520, 470) / (760, 470)(按鈕由 drawExitPrompt 自己畫, 不另呼叫 drawButton); drawHeatAlert 畫滿全畫面 1280×720 的四周邊框(只畫邊緣約 40 像素內, 不蓋場地中央); drawHeatMeter 由 RD 固定傳 (640, 25), 420×42, 在 HUD 帶內(drawHud 在 show phase 時中段 x 420~860 留白不畫東西); drawHud 固定畫在畫面頂端全寬, phase 為 dungeon 時高 100、其他 phase 高 50; 地下城 HUD 第 2 行固定版位: 捕獸繩列第 k 條(k 從 0 起算)圖示中心 (40 + 22k, 74)、整列範圍 x 20~260、y 56~92(新手教學第 6 階段附註泡泡的尾巴指向 (130, 92)), 武器框 x 634~814、y 56~92, 收服列「收服」小字中心 (300, 74)、第 k 隻(k 從 0 起算)頭像 26×26 中心 (346 + 28k, 74)(k = 0~9, 範圍 x 280~620、y 56~92), 按鍵提示文字中心 (1040, 74), 不再畫心(心改由 drawHeartBar 畫在馴獸師頭上); drawLooseFx 的「失控!」橫幅固定畫在 (640, 300), 600×140, 另在 x,y(失控那隻)畫爆發特效 160×160; 其餘有 x,y 的元件依 spec 數值表版面由 RD 傳入(drawBannerFx 固定傳 (640, 180), drawShopDetail 傳 (640, 570), drawMonsterInfo 只在布置第 1 步, 傳 (480, 555), 開放 / 上架提示是 drawFloatText kind unlock 傳 (640, 110), drawHeartBar 傳 (馴獸師 x, 馴獸師 y − 46))",
-    "文字歸屬": "新手教學(drawTutorial)以外畫面上所有文字都由美術在對應的 draw 函式裡畫, RD 不另外畫字。drawTitle 畫遊戲名「來馬戲團看一點大場面」與閃爍的「按 Z 開始」; drawCalendar 畫「第 N 天」(day 0 畫「見習日」)、「共 dayMax 天」、7 格天數的數字 1~7; drawIntermission 畫大字「見習表演」、「把剛抓到的火柴猴帶上台表演給觀眾看!」、三步圖解文字「① 選誰上台」「② 排暗號節目單: 什麼時候 → 演什麼」「③ 開演, 看牠們表演賺觀眾滿意度」, ready 為 true 時畫閃爍的「按 Z 繼續」(都是固定字串, 美術直接寫死); drawPlaceCard 畫場所名(地下城 / 表演 / 商店)與 note 字串; drawDungeonCard 畫地下城名稱、住的兩種魔物名、condition 字串(未開放時)或「已開放」; drawDungeonResult 畫標題(依 reason:「時間到」「倒下了」「提早收工」「見習完成!」)、「收服」與頭像列(沒有時畫「這趟沒有收服」)、「打倒 N 隻」「金幣 +N」與「按 Z 繼續」; drawBankSlot 畫「N 號」(不畫等級、不畫效果標籤); drawMonsterInfo 畫「種類名 N 號」、desc(含〔 〕標籤)、「上台 total / totalMax」(不畫等級與升級面板); drawExitPrompt 畫「是否離開地下城?」、小字「會直接進入結算」、兩鈕的「離開」「留下」(固定字串, 美術寫死); drawHeatMeter 畫「熱度」、「N%」(N = round(heat))與段名(quiet「安靜」、clap「掌聲」、cheer「歡呼」、frenzy「沸騰!」); drawCueRow 的 row 樣式畫序號「第 N 個」、暗號格裡的「當」與暗號名、節目格裡的「演」與節目名(空格畫「—」), locked 時改畫鎖頭與「見習後開放」; mini 樣式不畫字, 只畫暗號圖示 → 節目圖示(空格畫空框)、等待進度條與換列等待的「…」; drawPickerPanel 畫標題(layer 為 cue 時「什麼時候?」、program 時「演什麼?」)與每行的 name、desc; drawBannerFx 畫「暗號名 → 節目名!」; drawLooseFx 畫「失控!」; drawShowResult 畫標題(loose 為 true:「失控! 表演提前結束」並畫「剩 N 秒」; 否則「收場!」; tutorial 為 true 時標題前加「見習」)、「觀眾滿意度 N」、「金幣 +N」與「名聲 +N」(N 為跳動中的數字)、「最長連鎖 N」與「按 Z 繼續」(跳完才畫); drawShopTab 畫分頁名(角色 / 暗號 / 節目); drawShopItem 依 item 畫名稱、說明(spec 第 84 條與第 58、59 條表的「說明」欄)、價格或「已擁有」「裝備中」, fameLocked 時改畫「名聲 N 解鎖」; drawShopDetail 畫 lines 的每一行; drawButton 畫 label; drawFloatText 畫 text; drawCaptureRing 畫「準備捕捉」; drawResultPanel 畫所有結算數字、7 天行程、怪物庫與「按 Z 重來」; drawHud 畫天數(day 0 畫「見習日」, 其他「第 N / dayMax 天」)、金幣、名聲、計時、地下城名、繩、武器、收服列的「收服」小字與超過 10 隻時的「+N」、觀眾滿意度(show 時, 字「觀眾滿意度 N」)、歡呼中的「歡呼 ×1.5」與 message 字串。drawHeartBar、drawExit、drawHeatAlert、drawVisitor、drawPortal、drawCrackWall、drawHazard、drawWeaponFx、drawKeg、drawFountain、drawFruitTree、drawFruit、drawBlast、drawScrollMark 不畫字",
+    "固定版位": "drawTitle、drawCalendar、drawIntermission 畫滿全畫面 1280×720(呼叫時不畫 HUD); drawPickerPanel 固定畫在 x 760~1220, 標題列 y 60~110, 第 i 行(i 從 0 起算)y 110 + 44i ~ 154 + 44i(由美術依 options 長度畫, 最多 13 行, 最下緣 y 682); drawDungeonResult、drawShowResult 固定畫在畫面中央 (640, 390), 760×460; drawResultPanel 固定畫在 (640, 390), 800×560; drawExitPrompt 固定: 全畫面壓暗 1280×720 + 面板 560×240 中心 (640, 400), 「離開」「留下」兩鈕各 180×56 中心 (520, 470) / (760, 470)(按鈕由 drawExitPrompt 自己畫, 不另呼叫 drawButton); drawHeatAlert 畫滿全畫面 1280×720 的四周邊框(只畫邊緣約 40 像素內, 不蓋場地中央); drawHeatMeter 由 RD 固定傳 (640, 25), 420×42, 在 HUD 帶內(drawHud 在 show phase 時中段 x 420~860 留白不畫東西); drawShowClock 由 RD 固定傳 (900, 25), 48×48 圓形, 在 HUD 帶內(drawHud 在 show phase 時不再畫時間條與秒數, x 872~924 留給時鐘, message 小字改畫在 x 932~994 靠左); drawHud 固定畫在畫面頂端全寬, phase 為 dungeon 時高 100、其他 phase 高 50; 地下城 HUD 第 2 行固定版位: 捕獸繩列第 k 條(k 從 0 起算)圖示中心 (40 + 22k, 74)、整列範圍 x 20~260、y 56~92(新手教學第 6 階段附註泡泡改放在 HUD 第 1 行、繩列正上方: 泡泡中心 (186, 26)、340×40, 尾巴尖端 (40 + 11 ×(ropeMax − 1), 60) = 繩列正中央的正上方), 武器框 x 634~814、y 56~92, 收服列「收服」小字中心 (300, 74)、第 k 隻(k 從 0 起算)頭像 26×26 中心 (346 + 28k, 74)(k = 0~9, 範圍 x 280~620、y 56~92), 按鍵提示文字中心 (1040, 74), 不再畫心(心改由 drawHeartBar 畫在馴獸師頭上); drawLooseFx 的「失控!」橫幅固定畫在 (640, 300), 600×140, 另在 x,y(失控那隻)畫爆發特效 160×160; 其餘有 x,y 的元件依 spec 數值表版面由 RD 傳入(drawBannerFx 固定傳 (640, 180), drawShopDetail 傳 (640, 570), drawMonsterInfo 只在布置第 1 步, 傳 (480, 555), 開放 / 上架提示是 drawFloatText kind unlock 傳 (640, 110), drawHeartBar 傳 (馴獸師 x, 馴獸師 y − 46))",
+    "文字歸屬": "新手教學(drawTutorial)以外畫面上所有文字都由美術在對應的 draw 函式裡畫, RD 不另外畫字。drawTitle 畫遊戲名「來馬戲團看一點大場面」與閃爍的「按 Z 開始」; drawCalendar 畫「第 N 天」(day 0 畫「見習日」)、「共 dayMax 天」、7 格天數的數字 1~7; drawIntermission 畫大字「見習表演」、「把剛抓到的火柴猴帶上台表演給觀眾看!」、三步圖解文字「① 選誰上台」「② 排暗號節目單: 什麼時候 → 演什麼」「③ 開演, 看牠們表演賺觀眾滿意度」, ready 為 true 時畫閃爍的「按 Z 繼續」(都是固定字串, 美術直接寫死); drawPlaceCard 畫場所名(地下城 / 表演 / 商店)與 note 字串; drawDungeonCard 畫地下城名稱、住的兩種魔物名、condition 字串(未開放時)或「已開放」; drawDungeonResult 畫標題(依 reason:「時間到」「倒下了」「提早收工」「見習完成!」)、「收服」與頭像列(沒有時畫「這趟沒有收服」)、「打倒 N 隻」「金幣 +N」與「按 Z 繼續」; drawBankSlot 畫「N 號」(不畫等級、不畫效果標籤); drawMonsterInfo 畫「種類名 N 號」、desc(含〔 〕標籤)、「上台 total / totalMax」(不畫等級與升級面板); drawExitPrompt 畫「是否離開地下城?」、小字「會直接進入結算」、兩鈕的「離開」「留下」(固定字串, 美術寫死); drawHeatMeter 畫「熱度」、「N%」(N = round(heat))與段名(quiet「安靜」、clap「掌聲」、cheer「歡呼」、frenzy「沸騰!」), 最高標記 4 格不畫字(只畫格子); drawShowClock 畫時鐘正中間的秒數 ceil(timeLeft)(只寫數字, 不寫「秒」); drawCueRow 的 row 樣式畫序號「第 N 個」、暗號格裡的「當」與暗號名、節目格裡的「演」與節目名(空格畫「—」), locked 時改畫鎖頭與「見習後開放」; mini 樣式不畫字, 只畫暗號圖示 → 節目圖示(空格畫空框)、等待進度條與換列等待的「…」; drawPickerPanel 畫標題(layer 為 cue 時「什麼時候?」、program 時「演什麼?」)與每行的 name、desc; drawBannerFx 畫「暗號名 → 節目名!」; drawLooseFx 畫「失控!」; drawShowResult 畫標題(loose 為 true:「失控! 表演提前結束」並畫「剩 N 秒」; 否則「收場!」; tutorial 為 true 時標題前加「見習」)、「觀眾滿意度 N」、「金幣 +N」與「名聲 +N」(N 為跳動中的數字)、「最長連鎖 N」與「按 Z 繼續」(跳完才畫); drawShopTab 畫分頁名(角色 / 暗號 / 節目); drawShopItem 依 item 畫名稱、說明(spec 第 84 條與第 58、59 條表的「說明」欄)、價格或「已擁有」「裝備中」, fameLocked 時改畫「名聲 N 解鎖」; drawShopDetail 畫 lines 的每一行; drawButton 畫 label; drawFloatText 畫 text; drawCaptureRing 畫「準備捕捉」; drawResultPanel 畫所有結算數字、7 天行程、怪物庫與「按 Z 重來」; drawHud 畫天數(day 0 畫「見習日」, 其他「第 N / dayMax 天」)、金幣、名聲、計時(只在地下城; 表演改由 drawShowClock)、地下城名、繩、武器、收服列的「收服」小字與超過 10 隻時的「+N」、觀眾滿意度(show 時, 字「觀眾滿意度 N」)、歡呼中的「歡呼 ×1.5」與 message 字串。drawHeartBar、drawExit、drawHeatAlert、drawVisitor、drawPortal、drawCrackWall、drawHazard、drawWeaponFx、drawKeg、drawFountain、drawFruitTree、drawFruit、drawBlast、drawScrollMark 不畫字",
     "scene(Background)": "place(今天去哪) | select(地下城選擇) | dungeon | dresult(地下城結算) | setup1 | setup2 | sresult(表演結算) | shop | result(總結算); 結算畫面的背景要壓暗, 讓面板跳出來。表演場不呼叫 drawBackground(用 drawShowArena), 開始畫面、日曆過場、見習過場也不呼叫",
     "t(Title)": "開始畫面已顯示的秒數(一直累加, 給背景魔物走動與「按 Z 開始」閃爍用, 閃爍週期 1 秒)",
     "day,dayMax,t,dur(Calendar)": "day: 0~7(0 = 見習日); dayMax: 7; t/dur: 過場已過秒數 / 總長 2.0(0~0.6 秒翻頁、之後大字停住); 只在過場播放期間呼叫",
@@ -801,7 +820,7 @@
     "hasFruit": "true 表示樹上有果子(打得落)",
     "eating,eatT,eatDur": "eating 為 false 表示果子剛掉在地上、還沒有魔物在吃, 此時 eatT,eatDur 為 0 / 3; eating 為 true 表示已有魔物在吃, eatT/eatDur 為已吃秒數 / 總長 3(越接近 1 果子越小)",
     "mode(Keg)": "ok(完好) | fuse(引信中, 快爆了)。爆炸後桶消失、這趟不再出現: RD 不再呼叫 drawKeg(上一輪的 gone 焦痕已拿掉, 那格只剩 drawTile floor)",
-    "fuseT,fuseDur": "引信已過秒數 / 總長 0.6; mode 為 ok 時為 0.6 / 0.6(不在播)",
+    "fuseT,fuseDur": "引信已過秒數 / 總長 1.0(本輪由 0.6 拉長; 動畫請用 fuseT / fuseDur 的比例, 不要寫死 0.6); mode 為 ok 時為 1.0 / 1.0(不在播)",
     "radius(Keg)": "爆炸範圍外緣半徑 130。mode 為 fuse 時要畫出這個範圍的預警圈(會超出 60×60 本體框, 範圍見 size.fuseRange 260×260), 讓玩家知道要跑多遠; ok 時不畫範圍",
     "full": "true 表示回復泉有水; false 表示這次進地下城已用過、乾掉",
     "id(Portal)": "1 | 2; 同編號的兩座成對, 兩對要用不同顏色或圖紋讓玩家看得出誰配誰",
@@ -914,22 +933,24 @@
     "sat(Hud)": "只在 show 顯示: 本場目前累積的觀眾滿意度(畫「觀眾滿意度 N」; rep 是總名聲, 不含本場)",
     "cheerLeft,cheerDur": "只在 show 有意義: 節目歡呼剩餘秒數 / 總長 5; 閒置時 0 / 5(cheerLeft 為 0 表示沒在歡呼, 不畫); > 0 時在觀眾滿意度旁畫「歡呼 ×1.5」與剩餘時間小條",
     "ropes,ropeMax,weapon,xCdLeft,xCdMax": "只在 dungeon 顯示(心不在 HUD, 改由 drawHeartBar 畫); xCdMax 為 0 表示這把武器沒有 X 技(棍棒), 此時整個 X 鍵冷卻格都不畫",
-    "timeLeft,timeMax": "本段剩餘秒數 / 總長(地下城 75、表演場 45、見習日表演 30); 見習草地與其他 phase 為 0 / 0(不畫計時)",
+    "timeLeft,timeMax(Hud)": "只在 dungeon 畫計時: 剩餘秒數 / 總長 75; 見習草地與 dungeon 以外的 phase(含 show)一律傳 0 / 0, drawHud 不畫計時。表演的倒數改由 drawShowClock 畫",
+    "timeLeft,timeMax,running(ShowClock)": "表演場剩餘秒數 / 總長(45; 見習日 30)。鐘面畫成圓形: 剩餘比例 timeLeft / timeMax 畫成一塊扇形, 從 12 點方向(角度 −π/2)起、順時針張開 2π × 比例(時間越少扇形越小, 縮的方向是順時針), 已過去的部分畫暗; 正中間粗體寫 ceil(timeLeft), 字要壓在扇形之上看得清。timeLeft ≤ 10 時扇形與數字轉紅。跳一下: running 為 true 且 ceil(timeLeft) − timeLeft < 0.15(剛跨過整數秒的 0.15 秒內)時整個時鐘放大到 1.1 倍再回原大小, 不必另存狀態; running 為 false(失控收場停住、或已收場)時不跳、停在當下畫面。整個時鐘含跳動放大都在 48×48 框附近(放大後 53×53), 不超出 HUD 帶 y 0~50 太多。只在表演場呼叫",
+    "maxMarks(HeatMeter)": "場上標記最多那隻的失控標記數 0~4(到 5 就失控收場, 不會傳 5; 失控收場時停在失控前一刻的值)。在熱度表 420×42 框內右端畫 4 個小格(例: 每格 10×10、間距 4, 整組約 x + 150 ~ x + 200、垂直置中), 亮起 maxMarks 格: 1~2 格亮橘; ≥ 3 格亮紅並閃爍(用 t 算, 週期 0.5 秒)。熱度進度條要讓出這一段, 不和格子重疊; 美術可加一個小的標記圖示當這組的前綴, 不寫字",
     "dungeon(Hud)": "目前地下城代號, 不在地下城時為空字串",
     "message": "HUD 訊息字串(按鍵提示等), 由 RD 依 spec 數值表「HUD 訊息」給; 地下城的按鍵提示依武器寫出 X 技名(棍棒只有「Z 攻擊」)",
-    "stage(Tutorial)": "教學階段編號 1~23(對照 spec「新手教學」表; 本輪重排, 和上一輪編號不同)",
-    "kind(Tutorial)": "main(主階段, 一次一個) | note(附註, 只有第 6 階段: 指向 HUD 左上捕獸繩列, 和主階段同時呼叫, 畫在 HUD 之上; 樣式比主泡泡小一號、顏色較淡, 看得出是補充說明)。第 15、16 階段是 main 但指向 HUD 中央的熱度表, 也畫在 HUD 之上",
+    "stage(Tutorial)": "教學階段編號 1~22(對照 spec「新手教學」表; 上一輪的第 23 階段「出口」已刪除, 1~22 編號不變)",
+    "kind(Tutorial)": "main(主階段, 一次一個) | note(附註, 只有第 6 階段: 指向 HUD 左上捕獸繩列, 和主階段同時呼叫, 畫在 HUD 之上)。note 樣式: 單行字的扁泡泡 noteBubble 340×40 以 bx,by 為中心, 顏色較淡、看得出是補充說明, 不畫按鍵; 尾巴從泡泡下緣朝下(side up), 尖端停在 x,y; 尾巴根部的 x 跟著尖端 x(不要固定畫在泡泡中央)。第 15、16 階段是 main 但指向 HUD 中央的熱度表, 也畫在 HUD 之上",
     "text(Tutorial)": "泡泡裡的一句話, 由 RD 依 spec 表給(含進度如「1/2」)",
     "keys": "要顯示的按鍵圖示陣列, 依顯示順序: up | down | left | right | z | x | circle(方向鍵繞圈示意, 第 4 階段); 空陣列表示這階段不畫按鍵(例: 第 3 階段「站到牠身上 別動」只有文字)",
     "pressed": "已按過的鍵陣列(keys 的子集), 這些鍵要畫成亮起 / 打勾; 只有第 1 階段會逐一累積, 其他階段為空陣列",
-    "x,y(Tutorial)": "泡泡尾巴要指向的目標點(畫面座標, 例: 魔物頭頂、按鈕上緣; 第 1 階段指向馴獸師心列上方 (馴獸師 x, 馴獸師 y − 60); 第 15、16 階段指向熱度表下緣 (640, 46))",
-    "bx,by,side": "bx,by 為泡泡中心(RD 算好、已夾在畫面內; 附註固定 (250, 150); 第 15、16 階段固定 (640, 110)); side: up(泡泡在目標上方, 尾巴朝下)| down(泡泡在目標下方, 尾巴朝上; 附註與第 15、16 階段固定 down)。主泡泡本體 320×96 以內、附註 300×60 以內, 按鍵圖示 keyCap 34×34 排在泡泡內文字下方或左側",
+    "x,y(Tutorial)": "泡泡尾巴要指向的目標點(畫面座標, 例: 魔物頭頂、按鈕上緣; 第 1 階段指向馴獸師心列上方 (馴獸師 x, 馴獸師 y − 60); 第 6 階段附註指向捕獸繩列正中央的正上方 (40 + 11 ×(ropeMax − 1), 60), ropeMax 4 時 (73, 60); 第 15、16 階段指向熱度表下緣 (640, 46))",
+    "bx,by,side": "bx,by 為泡泡中心(RD 算好、已夾在畫面內; 附註固定 (186, 26), 整個泡泡在 HUD 帶 x 16~356、y 6~46 內, 不進地圖區; 第 15、16 階段固定 (640, 110)); side: up(泡泡在目標上方, 尾巴朝下; 附註固定 up)| down(泡泡在目標下方, 尾巴朝上; 第 15、16 階段固定 down)。主泡泡本體 320×96 以內、附註 noteBubble 340×40 以內, 按鍵圖示 keyCap 34×34 排在主泡泡內文字下方或左側",
     "phase(Tutorial)": "show(提示中) | done(完成特效播放中, 0.6 秒後 RD 不再呼叫)",
     "appearT,appearDur": "泡泡彈出已過秒數 / 總長 0.25; 彈出完後為 0.25 / 0.25(不在播)",
     "doneT,doneDur": "完成特效已過秒數 / 總長 0.6(打勾 + 星星 / 依階段的特效, 見 spec 表「完成特效」; 美術做一套通用的打勾星星即可); phase 為 show 時為 0.6 / 0.6(不在播), phase 為 done 時從 0 開始",
-    "繪製順序": "開始畫面: drawTitle。日曆過場: drawCalendar。見習過場: drawIntermission。今天去哪: drawBackground → drawPlaceCard × 3 → drawButton(聲音)→ drawFloatText(unlock)→ drawHud → drawTutorial。地下城選擇: drawBackground → drawDungeonCard × 3 → drawHud。地下城: drawBackground → drawTile / drawCrackWall → drawExit → drawFountain → drawPortal → drawFruitTree → drawFruit → drawHazard(預警與生效)→ drawCaptureRing → drawKeg(只畫還在的)→ drawWildMonster → drawLasso → drawTamer → drawWeaponFx → drawHazard(投射物)→ drawBlast → drawHeartBar → drawFloatText → drawTutorial(main)→ drawHud → drawTutorial(note)→ drawExitPrompt(詢問框開著時, 最上層)。地下城結算: 地下城最後一幀不重畫, 改畫 drawBackground → drawDungeonResult → drawHud。布置第 1 步: drawBackground → drawBankSlot × N → drawScrollMark → drawMonsterInfo → drawButton(下一步; 見習日以外再畫回選地點)→ drawFloatText → drawHud → drawTutorial。布置第 2 步: drawBackground → drawCueRow(row × 4)→ drawButton(開演、返回上一步)→ drawPickerPanel(開著時)→ drawHud → drawTutorial。表演場: drawShowArena → drawHazard(預警與生效)→ drawShowMonster(charge 以外)→ drawHazard(投射物)→ drawBannerFx → drawFence / drawVisitor → drawShowMonster(charge 那隻)→ drawLooseFx → drawHeatAlert(沸騰時)→ drawCueRow(mini × 4)→ drawFloatText → drawHud → drawHeatMeter → drawTutorial。表演結算: drawBackground → drawShowResult → drawHud。商店: drawBackground → drawShopTab × 3 → drawShopItem × N → drawShopDetail → drawButton(離開)→ drawFloatText → drawHud → drawTutorial。總結算: drawBackground → drawResultPanel → drawHud",
+    "繪製順序": "開始畫面: drawTitle。日曆過場: drawCalendar。見習過場: drawIntermission。今天去哪: drawBackground → drawPlaceCard × 3 → drawButton(聲音)→ drawFloatText(unlock)→ drawHud → drawTutorial。地下城選擇: drawBackground → drawDungeonCard × 3 → drawHud。地下城: drawBackground → drawTile / drawCrackWall → drawExit → drawFountain → drawPortal → drawFruitTree → drawFruit → drawHazard(預警與生效)→ drawCaptureRing → drawKeg(只畫還在的)→ drawWildMonster → drawLasso → drawTamer → drawWeaponFx → drawHazard(投射物)→ drawBlast → drawHeartBar → drawFloatText → drawTutorial(main)→ drawHud → drawTutorial(note)→ drawExitPrompt(詢問框開著時, 最上層)。地下城結算: 地下城最後一幀不重畫, 改畫 drawBackground → drawDungeonResult → drawHud。布置第 1 步: drawBackground → drawBankSlot × N → drawScrollMark → drawMonsterInfo → drawButton(下一步; 見習日以外再畫回選地點)→ drawFloatText → drawHud → drawTutorial。布置第 2 步: drawBackground → drawCueRow(row × 4)→ drawButton(開演、返回上一步)→ drawPickerPanel(開著時)→ drawHud → drawTutorial。表演場: drawShowArena → drawHazard(預警與生效)→ drawShowMonster(charge 以外)→ drawHazard(投射物)→ drawBannerFx → drawFence / drawVisitor → drawShowMonster(charge 那隻)→ drawLooseFx → drawHeatAlert(沸騰時)→ drawCueRow(mini × 4)→ drawFloatText → drawHud → drawHeatMeter → drawShowClock → drawTutorial。表演結算: drawBackground → drawShowResult → drawHud。商店: drawBackground → drawShopTab × 3 → drawShopItem × N → drawShopDetail → drawButton(離開)→ drawFloatText → drawHud → drawTutorial。總結算: drawBackground → drawResultPanel → drawHud",
     "rep,goldEarned": "rep: 總名聲(drawHud、drawResultPanel); goldEarned: 7 天(含見習日)累計賺得的金幣(表演結算 + 打倒金幣)",
-    "armed(Exit)": "true 表示可觸發(走上去會跳詢問框), 畫成正常亮著的門 / 樓梯口; false 表示玩家剛選「留下」、還沒走開 60 像素, 畫暗一點(看得出暫時不會再問)。出口畫在本體 60×60 框內, 要和牆、地板、傳送陣看得出差別(例: 有門框與向外的箭頭)",
+    "armed(Exit)": "true 表示可觸發(走上去會跳詢問框), 畫成正常亮著的門 / 樓梯口; false 表示玩家剛選「留下」、還沒走開 150 像素(本輪由 60 拉長), 畫暗一點(看得出暫時不會再問)。出口畫在本體 60×60 框內, 要和牆、地板、傳送陣看得出差別(例: 有門框與向外的箭頭)",
     "choice,t(ExitPrompt)": "choice: 0 = 「離開」被選中 | 1 = 「留下」被選中(預設 1); 選中的按鈕要亮框。t: 詢問框已顯示秒數(一直累加, 0~0.2 秒面板彈出); 只在詢問框開著時呼叫, 畫在所有地下城物件與 drawHud 之上",
     "i(Visitor)": "座位序號 0~7(從 0 起算, 由左到右), 用來錯開每名觀眾的動作節奏(例: 拍手相位 = t × 頻率 + i × 0.37), 讓 16 人不會整齊劃一",
     "mood(Visitor)": "quiet(安靜: 坐著看, 偶爾眨眼) | clap(掌聲: 拍手) | cheer(歡呼: 站起舉手、身體跳動) | frenzy(沸騰: 跳得更高、揮手更大, 但頭上冒汗珠或驚嘆號、表情緊張)。由 RD 依熱度段傳, 兩側 16 人同一個 mood; mode 為 flee / empty 時忽略 mood。動作要畫在 size.watch 56×76 框內(驚嘆號 / 汗珠也在框內上緣)",
@@ -938,8 +959,8 @@
     "t,tierT,tierDur(HeatMeter)": "t: 表演場已過秒數(一直累加, frenzy 時熱度表閃紅的脈動用, 週期 0.8 秒; 失控收場時停住); tierT/tierDur: 換段後已過秒數 / 彈跳總長 0.4(換段時熱度表彈一下); 閒置時 tierT = tierDur = 0.4(不在播); 開演那一刻也是 0.4 / 0.4(開場不彈)",
     "t(HeatAlert)": "進入沸騰段後已過秒數(一直累加; 每次重新進入沸騰從 0 起算)。只在 tier 為 frenzy 時呼叫: 畫面四周紅色脈動邊框, 週期 0.8 秒(t 每 0.8 秒一次由淡到濃再淡), 只畫外緣約 40 像素(含漸層), 不能蓋住場地中央與魔物",
     "caught(Hud)": "只在 dungeon 顯示: 這趟收服的種類代號陣列(依收服順序, 一隻一項; 見習草地也傳)。畫成 HUD 第 2 行的收服列: 「收服」小字中心 (300, 74), 第 k 個(k 從 0 起算)頭像 26×26 中心 (346 + 28k, 74); 長度 ≤ 10 全畫, > 10 時畫前 9 個, 第 10 格(k = 9)改畫「+N」(N = 長度 − 9); 空陣列時在第 0 格畫淡淡的空框",
-    "sounds(循環)": "crowd_clap、crowd_cheer、crowd_frenzy 是跟著熱度段的循環觀眾聲(同時最多一種, 換段交叉淡入淡出 0.4 秒, 安靜段沒有), 由音效節點提供設定目前觀眾聲的介面(例 Sound.setCrowd('clap' | 'cheer' | 'frenzy' | ''))並寫進 sound.md; 其他事件都是一次性的 play。heat_warn 在熱度剛進沸騰段時播一次; exit_prompt 在出口詢問框跳出時播一次",
-    "本輪欄位對照": "舊 → 新(美術沿用舊版會讀到不存在的欄位, 請照這裡改): drawBankSlot: level、canUpgrade → 刪除; drawMonsterInfo: where、level、upgrade → 刪除(面板只剩介紹, size 改成單一 [840,170], 不再分 left / right); drawShowMonster: level → 刪除(不畫 Lv), angryLow 固定 80; drawKeg: mode gone → 刪除(炸掉後不呼叫); drawVisitor: 新增 i、mood、t; drawHud: 新增 caught; drawCalendar / drawResultPanel: log、days 長度 10 → 7, dayMax 10 → 7; drawCueRow: index 0~5 → 0~3, locked 的列 index 2~5 → 2~3; drawShopTab: tab monster → 刪除; drawShopItem: item whip → 刪除; drawTamer / drawWeaponFx: weapon whip → 刪除, WeaponFx shape circle 不再出現; drawFloatText: kind levelUp → 刪除; drawDungeonResult: reason 新增 exit; drawTutorial: stage 1~26 → 1~23(重排); 新函式: drawExit、drawExitPrompt、drawHeatMeter、drawHeatAlert; sounds: upgrade → 刪除, 新增 exit_prompt、crowd_clap、crowd_cheer、crowd_frenzy、heat_warn"
+    "sounds(循環)": "crowd_clap、crowd_cheer、crowd_frenzy 是跟著熱度段的循環觀眾聲(同時最多一種, 換段交叉淡入淡出 0.4 秒, 安靜段沒有), 由音效節點提供設定目前觀眾聲的介面(例 Sound.setCrowd('clap' | 'cheer' | 'frenzy' | ''))並寫進 sound.md; 其他事件都是一次性的 play。heat_warn 在熱度剛進沸騰段時播一次; exit_prompt 在出口詢問框跳出時播一次; clock_tick 在表演最後 5 秒、timeLeft 每跨過 5、4、3、2、1 時各播一次(失控停住後不播)",
+    "本輪欄位對照": "polish-4 舊 → 新(美術沿用舊版會讀到不存在的欄位或漏畫新欄位, 請照這裡改; 沒列到的函式欄位不變): drawHeatMeter: 新增 maxMarks(最高標記 0~4); drawShowClock: 新函式(x, y, timeLeft, timeMax, running), 表演時鐘; drawHud: show phase 時 timeLeft / timeMax 改傳 0 / 0, 不再畫時間條與「N 秒」, message 小字移到 x 932~994; drawTutorial: stage 1~23 → 1~22(刪第 23 階段出口, 其他編號不變), 附註(note)泡泡 300×60 → noteBubble 340×40、bx,by (250, 150) → (186, 26)、side down → up、尾巴尖端 (130, 92) → (40 + 11 ×(ropeMax − 1), 60); drawKeg: fuseDur 0.6 → 1.0(ok 時 fuseT / fuseDur 為 1.0 / 1.0); drawExit: armed 恢復距離 60 → 150(欄位不變); sounds: 新增 clock_tick, 沒有刪除"
   },
   "sounds": [
     "ui_move",
@@ -986,6 +1007,7 @@
     "mark_add",
     "loose",
     "crowd_flee",
+    "clock_tick",
     "show_end",
     "coin_tally",
     "buy",
