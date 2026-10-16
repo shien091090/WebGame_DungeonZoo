@@ -1,1 +1,0 @@
-- 【合併到「自測」第 2 條(debug hook 那條)】隨機按鍵 fuzz 只走得到前幾個畫面(如教學關要抓到怪才過), 想測後段畫面又不想在 game.js 加觀察窗 → 傳統 script 頂層的 `let/const` 與 function 在同一個 vm context 的後續 `vm.runInContext('...')` 裡可直接讀寫、呼叫 → 載入 game.js 後用 `runInContext` 直接呼叫遊戲自己的進場函式(如 startShow / startDungeon)與改狀態造情境, 再用假 rAF 跑幀並記錄 Art 呼叫參數對帳, 不必改交付檔

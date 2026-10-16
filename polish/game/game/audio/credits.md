@@ -1,6 +1,8 @@
 # 音效 / 音樂素材來源
 
-授權統計: CC0 57 項(Kenney 45 檔 + OpenGameArt 3 檔 + OpenGameArt 9 段內嵌)、CC BY 4.0 7 項(背景音樂 5 檔 + 觀眾歡呼 2 檔)。另有 1 個程式產生的音效(heat_warn, 無外部素材, 不列)。
+授權統計: CC0 67 項(Kenney 52 檔 + OpenGameArt 5 檔 + OpenGameArt 10 段內嵌)、CC BY 4.0 7 項(背景音樂 5 檔 + 觀眾歡呼 2 檔)。另有 1 個程式產生的音效(heat_warn, 無外部素材, 不列)。
+
+打磨第 5 輪異動: 新增 9 個檔(Kenney 7 檔、OpenGameArt 2 檔)與 1 段內嵌(rope_throw), 給本輪新增的 6 個事件用; 既有檔案不動。
 
 打磨第 4 輪異動: 新增內嵌段 clock_tick(bart 的 CC0 時鐘單拍)。keg_fuse 素材不變, 只把播放長度從 0.6 秒改成 0.95 秒。
 
@@ -41,7 +43,7 @@ Licensed under CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
 
 ## 短音效(assets/, CC0)
 
-除最後三列(OpenGameArt)外全部出自 Kenney(https://kenney.nl), 頁面標示 CC0。檔案為原檔直接複製改名, 未剪輯; 音量、音高(播放速度)與截斷長度在 sound.js 裡調。sound.js 另以 base64 內嵌同一份 ogg 供 Web Audio 解碼。
+除最後五列(OpenGameArt)外全部出自 Kenney(https://kenney.nl), 頁面標示 CC0。檔案為原檔直接複製改名, 未剪輯; 音量、音高(播放速度)與截斷長度在 sound.js 裡調。sound.js 另以 base64 內嵌同一份 ogg 供 Web Audio 解碼。
 
 | 檔名 | 事件 | 原始頁面(原檔名) | 作者 | 授權 | 剪輯 |
 |---|---|---|---|---|---|
@@ -90,6 +92,15 @@ Licensed under CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
 | sfx_unlock.ogg | unlock | https://kenney.nl/assets/music-jingles (jingles_STEEL04.ogg) | Kenney | CC0 | 無 |
 | sfx_tutorial_done.ogg | tutorial_done | https://kenney.nl/assets/interface-sounds (maximize_001.ogg) | Kenney | CC0 | 無 |
 | sfx_star.ogg | star | https://kenney.nl/assets/interface-sounds (glass_001.ogg) | Kenney | CC0 | 無(播放時依第幾顆升調) |
+| sfx_monster_windup.ogg | monster_windup | https://kenney.nl/assets/digital-audio (highUp.ogg) | Kenney | CC0 | 無(播放時跳過開頭 0.14 秒靜音、速度 1.2) |
+| sfx_player_down_hit.ogg | player_down(重擊層) | https://kenney.nl/assets/impact-sounds (impactPunch_heavy_002.ogg) | Kenney | CC0 | 無 |
+| sfx_player_down_fall.ogg | player_down(倒地層) | https://kenney.nl/assets/impact-sounds (impactSoft_heavy_003.ogg) | Kenney | CC0 | 無(播放時速度 0.85) |
+| sfx_player_down_tone.ogg | player_down(遺憾撥弦層) | https://kenney.nl/assets/music-jingles (jingles_PIZZI05.ogg) | Kenney | CC0 | 無(播放時速度 0.89) |
+| sfx_weapon_menu.ogg | weapon_menu | https://kenney.nl/assets/rpg-audio (cloth4.ogg) | Kenney | CC0 | 無(播放時跳過開頭 25 毫秒) |
+| sfx_rope_escape_slap.ogg | rope_escape(輕拍層) | https://kenney.nl/assets/impact-sounds (impactGeneric_light_001.ogg) | Kenney | CC0 | 無 |
+| sfx_fruit_eat_ding.ogg | fruit_eat(回復小叮層) | https://kenney.nl/assets/interface-sounds (glass_005.ogg) | Kenney | CC0 | 無(播放時速度 1.5 / 2.0 各一聲) |
+| sfx_rope_escape_boing.mp3 | rope_escape(彈簧層) | https://opengameart.org/node/183321 「Silly Sound Effects」(blung_0.mp3) | EZduzziteh | CC0 | 無(播放時速度 1.1) |
+| sfx_fruit_eat.ogg | fruit_eat(咬一口) | https://opengameart.org/content/7-eating-crunches (crunch_-_tito.zip 內的 crunch.4.ogg) | StarNinjas(作者說明由其弟 Tito 錄製) | CC0 | 無(播放時跳過開頭 0.118 秒靜音) |
 | sfx_intermission.ogg | intermission | https://opengameart.org/content/classic-fanfare-lick (fanfare.ogg) | fvcalderan | CC0 | 無。作者在留言說明是自己用 GarageBand 內建樂器演奏, 非套用現成樂句 |
 | sfx_cheer.ogg | cheer | https://opengameart.org/content/cheers-0 (cheers.ogg) | Nocturnal_Vanguard | CC0 | 無 |
 | sfx_crowd_unrest.ogg | crowd_frenzy(循環, 騷動疊層) | https://opengameart.org/content/crowd-shoutingspeaking-ambience (crowd_shouting.ogg) | StarNinjas | CC0 | 只留開頭約 10.2 秒(依 Ogg 頁截斷、最後一頁標結尾並重算檢查碼, 未重新編碼); 播放時去頭 0.6 秒、尾段 1.5 秒交叉淡化進開頭做成循環。作者表示樂見署名但不強制 |
@@ -108,9 +119,9 @@ Licensed under CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
 | show_end | show_end | https://opengameart.org/content/applause-in-a-large-hall-or-church (applause-clapping-church-crowd-immersive.wav) | eXpl0it3r | CC0 | 取全曲最響的 3 秒(4.6~7.6 秒), 淡入 0.03 秒、淡出 0.9 秒, 單聲道 22.05 kHz, 峰值正規化 −1 dBFS |
 | exit_prompt | exit_prompt | https://opengameart.org/content/doorbell (doorbell.wav) | frosty ham | CC0 | 混成單聲道、48 kHz 降為 22.05 kHz、剪掉尾端 −50 dB 以下、淡出 0.15 秒、峰值正規化 −1 dBFS(0.93 秒, C5 → A4 兩音) |
 | crowd_clap | crowd_clap(循環) | https://opengameart.org/content/applause-in-a-large-hall-or-church (applause-clapping-church-crowd-immersive.wav) | eXpl0it3r | CC0 | 從掌聲漸弱的尾段(33.0~36.8 秒)切出 16 個單拍, 以 5 人各自節奏、拍一陣停一下的方式重新散佈成 6 秒首尾相接的循環(約每秒 10 拍), 單聲道 22.05 kHz, 峰值正規化 −3 dBFS |
-
+| rope_throw | rope_throw | https://opengameart.org/content/swishes-sound-pack (swish-6.wav) | artisticdude | CC0 | 剪掉開頭 15 毫秒、混成單聲道、44.1 kHz 降為 22.05 kHz、尾端淡出 15 毫秒、峰值正規化 −1 dBFS(0.12 秒) |
 | clock_tick | clock_tick | https://opengameart.org/content/ticking-clock (ticks.zip 內的 ticking clock - tick1.wav) | bart | CC0 | 剪掉開頭 32 毫秒靜音、取 0.135 秒、淡入 1 毫秒、淡出 20 毫秒, 混成單聲道 44.1 kHz 16-bit, 峰值正規化 −1 dBFS。作者表示樂見署名但不強制 |
 
 ## 核對
 
-assets/ 共 55 個檔 = 背景音樂 5 列 + 觀眾歡呼 2 列 + 短音效 48 列; 另 9 段內嵌於 sound.js(heat_warn 為程式產生, 不在此表)。沒有未登記的檔。
+assets/ 共 64 個檔 = 背景音樂 5 列 + 觀眾歡呼 2 列 + 短音效 57 列; 另 10 段內嵌於 sound.js(heat_warn 為程式產生, 不在此表)。沒有未登記的檔。

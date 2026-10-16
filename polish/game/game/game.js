@@ -1,12 +1,12 @@
 'use strict';
-/* 來馬戲團看一點大場面(打磨版第 3 輪)— 玩法驗證 Demo。只用方向鍵 + Z、X。
+/* 來馬戲團看一點大場面(打磨版第 5 輪)— 玩法驗證 Demo。只用方向鍵 + Z、X、C(地下城換武器)。
    邏輯與繪製分離: update(dt) 改狀態, render() 呼叫 Art.drawXxx。 */
 
 // ───────────────────────── 基本工具 ─────────────────────────
 const CW = (Art.canvas && Art.canvas.width) || 1280;
 const CH = (Art.canvas && Art.canvas.height) || 720;
 const DAY_MAX = 7;
-const BUILD = 'polish-4';
+const BUILD = 'polish-5';
 const PENDING_KEY = 'gamelog-WebGame_DungeonZoo-pending';
 const SHELF_FAME = [100, 200, 350, 500];   // 商店上架名聲門檻(0 一開始就上架)
 const ROWS = 4;                            // 暗號節目單列數
@@ -51,6 +51,14 @@ const Snd = {
       else if (Sound.stopMusic) Sound.stopMusic();
       else if (Sound.playMusic) Sound.playMusic(null);
     } catch (e) { console.error(e); }
+  },
+  duckCur: false,
+  // 出口詢問框、換武器視窗開著時音樂壓低一半
+  duck(b) {
+    b = !!b;
+    if (b === this.duckCur) return;
+    this.duckCur = b;
+    try { if (typeof Sound !== 'undefined' && Sound.setMusicDuck) Sound.setMusicDuck(b); } catch (e) { console.error(e); }
   },
   toggleMute() {
     this.muted = !this.muted;
@@ -113,7 +121,7 @@ function flushPending() {
 const SPECIES = ['lily', 'monkey', 'beetle', 'parrot', 'penguin', 'tanuki'];
 const SP = {
   lily:    { name: '鈴蘭精',   hp: 7,  effect: 'calm',   interval: 3.0, decay: 2,   rep: 1, kill: 3, desc: '朝對手撒三發花粉, 打中會〔冷靜〕', skill: 'pollen' },
-  monkey:  { name: '火柴猴',   hp: 7,  effect: 'ignite', interval: 3.0, decay: 2,   rep: 1, kill: 3, desc: '丟出會飛回來的火柴, 打中會〔生氣〕', skill: 'match' },
+  monkey:  { name: '火柴猴',   hp: 7,  effect: 'ignite', interval: 3.0, decay: 2,   rep: 1, kill: 3, desc: '丟出直直飛的火柴, 穿過的都會〔生氣〕', skill: 'match' },
   beetle:  { name: '齒輪甲蟲', hp: 12, effect: 'ignite', interval: 3.8, decay: 2,   rep: 1, kill: 5, desc: '轉圈噴出一串齒輪, 打中會〔生氣〕', skill: 'gear' },
   parrot:  { name: '標靶鸚鵡', hp: 12, effect: 'target', interval: 2.6, decay: 2,   rep: 1, kill: 5, desc: '羽毛射中的變成大家的〔標靶〕', skill: 'feather' },
   penguin: { name: '冰柱企鵝', hp: 16, effect: 'freeze', interval: 3.0, decay: 1.5, rep: 2, kill: 7, desc: '一道冰柱射線, 打中的〔凍住〕不動', skill: 'icebeam' },
@@ -122,7 +130,7 @@ const SP = {
 const NEST_CH = { l: 'lily', m: 'monkey', g: 'beetle', p: 'parrot', q: 'penguin', k: 'tanuki' };
 const PROJ = {
   pollen:  { speed: 160, r: 12, life: 4 },
-  match:   { speed: 200, r: 14, life: 3 },
+  match:   { speed: 200, r: 14, life: 2.4 },
   gear:    { speed: 150, r: 10, life: 4 },
   feather: { speed: 260, r: 12, life: 3 },
   card:    { speed: 200, r: 12, life: 3 },
@@ -267,7 +275,7 @@ let SR = null;      // 表演結算
 let RS = null;      // 總結算
 let TITLE_T = 0;
 let tutorialDone = false;   // 見習日完成過(本次開啟網頁內)
-const keys = { up: false, down: false, left: false, right: false, z: false, x: false };
+const keys = { up: false, down: false, left: false, right: false, z: false, x: false, c: false };
 let pressed = {};
 
 function emptyRows() { const r = []; for (let i = 0; i < ROWS; i++) r.push({ cue: '', prog: '' }); return r; }
@@ -289,7 +297,7 @@ function newRun(replay) {
     s2: { row: 0, col: 0, panel: null },
     shop: { tab: 0, zone: 'tab', idx: 0, top: 0 },
   };
-  if (replay) { addMonster('monkey', false); addMonster('monkey', false); G.cap.monkey = 2; }
+  if (replay) { for (let i = 0; i < 3; i++) addMonster('monkey', false); G.cap.monkey = 3; }   // 見習草地收服 3 隻 → 重來也是 3 隻
   D = null; S = null;
 }
 
@@ -306,7 +314,7 @@ function musicFor(sc) {
 function setScene(s) {
   scene = s;
   pressed = {};
-  keys.z = false; keys.x = false;   // 轉場後的動作要重新按
+  keys.z = false; keys.x = false; keys.c = false;   // 轉場後的動作要重新按
   if (s !== 'show') Snd.crowd('');
   Snd.music(musicFor(s));
 }
@@ -321,10 +329,10 @@ function addMonster(sp, on) {
 }
 function stageCount() { let n = 0; for (const b of G.bank) if (b.on) n++; return n; }
 function maxHeartsNow() { return 3 + G.armorBought; }
-function ropeMaxNow() { return 4 + G.ropeBought; }
+function ropeMaxNow() { return 3 + G.ropeBought; }
 function xCdBase(w) { return w === 'sword' ? 3 : w === 'spear' ? 1.2 : 0; }
-function xCdMax() { return xCdBase(G.weapon); }
-function captureDur() { return 0.8; }
+function xCdMax() { return D && D.tamer ? xCdBase(D.tamer.weapon) : xCdBase(G.weapon); }
+const STAGE_MAX_TUT = 2;   // 見習表演只能上台 2 隻
 
 function checkUnlock() {
   for (const id of DUNGEON_ORDER) {
@@ -346,8 +354,9 @@ function dungeonCondition(id) {
   return '名聲 ' + Math.min(G.rep, d.reqRep) + '/' + d.reqRep + ' + 收服' + SP[d.reqSp].name + ' ' + Math.min(G.cap[d.reqSp], d.reqN) + '/' + d.reqN;
 }
 
+function stageLimit() { return G.day === 0 ? STAGE_MAX_TUT : 20; }
 function monsterInfoState(b, x, y) {
-  return { x, y, species: b.sp, num: b.num, desc: SP[b.sp].desc, effect: SP[b.sp].effect, total: stageCount(), totalMax: 20 };
+  return { x, y, species: b.sp, num: b.num, desc: SP[b.sp].desc, effect: SP[b.sp].effect, total: stageCount(), totalMax: stageLimit() };
 }
 
 // ───────────────────────── 輸入(只掛鍵盤) ─────────────────────────
@@ -355,12 +364,12 @@ function keyName(e) {
   switch (e.code) {
     case 'ArrowUp': return 'up'; case 'ArrowDown': return 'down';
     case 'ArrowLeft': return 'left'; case 'ArrowRight': return 'right';
-    case 'KeyZ': return 'z'; case 'KeyX': return 'x';
+    case 'KeyZ': return 'z'; case 'KeyX': return 'x'; case 'KeyC': return 'c';
   }
   switch (e.key) {
     case 'ArrowUp': return 'up'; case 'ArrowDown': return 'down';
     case 'ArrowLeft': return 'left'; case 'ArrowRight': return 'right';
-    case 'z': case 'Z': return 'z'; case 'x': case 'X': return 'x';
+    case 'z': case 'Z': return 'z'; case 'x': case 'X': return 'x'; case 'c': case 'C': return 'c';
   }
   return null;
 }
@@ -387,8 +396,8 @@ window.addEventListener('blur', function () {
 
 /// ───────────────────────── 新手教學 ─────────────────────────
 // 已完成階段記在本次開啟網頁的記憶裡(整關重來、失敗重來都不重置)
-// 第 6 階段是「附註」: 不佔主階段位置, 另存在 TUT.note, 和主階段同時顯示
-const TUT = { done: {}, trig: {}, cur: null, note: null, logged: {}, angryMon: null, markMon: null };
+// 第 7 階段是「附註」: 不佔主階段位置, 另存在 TUT.note, 和主階段同時顯示
+const TUT = { done: {}, trig: {}, cur: null, note: null, logged: {}, angryMon: null, markMon: null, escMon: null };
 function tut(flag) { if (TUT.cur && TUT.cur.phase === 'show') TUT.cur.flags[flag] = true; }
 function tutTrig(id) { if (!TUT.done[id]) TUT.trig[id] = true; }
 function inMeadow() { return scene === 'dungeon' && D && D.id === 'meadow'; }
@@ -423,90 +432,116 @@ function tamerTgt() { if (!D) return null; const p = scr(D.tamer.x, D.tamer.y); 
 function objTgt(r, hh) { if (!r) return null; const p = scr(r.o.x, r.o.y); return { x: p.x, y: p.y, hh: hh || 30 }; }
 
 const ARROWS = ['up', 'down', 'left', 'right'];
-function heatTgt() { return { x: 640, y: 46, hh: 0 }; }   // 第 15、16 階段: 指向熱度表下緣, 泡泡中心固定 (640, 110)
+function heatTgt() { return { x: 640, y: 46, hh: 0 }; }   // 第 16、17 階段: 指向熱度表下緣, 泡泡中心固定 (640, 110)
 function miniTgt(i) { return { x: 322 + 212 * i, y: 691, hh: 23 }; }
+function pickerOpen() { return scene === 'dungeon' && !!D && !!D.picker; }
+function nearestWeak() {
+  if (!D) return null;
+  let w = null, bd = 1e9;
+  for (const m of D.mons) if (!m.dead && isWeak(m)) { const d = dist(m.x, m.y, D.tamer.x, D.tamer.y); if (d < bd) { bd = d; w = m; } }
+  return w;
+}
+function weakOrNest() { const w = nearestWeak(); return w ? monTgt(w) : nestTgt(); }
 const TS = {
   1: { where: () => inMeadow(), text: () => '方向鍵 移動', keys: () => ARROWS, tgt: tamerTgt, ok: c => ARROWS.every(k => c.pk[k]) },
-  2: { where: () => inMeadow(), text: () => 'Z 打牠', keys: () => ['z'], tgt: () => { const m = nearestMon(); return m ? monTgt(m) : nestTgt(); }, ok: c => c.flags.zhit },
-  3: { where: () => inMeadow(), text: () => '站到牠身上 別再打', keys: () => [],
-    tgt: () => { if (!D) return null; let w = null, bd = 1e9; for (const m of D.mons) if (!m.dead && isWeak(m)) { const d = dist(m.x, m.y, D.tamer.x, D.tamer.y); if (d < bd) { bd = d; w = m; } } return w ? monTgt(w) : null; },
-    ok: c => c.flags.lasso || (!!D && !!D.lasso) },
-  4: { where: () => inDungeon(), text: () => '繞牠一圈', keys: () => ['circle'], tgt: () => (D && D.lasso ? monTgt(D.lasso.m) : null), ok: c => c.flags.capture },
-  5: { where: () => inMeadow(), text: () => '再收服 1 隻火柴猴 ' + (TUT.cur && TUT.cur.phase === 'done' ? 2 : 1) + '/2', keys: () => [],
-    tgt: () => { const m = nearestMon(); return m ? monTgt(m) : nestTgt(); }, ok: c => c.flags.capture },
-  6: { note: true, where: () => inMeadow(), text: () => '每次收服都會用掉 1 條繩子, 最多 ' + ropeMaxNow() + ' 條', keys: () => [],
-    tgt: () => ({ x: 40 + 11 * (ropeMaxNow() - 1), y: 60, hh: 0 }), ok: () => !!D && D.caps.length >= 2 },
-  7: { where: () => scene === 'setup1' && G.day === 0, text: () => 'Z 讓牠上台表演', keys: () => ['z'],
-    tgt: () => { const c = slotCenter(G.s1.cur); return { x: c.x, y: c.y, hh: 55 }; }, ok: () => G.bank.length > 0 && G.bank.every(b => b.on) },
-  8: { where: () => scene === 'setup1' && G.day === 0, text: () => '↓ 再 Z 下一步', keys: () => ['down', 'z'],
+  2: { where: () => inMeadow(), text: () => '[Z] 打牠', keys: () => [], tgt: () => { const m = nearestMon(); return m ? monTgt(m) : nestTgt(); }, ok: c => c.flags.zhit },
+  3: { where: () => inMeadow(), keys: () => [],
+    text: () => (pickerOpen() ? '[←][→] 選捕捉繩 [Z] 換上' : '牠虛弱了 按 [C] 換武器'),
+    tgt: () => { const w = nearestWeak(); return w ? monTgt(w) : null; },
+    ok: c => !!D && D.tamer.weapon === 'rope' },
+  4: { where: () => inMeadow(), text: () => '面向牠 按 [Z] 丟繩', keys: () => [], tgt: weakOrNest, ok: c => c.flags.lasso || (!!D && !!D.lasso) },
+  5: { where: () => inDungeon(), text: () => '繞牠一圈', keys: () => ['circle'], tgt: () => (D && D.lasso ? monTgt(D.lasso.m) : null), ok: c => c.flags.capture },
+  6: { where: () => inDungeon() && (D.id === 'meadow' || D.id === 'lake'), text: () => '還沒虛弱 會掙脫 按 [C] 換回武器', keys: () => [],
+    tgt: () => { const m = TUT.escMon; return m && D && D.mons.indexOf(m) >= 0 && !m.dead ? monTgt(m) : null; },
+    ok: c => !!D && D.tamer.weapon !== 'rope' },
+  7: { note: true, where: () => inMeadow(), text: () => '每次收服都會用掉 1 條繩子, 最多 ' + ropeMaxNow() + ' 條', keys: () => [],
+    tgt: () => ({ x: 40 + 11 * (ropeMaxNow() - 1), y: 60, hh: 0 }), ok: () => !!D && D.caps.length >= 3 },
+  8: { where: () => scene === 'setup1' && G.day === 0, text: () => '[Z] 選 2 隻上台 ' + stageCount() + '/2', keys: () => [],
+    tgt: () => {
+      let i = G.s1.zone === 'grid' ? G.s1.cur : G.bank.findIndex(b => !b.on);
+      if (i < 0) i = 0;
+      const c = slotCenter(i); return { x: c.x, y: c.y, hh: 55 };
+    }, ok: () => stageCount() === 2 },
+  9: { where: () => scene === 'setup1' && G.day === 0, text: () => '[↓] 再 [Z] 下一步', keys: () => [],
     tgt: () => ({ x: 1070, y: 505, hh: 35 }), ok: () => scene === 'setup2' },
-  9: { where: () => scene === 'setup2' && G.day === 0, text: () => 'Z 選暗號: 什麼時候演', keys: () => ['z'],
+  10: { where: () => scene === 'setup2' && G.day === 0, text: () => '[Z] 選暗號: 什麼時候演', keys: () => [],
     tgt: () => ({ x: 280, y: 100, hh: 26 }), ok: () => !!G.rows[0].cue },
-  10: { where: () => scene === 'setup2' && G.day === 0, text: () => '→ 再 Z 選節目: 演什麼', keys: () => ['right', 'z'],
+  11: { where: () => scene === 'setup2' && G.day === 0, text: () => '[→] 再 [Z] 選節目: 演什麼', keys: () => [],
     tgt: () => ({ x: 580, y: 100, hh: 26 }), ok: () => !!(G.rows[0].cue && G.rows[0].prog) },
-  11: { where: () => scene === 'setup2' && G.day === 0, text: () => '↓ 再排第 2 列', keys: () => ['down'],
+  12: { where: () => scene === 'setup2' && G.day === 0, text: () => '[↓] 再排第 2 列', keys: () => [],
     tgt: () => ({ x: 280, y: 178, hh: 26 }), ok: () => !!(G.rows[1].cue && G.rows[1].prog) },
-  12: { where: () => scene === 'setup2' && G.day === 0, text: () => '↓ 到開演 按 Z', keys: () => ['down', 'z'],
+  13: { where: () => scene === 'setup2' && G.day === 0, text: () => '[↓] 到開演 按 [Z]', keys: () => [],
     tgt: () => ({ x: 260, y: 445, hh: 35 }), ok: () => scene === 'show' },
-  13: { where: () => scene === 'show' && G.day === 0, text: () => '暗號成立 就演節目', keys: () => [],
+  14: { where: () => scene === 'show' && G.day === 0, text: () => '暗號成立 就演節目', keys: () => [],
     tgt: () => miniTgt(S && S.cur >= 0 ? S.cur : 0), ok: () => !!S && S.fires >= 1 },
-  14: { where: () => scene === 'show' && G.day === 0, text: () => '接著輪到第 2 列', keys: () => [],
+  15: { where: () => scene === 'show' && G.day === 0, text: () => '接著輪到第 2 列', keys: () => [],
     tgt: () => miniTgt(S && S.cur >= 0 ? S.cur : 1), ok: () => !!S && S.fires >= 2 },
-  15: { fixed: true, where: () => scene === 'show' && G.day === 0, text: () => '熱度 = 大家的平均怒氣', keys: () => [],
+  16: { fixed: true, where: () => scene === 'show' && G.day === 0, text: () => '熱度 = 大家的平均怒氣', keys: () => [],
     tgt: heatTgt, tick: (c, dt) => { c.t += dt; }, ok: c => c.t >= 4 },
-  16: { fixed: true, where: () => scene === 'show', text: () => '太熱了! 小心失控', keys: () => [],
+  17: { fixed: true, where: () => scene === 'show', text: () => '太熱了! 小心失控', keys: () => [],
     tgt: heatTgt, tick: (c, dt) => { c.t += dt; }, ok: c => c.t >= 4 || (!!S && S.heat < 75 && c.t > 0.3) },
-  17: { where: () => scene === 'show', text: () => '生氣時表演 觀眾滿意度×2', keys: () => [],
+  18: { where: () => scene === 'show', text: () => '生氣時表演 觀眾滿意度×2', keys: () => [],
     tgt: () => { const m = TUT.angryMon; return m && S && S.mons.indexOf(m) >= 0 ? { x: m.x, y: m.y, hh: 64 } : null; },
     tick: (c, dt) => { c.t += dt; }, ok: c => c.t >= 4 },
-  18: { where: () => scene === 'show', text: () => '標記滿 5 個 會失控', keys: () => [],
+  19: { where: () => scene === 'show', text: () => '標記滿 5 個 會失控', keys: () => [],
     tgt: () => { const m = TUT.markMon; return m && S && S.mons.indexOf(m) >= 0 ? { x: m.x, y: m.y, hh: 72 } : null; },
     tick: (c, dt) => { c.t += dt; }, ok: c => c.t >= 5 || (!!TUT.markMon && TUT.markMon.marks === 0 && c.t > 0.3) },
-  19: { where: () => scene === 'place', text: () => '←→ 選 Z 決定', keys: () => ['left', 'right', 'z'],
+  20: { where: () => scene === 'place', text: () => '[←][→] 選 [Z] 決定', keys: () => [],
     tgt: () => ({ x: 240 + 400 * (G.placeCur), y: 370, hh: 210 }), ok: c => c.flags.placeChosen },
-  20: { where: () => scene === 'shop', text: () => '←→ 換分頁', keys: () => ['left', 'right'], tgt: () => ({ x: 640, y: 85, hh: 25 }), ok: c => c.flags.tab },
-  21: { where: () => inDungeon() && D.id === 'lake', text: () => '躲進草叢 魔物看不到你', keys: () => [],
+  21: { where: () => scene === 'shop', text: () => '[←][→] 換分頁', keys: () => [], tgt: () => ({ x: 640, y: 85, hh: 25 }), ok: c => c.flags.tab },
+  22: { where: () => inDungeon() && D.id === 'lake', text: () => '躲進草叢 魔物看不到你', keys: () => [],
     tgt: () => (D.bushes.length ? objTgt(nearestOf(D.bushes)) : null), ok: c => c.flags.hide },
-  22: { where: () => inDungeon() && D.id === 'lake', text: () => 'Z 打落果子 引開魔物', keys: () => ['z'],
-    tgt: () => objTgt(nearestOf(D.trees.filter(t => t.hasFruit)), 32), ok: c => c.flags.fruit },
+  23: { where: () => inDungeon() && D.id === 'lake', keys: () => [],
+    text: () => (D && D.fruits.length ? '吃果子 回 1 心' : '[Z] 打樹 掉下果子'),
+    tgt: () => {
+      if (!D) return null;
+      if (D.fruits.length) return objTgt(nearestOf(D.fruits), 24);
+      const t = nearestOf(D.trees.filter(t => t.hasFruit));
+      return t ? objTgt(t, 32) : null;
+    }, ok: c => c.flags.fruitEat },
 };
 const TUT_IDS = Object.keys(TS).map(Number).sort((a, b) => a - b);
+const TUT_CHAIN = { 1: 2, 3: 4, 8: 9, 10: 11, 11: 12, 12: 13, 14: 15, 15: 16 };   // 「階段 N 完成後」才出現的下一階段
 
 // 每幀檢查「第一次成立」的出現時機(成立後鎖存)
 function tutWatch() {
   if (scene === 'dungeon' && D) {
-    const T = D.tamer;
     if (D.id === 'meadow') {
       tutTrig(1);
-      if (D.mons.some(m => !m.dead && isWeak(m))) tutTrig(3);
+      if (TUT.done[2] && D.mons.some(m => !m.dead && isWeak(m))) tutTrig(3);
     }
-    if (D.lasso) tutTrig(4);
-    if (!TUT.done[21] && D.bushes.length) { const b = nearestOf(D.bushes); if (b && b.d <= 150) tutTrig(21); }
-    if (!TUT.done[22]) { const b = nearestOf(D.trees.filter(t => t.hasFruit)); if (b && b.d <= 200) tutTrig(22); }
+    if (D.lasso) tutTrig(5);
+    if (D.id === 'lake' && !D.down) {
+      if (!TUT.done[22] && D.bushes.length) { const b = nearestOf(D.bushes); if (b && b.d <= 150) tutTrig(22); }
+      if (!TUT.done[23] && D.tamer.hearts < D.tamer.maxHearts) {
+        const f = nearestOf(D.fruits), t = nearestOf(D.trees.filter(t => t.hasFruit));
+        if ((f && f.d <= 200) || (t && t.d <= 200)) tutTrig(23);
+      }
+    }
   }
-  if (scene === 'setup1' && G.day === 0) tutTrig(7);
-  if (scene === 'setup2' && G.day === 0) tutTrig(9);
-  if (scene === 'show' && G.day === 0) tutTrig(13);
-  if (scene === 'show' && S && S.heat >= 90) tutTrig(16);
-  if (scene === 'place' && G.day === 1) tutTrig(19);
-  if (scene === 'shop') tutTrig(20);
+  if (scene === 'setup1' && G.day === 0) tutTrig(8);
+  if (scene === 'setup2' && G.day === 0) tutTrig(10);
+  if (scene === 'show' && G.day === 0) tutTrig(14);
+  if (scene === 'show' && S && S.heat >= 90) tutTrig(17);
+  if (scene === 'place' && G.day === 1) tutTrig(20);
+  if (scene === 'shop') tutTrig(21);
 }
 function tutStart(id) {
-  const c = { id, phase: 'show', pk: {}, flags: {}, t: 0, age: 0, doneT: 0, lastTg: null };
+  const c = { id, phase: 'show', pk: {}, flags: {}, t: 0, age: 0, doneT: 0, lastGeo: null };
   TUT.cur = c;
   if (!TUT.logged[id]) { TUT.logged[id] = Date.now(); ev('tutorial_show', { stage: id, day: G.day, scene }); }
-  if (id === 3) noteStart();
 }
+// 第一次手上換成捕捉繩(見習草地): 附註出現(和階段 4 同時)
 function noteStart() {
-  if (TUT.done[6] || TUT.note) return;
-  TUT.note = { id: 6, phase: 'show', age: 0, doneT: 0 };
-  if (!TUT.logged[6]) { TUT.logged[6] = Date.now(); ev('tutorial_show', { stage: 6, day: G.day, scene }); }
+  if (TUT.done[7] || TUT.note) return;
+  TUT.note = { id: 7, phase: 'show', age: 0, doneT: 0 };
+  if (!TUT.logged[7]) { TUT.logged[7] = Date.now(); ev('tutorial_show', { stage: 7, day: G.day, scene }); }
 }
 function noteDone() {
   const n = TUT.note;
   if (!n || n.phase !== 'show') return;
   n.phase = 'done'; n.doneT = 0;
-  ev('tutorial_done', { stage: 6, day: G.day, took: +((Date.now() - TUT.logged[6]) / 1000).toFixed(1), cut: false });
+  ev('tutorial_done', { stage: 7, day: G.day, took: +((Date.now() - TUT.logged[7]) / 1000).toFixed(1), cut: false });
   Snd.play('tutorial_done');
 }
 function noteUpdate(dt) {
@@ -514,27 +549,36 @@ function noteUpdate(dt) {
   if (!n) return;
   if (n.phase === 'show') {
     n.age += dt;
-    if (!inMeadow()) { TUT.done[6] = true; TUT.note = null; return; }   // 見習草地結束: 收起
-    if (TS[6].ok()) noteDone();
+    if (!inMeadow()) { TUT.done[7] = true; TUT.note = null; return; }   // 見習草地結束: 收起
+    if (TS[7].ok()) noteDone();
   } else {
     n.doneT += dt;
-    if (n.doneT >= 0.6) { TUT.done[6] = true; TUT.note = null; }
+    if (n.doneT >= 0.6) { TUT.done[7] = true; TUT.note = null; }
   }
 }
+// 表演收場: 還在顯示的表演階段(14~19)直接算完成
 function tutCutShow() {
   const c = TUT.cur;
-  if (c && c.id >= 13 && c.id <= 18) {
+  if (c && c.id >= 14 && c.id <= 19) {
     if (c.phase === 'show') {
       ev('tutorial_done', { stage: c.id, day: G.day, took: +((Date.now() - TUT.logged[c.id]) / 1000).toFixed(1), cut: true });
     }
     TUT.done[c.id] = true; TUT.cur = null;
   }
-  if (S && S.tutorial) tutForceSkip(15);   // 見習表演: 排隊中還沒出現的 13~15 也收掉
+  if (S && S.tutorial) tutForceSkip(16);   // 見習表演: 排隊中還沒出現的 14~16 也收掉
 }
 function tutForceSkip(maxId) {
   for (const id of TUT_IDS) if (id <= maxId) { if (TUT.trig[id] || (TUT.cur && TUT.cur.id === id)) TUT.done[id] = true; }
   if (TUT.cur && TUT.cur.id <= maxId) TUT.cur = null;
-  if (maxId >= 6 && TUT.note) { TUT.done[6] = true; TUT.note = null; }
+}
+// 地下城結束: 見習草地的階段(1~5、附註 7)在流程出口強制標成完成; 其餘地下城階段只解除鎖存, 下次條件成立再出現
+function tutDungeonEnd(id) {
+  if (id === 'meadow') {
+    for (const k of [1, 2, 3, 4, 5, 7]) if (TUT.trig[k] || (TUT.cur && TUT.cur.id === k) || (TUT.note && k === 7)) TUT.done[k] = true;
+    TUT.note = null;
+  }
+  for (const k of [5, 6, 22, 23]) if (!TUT.done[k]) TUT.trig[k] = false;
+  if (TUT.cur) TUT.cur = null;
 }
 function tutUpdate(dt) {
   tutWatch();
@@ -549,13 +593,7 @@ function tutUpdate(dt) {
         c.phase = 'done'; c.doneT = 0;
         ev('tutorial_done', { stage: c.id, day: G.day, took: +((Date.now() - TUT.logged[c.id]) / 1000).toFixed(1), cut: false });
         Snd.play('tutorial_done');
-        if (c.id === 1) tutTrig(2);
-        if (c.id === 7) tutTrig(8);
-        if (c.id === 9) tutTrig(10);
-        if (c.id === 10) tutTrig(11);
-        if (c.id === 11) tutTrig(12);
-        if (c.id === 13) tutTrig(14);
-        if (c.id === 14) tutTrig(15);
+        if (TUT_CHAIN[c.id]) tutTrig(TUT_CHAIN[c.id]);
       } else if (!here) {
         TUT.cur = null;   // 離開該階段的場景: 收起來, 條件成立時再出現
       }
@@ -567,44 +605,57 @@ function tutUpdate(dt) {
   if (!TUT.cur) {
     for (const id of TUT_IDS) {
       if (TS[id].note || TUT.done[id] || !TUT.trig[id]) continue;
-      if (id >= 13 && id <= 18 && S && S.loose) continue;   // 收場期間不再冒出表演階段
+      if (id >= 14 && id <= 19 && S && S.loose) continue;   // 收場期間不再冒出表演階段
       if (TS[id].where()) { tutStart(id); break; }
     }
   }
 }
-function renderTutorial() {
+// 泡泡位置(RD 算): 目標在畫面上半(y < 300)放下方, 否則上方; 左右夾在畫面內; 第 16、17 階段固定; 第 3 階段在換武器視窗裡指捕捉繩卡
+function tutGeo(c, def) {
+  if (c.id === 3 && pickerOpen()) {
+    const cx = 640 + 90 * (D.picker.options.length - 1);
+    return { x: cx, y: 477, bx: cx, by: 541, side: 'down' };
+  }
+  const tg = def.tgt(); if (!tg) return null;
+  if (def.fixed) return { x: 640, y: 46, bx: 640, by: 110, side: 'down' };
+  const side = tg.y < 300 ? 'down' : 'up';
+  const ty = side === 'down' ? tg.y + tg.hh : tg.y - tg.hh;
+  const top = (scene === 'dungeon' ? 100 : 50) + 52;
+  const by = clamp(side === 'down' ? ty + 60 : ty - 60, top, CH - 52);
+  const bx = clamp(tg.x, 170, CW - 170);
+  return { x: tg.x, y: ty, bx, by, side };
+}
+// over = true: 只畫「第 3 階段、換武器視窗開著」那一個(要畫在視窗之上); false: 其餘一律
+function renderTutorial(over) {
   const c = TUT.cur;
   if (!c) return;
   const def = TS[c.id];
-  let tg;
+  const special = c.phase === 'show' && c.id === 3 && pickerOpen();
+  if (special !== !!over) return;
+  let geo;
   if (c.phase === 'show') {
     if (!def.where()) return;
-    tg = def.tgt(); if (!tg) return;
-    c.lastTg = tg;
+    geo = tutGeo(c, def); if (!geo) return;
+    c.lastGeo = geo;
   } else {
-    tg = c.lastTg; if (!tg) return;
+    geo = c.lastGeo; if (!geo) return;
   }
-  let side = tg.y < 300 ? 'down' : 'up';
-  let ty = side === 'down' ? tg.y + tg.hh : tg.y - tg.hh;
-  const top = (scene === 'dungeon' ? 100 : 50) + 52;
-  let by = clamp(side === 'down' ? ty + 60 : ty - 60, top, CH - 52);
-  let bx = clamp(tg.x, 170, CW - 170);
-  if (def.fixed) { side = 'down'; ty = 46; bx = 640; by = 110; tg = { x: 640, y: 46, hh: 0 }; }   // 第 15、16 階段: 指向熱度表, 畫在 HUD 之上
   const keysList = def.keys();
   Art.drawTutorial(ctx, {
     stage: c.id, kind: 'main', text: def.text(), keys: keysList,
     pressed: c.id === 1 ? keysList.filter(k => c.pk[k]) : [],
-    x: tg.x, y: ty, bx, by, side, phase: c.phase,
+    x: geo.x, y: geo.y, bx: geo.bx, by: geo.by, side: geo.side, phase: c.phase,
     appearT: Math.min(0.25, c.age), appearDur: 0.25,
     doneT: c.phase === 'done' ? c.doneT : 0.6, doneDur: 0.6,
   });
 }
-// 第 6 階段附註: 畫在 HUD 之上, 整個泡泡在 HUD 帶內(中心 (186, 26)), 尾巴朝下指向捕獸繩列正中央
+// 第 7 階段附註: 畫在 HUD 之上, 整個泡泡在 HUD 帶內(中心 (186, 26)), 尾巴朝下指向捕捉繩列正中央; 手上不是捕捉繩時暫時隱藏
 function renderTutNote() {
   const n = TUT.note;
   if (!n || !inMeadow()) return;
+  if (n.phase === 'show' && D.tamer.weapon !== 'rope') return;
   Art.drawTutorial(ctx, {
-    stage: 6, kind: 'note', text: TS[6].text(), keys: [], pressed: [],
+    stage: 7, kind: 'note', text: TS[7].text(), keys: [], pressed: [],
     x: 40 + 11 * (ropeMaxNow() - 1), y: 60, bx: 186, by: 26, side: 'up', phase: n.phase,
     appearT: Math.min(0.25, n.age), appearDur: 0.25,
     doneT: n.phase === 'done' ? n.doneT : 0.6, doneDur: 0.6,
@@ -734,9 +785,10 @@ function startDungeon(id) {
   const H = grid.length, W = grid[0].length;
   D = {
     id, grid, W, H, portals: [], nests: [], mons: [], hz: [], fx: [], floats: [], cracks: {}, kegs: [], trees: [], fruits: [], fountains: [], blasts: [], bushes: [],
-    timed: id !== 'meadow', timeLeft: 75, elapsed: 0, pairCd: { 1: 0, 2: 0 }, ring: { m: null, t: 0 }, lasso: null,
+    timed: id !== 'meadow', timeLeft: 75, elapsed: 0, pairCd: { 1: 0, 2: 0 }, lasso: null,
     ropes: ropeMaxNow(), tamer: null, caps: [], kills: 0, killGold: 0, heartsLost: 0, endT: -1, hidden: false, respawnT: id === 'meadow' ? 3 : 10,
     exit: null, prompt: null, capPop: 0,
+    rope: null, picker: null, down: null, dying: null, zWait: false, xWait: false,
   };
   let sx = 0, sy = 0;
   for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) {
@@ -746,7 +798,7 @@ function startDungeon(id) {
     else if (ch === 'E') { D.exit = { x: cx, y: cy, armed: true }; grid[r][c] = '.'; }
     else if (ch === 'K') { D.kegs.push({ x: cx, y: cy, mode: 'ok', fuseT: 0 }); grid[r][c] = '.'; }
     else if (ch === 'F') { D.fountains.push({ x: cx, y: cy, full: true }); grid[r][c] = '.'; }
-    else if (ch === 'Y') D.trees.push({ x: cx, y: cy, hasFruit: true, regrow: 0 });
+    else if (ch === 'Y') D.trees.push({ x: cx, y: cy, hasFruit: true });
     else if (ch === 'G') D.bushes.push({ x: cx, y: cy });
     else if (NEST_CH[ch]) { D.nests.push({ sp: NEST_CH[ch], x: cx, y: cy, room: id === 'meadow' ? 0 : roomOf(cx, cy), mon: null, respawn: 0 }); grid[r][c] = 'n'; }
   }
@@ -765,6 +817,7 @@ function spawnWild(n) {
     room: n.room, nest: n, dead: false, ang: rnd(0, Math.PI * 2), dirT: rnd(0.5, 2), cyc: rnd(0, 1),
     tp: 0, tpT: 0, teleT: rnd(0, 2.5), swooping: false, castT: 0, inRange: false, burst: null,
     face: 1, move: 'walk', moveT: 0, moveDur: 0, weak: false, casting: false,
+    windup: false, windupT: 0, windupDur: 0, aim: null, escapeT: 0.4, warnH: null,
   };
   if (n.sp === 'penguin' || n.sp === 'parrot') m.cyc = rnd(0, 2);
   n.mon = m; n.respawn = 0;
@@ -834,7 +887,7 @@ function moveMonster(m, dt, env, mul) {
 // ───────────────────────── 技能(地下城 / 表演場共用) ─────────────────────────
 function newHz(o) {
   return Object.assign({ kind: '', phase: 'fly', x: 0, y: 0, radius: 0, angle: 0, length: 0, width: 0, t: 0, dur: 0,
-    speed: 0, returning: false, reflected: false, dead: false, owner: null, cast: null, hit: null, trav: 0, ox: 0, oy: 0 }, o);
+    speed: 0, reflected: false, dead: false, owner: null, cast: null, hit: null, trav: 0, ox: 0, oy: 0 }, o);
 }
 function hzList() { return scene === 'show' || scene === 'sresult' ? S.hz : D.hz; }
 function killHz(h) {
@@ -851,8 +904,7 @@ function emitSkill(m, tx, ty, cast) {
   const base = Math.atan2(ty - m.y, tx - m.x);
   const mk = (ang, extra) => {
     const p = PROJ[kind];
-    const spd = (cast.dungeon && D && D.id === 'meadow' && kind === 'match') ? 160 : p.speed;
-    const h = newHz(Object.assign({ kind, phase: 'fly', x: m.x, y: m.y, radius: p.r, angle: ang, dur: p.life, speed: spd, owner: m, cast, ox: m.x, oy: m.y }, extra || {}));
+    const h = newHz(Object.assign({ kind, phase: 'fly', x: m.x, y: m.y, radius: p.r, angle: ang, dur: p.life, speed: p.speed, owner: m, cast, ox: m.x, oy: m.y }, extra || {}));
     cast.alive++; list.push(h);
   };
   if (kind === 'pollen') { mk(base - 20 * D2R); mk(base); mk(base + 20 * D2R); }
@@ -911,15 +963,34 @@ function facingFromDir(dx, dy) {
   if (dx === -1 && dy === 0) return 6; return 7;
 }
 // source: 技能代號 / 'hurt' / 'blast'
+// h: 打中的投射物 / 射線 / 爆炸(傷害地形給 null); 心歸零時記下它, 倒下動畫定格時要標亮
 function hurtTamer(source, h) {
   const T = D.tamer;
-  if (T.invuln > 0 || T.dash) return false;
+  if (D.down || T.invuln > 0 || T.dash) return false;
   T.hearts--; T.invuln = 1.5; D.heartsLost++;
   if (h && h.kind === 'icebeam') T.slowT = 1;
-  Snd.play('player_hurt');
+  const lethal = T.hearts <= 0;
+  if (lethal && !D.dying) D.dying = { source, kobj: h || null };
+  if (!lethal) Snd.play('player_hurt');
   ev('player_hit', { dungeon: D.id, source, x: Math.round(T.x), y: Math.round(T.y), heartsLeft: T.hearts, elapsed: +D.elapsed.toFixed(1) });
-  if (D.lasso) breakLasso('hit');
+  if (D.lasso && !lethal) breakLasso('hit');
   return true;
+}
+const HZ_CAUSE = { pollen: '鈴蘭精的花粉', match: '火柴猴的火柴', gear: '齒輪甲蟲的齒輪', feather: '標靶鸚鵡的羽毛', icebeam: '冰柱企鵝的冰柱', card: '戲法狸的紙牌' };
+function downCause(src) {
+  if (src === 'blast') return '被〔爆炸桶〕炸倒了';
+  if (src === 'hurt') return D.id === 'snow' ? '被〔冰刺〕刺傷倒下了' : '被〔齒輪刃〕割傷倒下了';
+  return '被〔' + (HZ_CAUSE[src] || '魔物') + '〕打倒了';
+}
+// 心歸零: 倒下動畫共 1.5 秒(定格 0.3 + 倒下 1.2), 期間不接受按鍵、不算進 75 秒
+function startDown() {
+  const T = D.tamer, dy = D.dying;
+  const cause = downCause(dy.source);
+  D.down = { t: 0, dur: 1.5, cause, kobj: dy.kobj };
+  D.prompt = null; D.picker = null; D.rope = null;
+  if (D.lasso) { D.lasso.m.lassoed = false; D.lasso = null; }   // 套索直接消失: 不播斷掉音效、不記 lasso_break
+  Snd.play('player_down'); Snd.music(null);
+  ev('player_down', { dungeon: D.id, source: dy.source, cause, x: Math.round(T.x), y: Math.round(T.y), elapsed: +D.elapsed.toFixed(1) });
 }
 function tryMoveTamer(dx, dy) {
   const T = D.tamer;
@@ -956,8 +1027,14 @@ function updateTamer(dt) {
   }
   T.hidden = inBush;
   if (circleOnChar(T.x, T.y, 18, 'L')) hurtTamer('hurt', null);
-  if (keys.z && T.zCd <= 0) doAttack(false);
-  if (keys.x && T.xCd <= 0 && !T.dash) doAttack(true);
+  if (!keys.z) D.zWait = false;
+  if (!keys.x) D.xWait = false;
+  if (T.weapon === 'rope') {
+    if (pressed.z) throwRope();   // 丟繩只吃按下的那一下, 不連發
+  } else {
+    if (keys.z && !D.zWait && T.zCd <= 0) doAttack(false);
+    if (keys.x && !D.xWait && T.xCd <= 0 && !T.dash) doAttack(true);
+  }
 }
 function addFx(o) { D.fx.push(Object.assign({ x: D.tamer.x, y: D.tamer.y, weapon: D.tamer.weapon, move: 'normal', shape: 'arc', angle: 0, spread: 0, radius: 0, length: 0, width: 0, t: 0, dur: 0.2 }, o)); }
 function doAttack(isX) {
@@ -1021,7 +1098,7 @@ function applyShape(sh, ox, oy, ang) {
     if (!inShape(sh, m.x, m.y, ox, oy, ang, 24)) continue;
     if (sh.dmg > 0) { damageMon(m, sh.dmg, 'weapon'); n++; }
     if (m.dead) continue;
-    if (sh.stun) { m.stun = 2; cancelWarns(m); cancelBurst(m); n++; Snd.once('hit_monster'); }
+    if (sh.stun) { m.stun = 2; cancelWarns(m); cancelBurst(m); cancelWindup(m); n++; Snd.once('hit_monster'); }
     if (sh.knock) {
       const a = Math.atan2(m.y - T.y, m.x - T.x);
       m.kb = { vx: Math.cos(a) * 640, vy: Math.sin(a) * 640, t: 0.25 };
@@ -1033,7 +1110,7 @@ function applyShape(sh, ox, oy, ang) {
       if (!inShape(sh, h.x, h.y, ox, oy, ang, h.radius)) continue;
       const ow = h.owner;
       h.angle = (ow && !ow.dead && D.mons.indexOf(ow) >= 0) ? Math.atan2(ow.y - T.y, ow.x - T.x) : h.angle + Math.PI;
-      h.speed *= 1.2; h.reflected = true; h.returning = false; h.t = 0;
+      h.speed *= 1.2; h.reflected = true; h.t = 0;
     }
   }
   hitObjects(sh, ox, oy, ang);
@@ -1067,25 +1144,26 @@ function igniteKeg(k) {
 }
 function explodeKeg(k) {
   k.mode = 'gone'; k.fuseT = 0;   // 炸掉就消失, 這趟不再長回來(下次進地下城才重新生成)
-  D.blasts.push({ x: k.x, y: k.y, t: 0, dur: 0.3 });
+  const blast = { x: k.x, y: k.y, t: 0, dur: 0.3 };
+  D.blasts.push(blast);
   Snd.play('keg_blast'); tut('keg');
   ev('object_use', { dungeon: D.id, object: 'keg', action: 'blast', x: Math.round(k.x), y: Math.round(k.y) });
   for (const m of D.mons) {
     if (m.dead || m.lassoed) continue;
     if (dist(m.x, m.y, k.x, k.y) <= 130 + 24) damageMon(m, 4, 'blast');
   }
-  if (dist(D.tamer.x, D.tamer.y, k.x, k.y) <= 130 + 18) hurtTamer('blast', null);
+  if (dist(D.tamer.x, D.tamer.y, k.x, k.y) <= 130 + 18) hurtTamer('blast', blast);
   for (let r = 0; r < D.H; r++) for (let c = 0; c < D.W; c++) {
     if (D.grid[r][c] === 'X' && dist(c * TILE + 30, r * TILE + 30, k.x, k.y) <= 130) addCrack(r, c);
   }
   for (const o of D.kegs) if (o !== k && o.mode === 'ok' && dist(o.x, o.y, k.x, k.y) <= 130) igniteKeg(o);
 }
+// 回血果樹: 打樹掉下 1 顆果子(這趟不再結果); 果子留在樹下方那格, 馴獸師碰到且心沒滿才吃(魔物不理果子)
 function dropFruit(t) {
-  t.hasFruit = false; t.regrow = 15;
-  const f = { x: t.x, y: t.y + 60, room: roomOf(t.x, t.y + 60), eating: false, eatT: 0 };
+  t.hasFruit = false;
+  const f = { x: t.x, y: t.y + 60 };
   D.fruits.push(f);
-  for (const m of D.mons) if (!m.dead && m.room === f.room) { cancelWarns(m); cancelBurst(m); m.casting = false; }
-  Snd.play('fruit_drop'); tut('fruit');
+  Snd.play('fruit_drop');
   ev('object_use', { dungeon: D.id, object: 'fruit', action: 'drop', x: Math.round(f.x), y: Math.round(f.y) });
 }
 function damageMon(m, dmg, by) {
@@ -1094,8 +1172,7 @@ function damageMon(m, dmg, by) {
   m.hp -= dmg; m.hitT = 0.1;
   if (!wasWeak && m.hp <= 0) m.hp = 1;   // 保底殘血: 非殘血的魔物不會被一擊打死, 停在 1 血進殘血
   Snd.once('hit_monster');
-  if (D.id === 'meadow' && wasWeak) { m.hp += dmg; return; }   // 見習草地殘血魔物不再受傷(照樣閃白、播受擊音)、不打斷準備捕捉
-  if (D.ring.m === m) D.ring.t = 0;
+  if (D.id === 'meadow' && wasWeak) { m.hp += dmg; return; }   // 見習草地殘血魔物不再受傷(照樣閃白、播受擊音)
   if (m.hp <= 0) killMon(m, by);
   else if (!wasWeak && isWeak(m)) Snd.once('monster_weak');
 }
@@ -1108,9 +1185,8 @@ function killMon(m, by) {
   ev('kill', { dungeon: D.id, species: m.sp, by: by || 'weapon', x: Math.round(m.x), y: Math.round(m.y) });
   addDFloat(m.x, m.y - 40, '+' + k, 'gold');
   if (D.lasso && D.lasso.m === m) D.lasso = null;
-  if (D.ring.m === m) { D.ring.m = null; D.ring.t = 0; }
 }
-function addDFloat(x, y, text, kind) { D.floats.push({ x, y, text, kind, t: 0, dur: 1 }); }
+function addDFloat(x, y, text, kind, dur) { D.floats.push({ x, y, text, kind, t: 0, dur: dur || 1 }); }
 
 // ───────────────────────── 地下城: 魔物 ─────────────────────────
 function dirDungeon(m) {
@@ -1132,29 +1208,35 @@ function teleDungeon(m) {
   return { x: rnd(b.x0, b.x1), y: rnd(b.y0, b.y1) };
 }
 function intervalWild(m) { return m.interval * (m.weak ? 1.5 : 1); }
-function fruitFor(m) {
-  let best = null, bd = 1e9;
-  for (const f of D.fruits) { if (f.room !== m.room) continue; const d = dist(m.x, m.y, f.x, f.y); if (d < bd) { bd = d; best = f; } }
-  return best;
+// 前搖(只在地下城): 每次施放前魔物停住、頭上「!」、朝要射的方向畫短箭頭; 冰柱企鵝的射線預警(0.7 秒)就是牠的前搖
+const WINDUP = { lily: 0.6, monkey: 0.6, beetle: 0.6, tanuki: 0.6, parrot: 0.5 };
+// 前搖被打斷(劍擊暈、被套住): 不放技能, 間隔重新計時
+function cancelWindup(m) {
+  if (!m.windup) return;
+  m.windup = false; m.windupT = 0; m.aim = null;
+  m.castT = intervalWild(m);
 }
 function updateWild(m, dt) {
   const T = D.tamer;
   m.hitT = Math.max(0, m.hitT - dt);
+  m.escapeT = Math.min(0.4, m.escapeT + dt);
   m.weak = isWeak(m);
   const b = roomBounds(m.room);
-  if (m.lassoed) { m.casting = false; return; }
-  if (m.stun > 0) { m.stun = Math.max(0, m.stun - dt); m.casting = false; return; }
-  // 果子: 同房間的魔物走過去吃, 期間不施放
-  const f = fruitFor(m);
-  if (f) {
-    cancelWarns(m); cancelBurst(m); m.casting = false;
-    m.move = 'eat'; m.moveT = 0; m.moveDur = 0; m.inRange = false;
-    const d = dist(m.x, m.y, f.x, f.y);
-    if (d > 30) {
-      const st = Math.min(80 * dt, d);
-      m.x = clamp(m.x + (f.x - m.x) / d * st, b.x0, b.x1); m.y = clamp(m.y + (f.y - m.y) / d * st, b.y0, b.y1);
-      m.face = f.x >= m.x ? 1 : -1;
-    } else if (!f.eating) { f.eating = true; f.eatT = 0; }
+  if (m.lassoed) { m.casting = false; cancelWindup(m); return; }
+  if (m.stun > 0) { m.stun = Math.max(0, m.stun - dt); m.casting = false; cancelWindup(m); return; }
+  // 前搖中: 停住不動(戲法狸不瞬移), 瞄準方向每幀跟著馴獸師, 前搖結束的瞬間放技能
+  if (m.windup) {
+    m.move = 'walk'; m.moveT = 0; m.moveDur = 0;
+    m.aim = Math.atan2(T.y - m.y, T.x - m.x);
+    m.windupT += dt;
+    if (m.windupT >= m.windupDur) {
+      m.windup = false; m.windupT = 0; m.aim = null;
+      emitSkill(m, T.x, T.y, newCast(m, 1, true));
+      Snd.once('monster_cast');
+      m.castT = intervalWild(m);
+    }
+    m.casting = !!m.burst;
+    if (m.burst) stepBurst(m, 0);
     return;
   }
   if (m.kb) {
@@ -1166,18 +1248,27 @@ function updateWild(m, dt) {
     moveMonster(m, dt, { b, dir: dirDungeon, tele: teleDungeon }, m.weak ? 0.5 : 1);
   }
   if (m.burst) stepBurst(m, dt);
-  let warning = false;
-  for (const h of D.hz) if (!h.dead && h.owner === m && h.phase === 'warn') warning = true;
-  m.casting = warning || !!m.burst;
+  let warn = null;
+  for (const h of D.hz) if (!h.dead && h.owner === m && h.phase === 'warn') warn = h;
+  m.warnH = warn;
+  m.casting = !!warn || !!m.burst;
   const d = dist(m.x, m.y, T.x, T.y);
   if (D.id === 'meadow') { m.inRange = false; m.casting = false; }   // 見習草地的魔物不攻擊, 只走動
   else if (d < 300 && !T.hidden) {
     if (!m.inRange) { m.inRange = true; m.castT = intervalWild(m); }
     m.castT -= dt;
-    if (m.castT <= 0 && !m.casting) {
-      emitSkill(m, T.x, T.y, newCast(m, 1, true));
-      Snd.once('monster_cast');
-      m.castT = intervalWild(m);
+    if (m.sp === 'penguin') {
+      // 企鵝: 射線預警開始 = 前搖開始
+      if (m.castT <= 0 && !m.casting) {
+        emitSkill(m, T.x, T.y, newCast(m, 1, true));
+        Snd.once('monster_windup');
+        m.castT = intervalWild(m);
+      }
+    } else if (m.castT <= WINDUP[m.sp] && !m.casting && m.tp === 0) {
+      // 施放間隔 − 前搖長度 時開始前搖(前搖算在間隔裡)
+      m.windup = true; m.windupT = 0; m.windupDur = WINDUP[m.sp];
+      m.aim = Math.atan2(T.y - m.y, T.x - m.x);
+      Snd.once('monster_windup');
     }
   } else m.inRange = false;
 }
@@ -1194,6 +1285,7 @@ function updateHazardsDungeon(dt) {
         if (h.owner.dead || h.owner.stun > 0 || h.owner.lassoed) { killHz(h); continue; }
         if (h.t >= h.dur) {
           h.phase = 'active'; h.t = 0; h.dur = 0.2;
+          Snd.once('monster_cast');
           if (lineHitsCircle(h, T.x, T.y, 18)) hurtTamer('icebeam', h);
           for (const k of D.kegs) if (k.mode === 'ok' && inLine(k.x, k.y, h.x, h.y, h.angle, h.length, h.width, 0)) igniteKeg(k);
         }
@@ -1203,13 +1295,11 @@ function updateHazardsDungeon(dt) {
     h.t += dt;
     if (h.t >= h.dur) { killHz(h); continue; }
     const step = h.speed * dt;
-    if (h.kind === 'match' && !h.reflected && h.returning) {
-      h.angle = Math.atan2(h.oy - h.y, h.ox - h.x);
-      if (dist(h.x, h.y, h.ox, h.oy) <= 20) { killHz(h); continue; }
-    }
     h.x += Math.cos(h.angle) * step; h.y += Math.sin(h.angle) * step;
-    if (h.kind === 'match' && !h.reflected && !h.returning) { h.trav += step; if (h.trav >= 280) h.returning = true; }
-    if (solidAtPoint(h.x, h.y)) { killHz(h); continue; }
+    if (solidAtPoint(h.x, h.y)) {
+      if (h.reflected) { const tr = D.trees.find(t => t.hasFruit && Math.floor(t.x / TILE) === Math.floor(h.x / TILE) && Math.floor(t.y / TILE) === Math.floor(h.y / TILE)); if (tr) dropFruit(tr); }
+      killHz(h); continue;
+    }
     let kegHit = null;
     for (const k of D.kegs) if (k.mode !== 'gone' && dist(h.x, h.y, k.x, k.y) <= 22 + h.radius) { kegHit = k; break; }
     if (kegHit) { igniteKeg(kegHit); killHz(h); continue; }
@@ -1269,16 +1359,20 @@ function updateObjects(dt) {
   }
   for (const b of D.blasts) b.t += dt;
   D.blasts = D.blasts.filter(b => b.t < b.dur);
-  // 果樹與果子
-  for (const t of D.trees) if (!t.hasFruit) { t.regrow -= dt; if (t.regrow <= 0) t.hasFruit = true; }
-  for (const f of D.fruits) if (f.eating) f.eatT += dt;
-  D.fruits = D.fruits.filter(f => !(f.eating && f.eatT >= 3));
+  // 果子: 馴獸師中心離果子 ≤ 30 且心沒滿 → 吃掉回 1 心; 心滿了碰了沒反應、果子留著
+  for (const f of D.fruits) {
+    if (f.eaten || T.hearts >= T.maxHearts || dist(T.x, T.y, f.x, f.y) > 30) continue;
+    f.eaten = true; T.hearts++;
+    addDFloat(T.x, T.y - 50, '+1 心', 'heal');
+    Snd.play('fruit_eat'); tut('fruitEat');
+    ev('fruit_eat', { dungeon: D.id, heartsAfter: T.hearts, elapsed: +D.elapsed.toFixed(1), x: Math.round(T.x), y: Math.round(T.y) });
+  }
+  D.fruits = D.fruits.filter(f => !f.eaten);
 }
 function startLasso(m) {
-  m.lassoed = true; cancelWarns(m); cancelBurst(m); m.casting = false;
+  m.lassoed = true; cancelWarns(m); cancelBurst(m); cancelWindup(m); m.casting = false;
   const T = D.tamer;
   D.lasso = { m, t: 0, limit: 5, sum: 0, last: Math.atan2(T.y - m.y, T.x - m.x) };
-  D.ring.m = null; D.ring.t = 0;
   Snd.play('capture_ready'); tut('lasso');
 }
 function breakLasso(reason) {
@@ -1287,48 +1381,147 @@ function breakLasso(reason) {
   m.lassoed = false;
   Snd.play('lasso_break');
   ev('lasso_break', { dungeon: D.id, species: m.sp, reason, x: Math.round(D.tamer.x), y: Math.round(D.tamer.y) });
-  D.lasso = null; D.ring.m = null; D.ring.t = 0;
+  D.lasso = null;
+}
+// 手上換東西(武器或捕捉繩); 換上武器 = 同時變成目前裝備的武器
+function setHand(to, auto, pausedFor) {
+  const T = D.tamer, from = T.weapon;
+  if (from === to) return;
+  T.weapon = to;
+  if (to !== 'rope') G.weapon = to;
+  ev('weapon_switch', { dungeon: D.id, from, to, auto: !!auto, elapsed: +D.elapsed.toFixed(1), pausedFor: +(pausedFor || 0).toFixed(1) });
+  if (to === 'rope' && D.id === 'meadow') noteStart();
 }
 function captureDone() {
   const L = D.lasso, m = L.m;
-  D.ropes--;
+  D.ropes--;   // 只有收服成功才扣繩
   const auto = G.stageInit && stageCount() < 20;
   const b = addMonster(m.sp, auto);
   G.cap[m.sp]++;
   D.caps.push(m.sp); D.capPop = 0;
   addDFloat(m.x, m.y - 40, '收服!', 'capture');
   Snd.play('capture'); tut('capture');
-  ev('capture', { dungeon: D.id, species: m.sp, num: b.num, elapsed: +D.elapsed.toFixed(1), x: Math.round(m.x), y: Math.round(m.y) });
+  ev('capture', { dungeon: D.id, species: m.sp, num: b.num, elapsed: +D.elapsed.toFixed(1), x: Math.round(m.x), y: Math.round(m.y), ropesLeft: D.ropes });
   m.dead = true; m.nest.mon = null; m.nest.respawn = D.respawnT;
-  D.lasso = null; D.ring.m = null; D.ring.t = 0;
-  if (D.id === 'meadow') {
-    if (D.caps.length === 1) tutTrig(5);
-    if (D.caps.length >= 2 && D.endT < 0) D.endT = 0.7;   // 讓「2/2」完成特效播完再結束
+  D.lasso = null;
+  // 收服用掉最後一條繩子: 自動換回目前裝備的武器
+  if (D.ropes <= 0 && D.tamer.weapon === 'rope') {
+    setHand(G.weapon, true, 0);
+    addDFloat(D.tamer.x, D.tamer.y - 96, '繩子用完了', 'hint', 1.5);
   }
+  if (D.id === 'meadow' && D.caps.length >= 3 && D.endT < 0) D.endT = 0.7;   // 讓最後一個教學完成特效播完再結束
 }
 function updateCapture(dt) {
   const T = D.tamer;
-  if (D.lasso) {
-    const L = D.lasso, m = L.m;
-    L.t += dt;
-    const a = Math.atan2(T.y - m.y, T.x - m.x);
-    L.sum += normAng(a - L.last); L.last = a;
-    if (dist(T.x, T.y, m.x, m.y) > 220) { breakLasso('distance'); return; }
-    if (L.t >= L.limit) { breakLasso('timeout'); return; }
-    if (Math.abs(L.sum) / (Math.PI * 2) >= 1) captureDone();
+  if (!D.lasso) return;
+  const L = D.lasso, m = L.m;
+  L.t += dt;
+  const a = Math.atan2(T.y - m.y, T.x - m.x);
+  L.sum += normAng(a - L.last); L.last = a;
+  if (dist(T.x, T.y, m.x, m.y) > 220) { breakLasso('distance'); return; }
+  if (L.t >= L.limit) { breakLasso('timeout'); return; }
+  if (Math.abs(L.sum) / (Math.PI * 2) >= 1) captureDone();
+}
+
+// ───── 丟繩 ─────
+const ROPE_SPEED = 700, ROPE_RANGE = 220, ROPE_BACK = 0.15;
+function throwRope() {
+  const T = D.tamer;
+  if (T.weapon !== 'rope' || D.ropes <= 0 || D.lasso || D.rope || T.dash) return;
+  const face = (T.facing - 2) * Math.PI / 4;
+  // 自動瞄準: 220 以內、和面向相差 ≤ 30° 的野生魔物裡最近的一隻(被套住、淡出中的戲法狸除外)
+  let tgt = null, bd = 1e9;
+  for (const m of D.mons) {
+    if (m.dead || m.lassoed || (m.sp === 'tanuki' && m.tp === 1)) continue;
+    const d = dist(m.x, m.y, T.x, T.y);
+    if (d > ROPE_RANGE) continue;
+    if (Math.abs(normAng(Math.atan2(m.y - T.y, m.x - T.x) - face)) > 30 * D2R + 1e-9) continue;
+    if (d < bd) { bd = d; tgt = m; }
+  }
+  D.rope = { phase: 'out', x: T.x, y: T.y, ang: face, trav: 0, t: 0, dur: ROPE_RANGE / ROPE_SPEED, tgt, tdist: tgt ? bd : null, hx: T.x, hy: T.y };
+  Snd.play('rope_throw');
+}
+function ropeResult(result, m) {
+  ev('rope_throw', { dungeon: D.id, result, species: m ? m.sp : null, weak: m ? isWeak(m) : false, dist: m && D.rope && D.rope.tdist != null ? Math.round(D.rope.tdist) : null, elapsed: +D.elapsed.toFixed(1) });
+}
+function updateRope(dt) {
+  const R = D.rope, T = D.tamer;
+  if (!R) return;
+  if (R.phase === 'back') {
+    R.t += dt;
+    if (R.t >= ROPE_BACK) D.rope = null;
     return;
   }
-  if (D.ropes <= 0) { D.ring.m = null; D.ring.t = 0; return; }
-  let best = null, bd = 1e9;
-  for (const m of D.mons) {
-    if (m.dead || !isWeak(m) || m.tp === 1) continue;
-    const d = dist(T.x, T.y, m.x, m.y);
-    if (d <= 40 && d < bd) { best = m; bd = d; }
+  // 飛出中: 繩頭追著目標(沒目標就朝面向直飛); 分段走, 免得穿過牆或魔物
+  let left = Math.min(ROPE_SPEED * dt, ROPE_RANGE - R.trav);
+  const n = Math.max(1, Math.ceil(left / 8));
+  for (let i = 0; i < n && R.phase === 'out'; i++) {
+    const st = left / n;
+    if (R.tgt && !R.tgt.dead && !R.tgt.lassoed) R.ang = Math.atan2(R.tgt.y - R.y, R.tgt.x - R.x);
+    R.x += Math.cos(R.ang) * st; R.y += Math.sin(R.ang) * st; R.trav += st;
+    // 撞牆、石柱、裂牆、果樹、爆炸桶 → 收回, 不扣繩
+    if (solidAtPoint(R.x, R.y) || kegBlock(R.x, R.y, 0)) {
+      ropeResult('miss', null); R.phase = 'back'; R.t = 0; R.hx = R.x; R.hy = R.y; break;
+    }
+    let hit = null;
+    for (const m of D.mons) {
+      if (m.dead || m.lassoed || (m.sp === 'tanuki' && m.tp === 1)) continue;
+      // 套索最長 220: 魔物離馴獸師超過 220 就不算打中(免得套上瞬間就斷)
+      if (dist(R.x, R.y, m.x, m.y) <= 16 + 24 && dist(T.x, T.y, m.x, m.y) <= 220) { hit = m; break; }
+    }
+    if (hit) {
+      if (isWeak(hit)) {
+        ropeResult('lasso', hit);
+        D.rope = null;
+        startLasso(hit);
+      } else {
+        ropeResult('escape', hit);
+        hit.escapeT = 0;
+        addDFloat(hit.x, hit.y - 60, '掙脫了!', 'escape');
+        Snd.play('rope_escape');
+        if (!TUT.done[6] && (D.id === 'meadow' || D.id === 'lake')) { TUT.escMon = hit; tutTrig(6); }
+        R.phase = 'back'; R.t = 0; R.hx = R.x; R.hy = R.y;
+      }
+      break;
+    }
+    if (R.trav >= ROPE_RANGE - 1e-6) { ropeResult('miss', null); R.phase = 'back'; R.t = 0; R.hx = R.x; R.hy = R.y; break; }
   }
-  if (!best) { D.ring.m = null; D.ring.t = 0; return; }
-  if (D.ring.m !== best) { D.ring.m = best; D.ring.t = 0; }
-  D.ring.t += dt;
-  if (D.ring.t >= captureDur()) startLasso(best);
+  if (R.phase === 'out') R.t = Math.min(R.dur, R.trav / ROPE_SPEED);
+}
+
+// ───── 換武器視窗(開著時整個地下城暫停) ─────
+const WEAPON_ORDER = ['club', 'sword', 'spear'];
+const WEAPON_NAME = { club: '棍棒', sword: '劍', spear: '長槍', rope: '捕捉繩' };
+const WEAPON_LINE = { club: '[Z] 敲擊', sword: '[Z] 斬擊 [X] 擊暈', spear: '[Z] 長刺 [X] 突進', rope: '[Z] 丟繩 套虛弱的魔物' };
+function pickerOptions() {
+  const out = [];
+  for (const k of WEAPON_ORDER) if (G.ownedWeapons[k]) out.push({ key: k, name: WEAPON_NAME[k], line: WEAPON_LINE[k], current: D.tamer.weapon === k, disabled: false, ropes: 0, ropeMax: 0 });
+  out.push({ key: 'rope', name: WEAPON_NAME.rope, line: WEAPON_LINE.rope, current: D.tamer.weapon === 'rope', disabled: D.ropes <= 0, ropes: D.ropes, ropeMax: ropeMaxNow() });
+  return out;
+}
+function openPicker() {
+  const options = pickerOptions();
+  let index = options.findIndex(o => o.current); if (index < 0) index = 0;
+  D.picker = { options, index, t: 0 };
+  Snd.play('weapon_menu');
+}
+function closePicker() {
+  D.picker = null; D.zWait = true; D.xWait = true;
+}
+function updatePicker(dt) {
+  const P = D.picker;
+  P.t += dt;
+  if (pressed.left && P.index > 0) { P.index--; Snd.play('ui_move'); }
+  else if (pressed.right && P.index < P.options.length - 1) { P.index++; Snd.play('ui_move'); }
+  else if (pressed.x || pressed.c) { closePicker(); Snd.play('ui_cancel'); }
+  else if (pressed.z) {
+    const o = P.options[P.index];
+    if (o.disabled) { Snd.play('ui_denied'); return; }
+    const pf = P.t;
+    closePicker();
+    Snd.play('ui_confirm');
+    setHand(o.key, false, pf);
+  }
 }
 
 // 出口詢問框開著: 整個地下城暫停, 只接受 ← → Z X
@@ -1340,6 +1533,7 @@ function updateExitPrompt(dt) {
   else if (pressed.x || (pressed.z && P.choice === 1)) {
     ev('exit_prompt', { dungeon: D.id, action: 'stay', elapsed: +D.elapsed.toFixed(1), captures: D.caps.length, heartsLeft: D.tamer.hearts });
     D.prompt = null; D.exit.armed = false;   // 離開出口 > 150 才會再觸發
+    D.zWait = true; D.xWait = true;
     Snd.play('ui_cancel');
   } else if (pressed.z) {
     ev('exit_prompt', { dungeon: D.id, action: 'leave', elapsed: +D.elapsed.toFixed(1), captures: D.caps.length, heartsLeft: D.tamer.hearts });
@@ -1361,7 +1555,11 @@ function checkExit() {
 }
 
 function updateDungeon(dt) {
+  // 倒下動畫: 定格 0.3 + 倒下 1.2, 期間其他一切定格、不接受按鍵
+  if (D.down) { D.down.t += dt; if (D.down.t >= D.down.dur) endDungeon('down'); return; }
   if (D.prompt) { updateExitPrompt(dt); return; }
+  if (D.picker) { updatePicker(dt); return; }
+  if (pressed.c) { openPicker(); return; }
   D.elapsed += dt;
   if (D.timed) D.timeLeft -= dt;
   updateTamer(dt);
@@ -1372,6 +1570,7 @@ function updateDungeon(dt) {
   for (const m of D.mons) if (!m.dead) updateWild(m, dt);
   updateHazardsDungeon(dt);
   D.mons = D.mons.filter(m => !m.dead);
+  updateRope(dt);
   updateCapture(dt);
   for (const f of D.fx) f.t += dt;
   D.fx = D.fx.filter(f => f.t < f.dur);
@@ -1387,9 +1586,8 @@ function updateDungeon(dt) {
       if (hb.t >= 2) { hb.fx = 'none'; hb.t = 2; hb.delta = 0; }
     } }
   if (T.hearts <= 0) {
-    ev('player_down', { dungeon: D.id, x: Math.round(T.x), y: Math.round(T.y), elapsed: +D.elapsed.toFixed(1) });
     if (D.id === 'meadow') T.hearts = T.maxHearts;   // 教學不會失敗: 補滿心、原地繼續
-    else { endDungeon('down'); return; }
+    else { startDown(); return; }
   }
   if (D.timed && D.timeLeft <= 0) { endDungeon('time'); return; }
   if (D.endT >= 0) { D.endT -= dt; if (D.endT <= 0) { endDungeon('tutorial'); return; } }
@@ -1397,10 +1595,10 @@ function updateDungeon(dt) {
 }
 function endDungeon(reason) {
   if (D.lasso) { D.lasso.m.lassoed = false; D.lasso = null; }
-  DR = { reason, captures: D.caps.slice(), kills: D.kills, gold: D.killGold };
+  DR = { reason, captures: D.caps.slice(), kills: D.kills, gold: D.killGold, cause: reason === 'down' && D.down ? D.down.cause : '' };
   ev('dungeon_end', { day: G.day, dungeon: D.id, reason, dur: +D.elapsed.toFixed(1), captures: D.caps.slice(), kills: D.kills, heartsLost: D.heartsLost, gold: D.killGold });
-  Snd.play('dungeon_end');
-  if (D.id === 'meadow') tutForceSkip(6);
+  Snd.play('dungeon_end', reason);
+  tutDungeonEnd(D.id);
   D = null;
   checkUnlock();
   setScene('dresult');
@@ -1431,6 +1629,11 @@ function intermissionInput(dt) {
 // ───────────────────────── 布置 ─────────────────────────
 const UI = { floats: [] };
 function uiFloat(x, y, text, kind) { UI.floats.push({ x, y, text, kind, t: 0, dur: 1 }); }
+// 擋下提示(kind hint, 1.5 秒, 停在原位); 同一個提示顯示中又觸發 → 重新計時, 不疊兩個
+function setupHint(text, x, y) {
+  UI.floats = UI.floats.filter(f => !(f.kind === 'hint' && f.text === text));
+  UI.floats.push({ x, y, text, kind: 'hint', t: 0, dur: 1.5 });
+}
 function enterSetup1() {
   if (G.day >= 1 && !G.stageInit) { G.bank.forEach((b, i) => { b.on = i < 20; }); G.stageInit = true; }
   G.s1 = { cur: 0, top: 0, zone: 'grid', back: 0 };
@@ -1463,16 +1666,29 @@ function setup1Input() {
     else if (pressed.z && n > 0) {
       const b = G.bank[s.cur];
       if (b.on) { b.on = false; Snd.play('ui_cancel'); }
-      else if (stageCount() < 20) { b.on = true; Snd.play('ui_confirm'); }
-      else Snd.play('ui_denied');
+      else if (stageCount() < stageLimit()) { b.on = true; Snd.play('ui_confirm'); }
+      else {
+        Snd.play('ui_denied');
+        if (G.day === 0) {   // 見習表演只能上台 2 隻
+          setupHint('見習表演 只能上台 2 隻', 480, 450);
+          ev('setup_denied', { day: G.day, reason: 'max2', count: stageCount() });
+        }
+      }
     }
     fixScroll(s, 'cur', n);
   } else if (s.zone === 'next') {
     if (pressed.up) { s.zone = 'grid'; s.cur = s.back; Snd.play('ui_move'); }
     else if (pressed.down) { if (G.day !== 0) { s.zone = 'back'; Snd.play('ui_move'); } }   // 見習日沒有「回選地點」
     else if (pressed.z) {
-      if (stageCount() >= 1) { Snd.play('ui_confirm'); G.s2 = { row: 0, col: 0, panel: null }; setScene('setup2'); }
-      else Snd.play('ui_denied');
+      const need = G.day === 0 ? stageCount() === STAGE_MAX_TUT : stageCount() >= 1;
+      if (need) { Snd.play('ui_confirm'); G.s2 = { row: 0, col: 0, panel: null }; setScene('setup2'); }
+      else {
+        Snd.play('ui_denied');
+        if (G.day === 0) {   // 見習日一定要選滿 2 隻
+          setupHint('要選 2 隻上台 才能下一步', 1070, 450);
+          ev('setup_denied', { day: G.day, reason: 'need2', count: stageCount() });
+        }
+      }
     }
   } else {
     if (pressed.up) { s.zone = 'next'; Snd.play('ui_move'); }
@@ -1573,7 +1789,7 @@ function startShow() {
   S.cur = S.rows.findIndex(r => r.complete);
   ev('setup_done', { day: G.day, roster: roster.map(b => ({ species: b.sp, num: b.num })), rows: G.rows.map(r => ({ cue: r.cue, program: r.prog })) });
   Snd.play('show_start');
-  if (tutorial) tutForceSkip(11);   // 沒走完的布置階段收掉; 階段 12(開演)讓它在表演場播完成特效
+  if (tutorial) tutForceSkip(12);   // 沒走完的布置階段收掉; 階段 13(開演)讓它在表演場播完成特效
   setScene('show');
   // 熱度: 開演時直接依開演熱度定段
   S.heat = avgHeat(); S.heatMax = S.heat; S.tierIdx = tierOf(S.heat);
@@ -1628,7 +1844,7 @@ function perform(m, chain) {
   S.ev.perf1 = true;
   const cast = newCast(m, chain, false);
   cast.angry = isAngry(m);
-  if (cast.angry) { S.angryPerforms++; Snd.once('angry_perform'); if (!TUT.done[17]) { TUT.angryMon = m; tutTrig(17); } }
+  if (cast.angry) { S.angryPerforms++; Snd.once('angry_perform'); if (!TUT.done[18]) { TUT.angryMon = m; tutTrig(18); } }
   Snd.once('perform');
   if (chain >= 2) Snd.once('chain', chain);
   const t = pickAim(m);
@@ -1650,7 +1866,7 @@ function checkSettle(c) {
 
 function markFx(m) {
   Snd.once('mark_add', m.marks);
-  if (!TUT.done[18]) { TUT.markMon = m; tutTrig(18); }
+  if (!TUT.done[19]) { TUT.markMon = m; tutTrig(19); }
   if (m.marks >= 3) ev('mark_peak', { day: G.day, species: m.sp, num: m.num, marks: m.marks, elapsed: +S.clock.toFixed(1) });
 }
 function addMark(m) {
@@ -1710,12 +1926,7 @@ function updateHazardsShow(dt) {
     h.t += dt;
     if (h.t >= h.dur) { killHz(h); continue; }
     const step = h.speed * dt;
-    if (h.kind === 'match' && h.returning) {
-      h.angle = Math.atan2(h.oy - h.y, h.ox - h.x);
-      if (dist(h.x, h.y, h.ox, h.oy) <= 20) { killHz(h); continue; }
-    }
     h.x += Math.cos(h.angle) * step; h.y += Math.sin(h.angle) * step;
-    if (h.kind === 'match' && !h.returning) { h.trav += step; if (h.trav >= 280) h.returning = true; }
     if (h.x < ARENA.x0 || h.x > ARENA.x1 || h.y < ARENA.y0 || h.y > ARENA.y1) { killHz(h); continue; }
     for (const v of S.mons) {
       if (!validVictim(h, v)) continue;
@@ -1991,7 +2202,7 @@ function finishShow(reason) {
   if (loose) { o.looseSpecies = L.m.sp; o.looseNum = L.m.num; o.looseX = Math.round(L.m.x); o.looseY = Math.round(L.m.y); }
   ev('show_end', o);
   if (!loose) Snd.play('show_end');
-  tutCutShow();   // 表演收場: 還在顯示的表演階段(13~18)直接算完成
+  tutCutShow();   // 表演收場: 還在顯示的表演階段(14~19)直接算完成
   S = null;
   checkUnlock();
   setScene('sresult');
@@ -2017,8 +2228,8 @@ const SHOP_ITEMS = {
   program: ['ice', 'pep', 'tutti', 'scatter', 'mob', 'lull', 'bull', 'still', 'shuffle', 'cheer'],
 };
 const WEAPON_PRICE = { sword: 60, spear: 60 };
-const WEAPON_DESC = { club: 'Z 敲擊', sword: 'Z 斬擊可打回飛彈 X 擊暈', spear: 'Z 長刺 X 突進' };
-const ENH_DESC = { attack: '每次攻擊傷害 +1', armor: '心上限 +1', ropeBag: '每天捕獸繩 +1' };
+const WEAPON_DESC = { club: '[Z] 敲擊', sword: '[Z] 斬擊可打回飛彈 [X] 擊暈', spear: '[Z] 長刺 [X] 突進' };
+const ENH_DESC = { attack: '每次攻擊傷害 +1', armor: '心上限 +1', ropeBag: '每趟捕捉繩 +1' };
 function shopState(item) {
   const o = { item, cost: 0, level: 0, owned: false, equipped: false, affordable: false, fameReq: 0, fameLocked: false };
   if (WEAPON_DESC[item]) {
@@ -2035,7 +2246,7 @@ function shopState(item) {
   return o;
 }
 function shopDetailLines(item) {
-  if (WEAPON_DESC[item]) return [WEAPON_DESC[item]];
+  if (WEAPON_DESC[item]) return [WEAPON_DESC[item], '地下城裡按 [C] 可以換武器'];
   if (ENH_DESC[item]) return [ENH_DESC[item]];
   if (CUE_BY[item]) return [CUE_BY[item].desc];
   if (PROG_BY[item]) return [PROG_BY[item].desc];
@@ -2119,30 +2330,40 @@ function update(dt) {
   for (const f of UI.floats) f.t += dt;
   UI.floats = UI.floats.filter(f => f.t < f.dur);
   pressed = {};
-  tutUpdate(scene === 'dungeon' && D && D.prompt ? 0 : dt);   // 出口詢問中泡泡也停在當下
+  // 出口詢問框、換武器視窗、倒下動畫中泡泡也停在當下(第 3 階段在換武器視窗裡照常走)
+  let tdt = dt;
+  if (scene === 'dungeon' && D) {
+    if (D.prompt || D.down) tdt = 0;
+    else if (D.picker && !(TUT.cur && TUT.cur.id === 3)) tdt = 0;
+  }
+  tutUpdate(tdt);
+  Snd.duck(scene === 'dungeon' && !!D && !!(D.prompt || D.picker));
 }
 
 // ───────────────────────── 繪製 ─────────────────────────
 function hudMessage() {
   switch (scene) {
-    case 'place': return '←→ 選擇 Z 決定 ↓ 聲音';
-    case 'select': return '←→ 選擇 Z 進入 X 返回';
-    case 'dungeon':
-      if (D.prompt) return '←→ 選擇 Z 決定 X 留下';
+    case 'place': return '[←][→] 選擇 [Z] 決定 [↓] 聲音';
+    case 'select': return '[←][→] 選擇 [Z] 進入 [X] 返回';
+    case 'dungeon': {
+      if (D.down) return '';
+      if (D.prompt) return '[←][→] 選擇 [Z] 決定 [X] 留下';
+      if (D.picker) return '[←][→] 選擇 [Z] 換上 [X] 取消';
       if (D.kegs.some(k => k.mode === 'fuse' && dist(k.x, k.y, D.tamer.x, D.tamer.y) <= 130 + 18)) return '爆炸桶要爆了 快跑!';
       if (D.lasso) return '繞牠一圈!';
-      if (D.ring.m) return '站住別動';
       if (D.tamer.hidden) return '躲藏中';
-      if (D.id === 'meadow') return '收服火柴猴 ' + Math.min(2, D.caps.length) + '/2';
-      return G.weapon === 'sword' ? 'Z 攻擊 X 擊暈' : G.weapon === 'spear' ? 'Z 攻擊 X 突進' : 'Z 攻擊';
-    case 'dresult': case 'sresult': return 'Z 繼續';
-    case 'setup1': return G.s1.zone === 'grid' ? 'Z 上台/下台 ↓ 下一步' : 'Z 確定 ↑ 回格子';
+      if (D.id === 'meadow') return '收服火柴猴 ' + Math.min(3, D.caps.length) + '/3 [C] 換武器';
+      const w = D.tamer.weapon;
+      return w === 'sword' ? '[Z] 攻擊 [X] 擊暈 [C] 換武器' : w === 'spear' ? '[Z] 攻擊 [X] 突進 [C] 換武器' : w === 'rope' ? '[Z] 丟繩 [C] 換武器' : '[Z] 攻擊 [C] 換武器';
+    }
+    case 'dresult': case 'sresult': return '[Z] 繼續';
+    case 'setup1': return G.s1.zone === 'grid' ? '[Z] 上台/下台 [↓] 下一步' : '[Z] 確定 [↑] 回格子';
     case 'setup2':
-      if (G.s2.panel) return '↑↓ 選 Z 確定 X 取消';
-      return G.s2.row >= BTN_GO ? '←→ 開演/返回 Z 確定' : '↑↓ 選列 ←→ 暗號/節目 Z 放入 X 清空';
+      if (G.s2.panel) return '[↑][↓] 選 [Z] 確定 [X] 取消';
+      return G.s2.row >= BTN_GO ? '[←][→] 開演/返回 [Z] 確定' : '[↑][↓] 選列 [←][→] 暗號/節目 [Z] 放入 [X] 清空';
     case 'show': return '表演中…';
-    case 'shop': return '←→ 切分頁 方向鍵選擇 Z 購買';
-    case 'result': return 'Z 重來';
+    case 'shop': return '[←][→] 切分頁 [Z] 購買';
+    case 'result': return '[Z] 重來';
   }
   return '';
 }
@@ -2152,18 +2373,19 @@ function hudState() {
     phase: scene, day: G.day, dayMax: DAY_MAX, gold: G.gold, rep: G.rep, sat: inS ? S.sat : 0,
     cheerLeft: inS ? S.cheer : 0, cheerDur: 5,
     ropes: inD ? D.ropes : 0, ropeMax: inD ? ropeMaxNow() : 0, caught: inD ? D.caps.slice() : [],
-    weapon: G.weapon, xCdLeft: inD ? D.tamer.xCd : 0, xCdMax: inD ? xCdMax() : 0,
+    weapon: inD ? D.tamer.weapon : G.weapon, xCdLeft: inD ? Math.min(D.tamer.xCd, xCdMax()) : 0, xCdMax: inD ? xCdMax() : 0,
     timeLeft: inD ? (D.timed ? Math.max(0, D.timeLeft) : 0) : 0,
     timeMax: inD ? (D.timed ? 75 : 0) : 0,
     dungeon: inD ? D.id : '', message: hudMessage(),
   };
 }
-function drawHazards(list, solidPhase, ox, oy) {
-  for (const h of list) {
+function drawHazards(list, solidPhase, ox, oy, killer) {
+  const arr = killer && list.indexOf(killer) < 0 ? list.concat([killer]) : list;   // 致命的那顆已被收掉也要留在原地標亮
+  for (const h of arr) {
     const isBeam = h.kind === 'icebeam';
     if (isBeam !== solidPhase) continue;
     Art.drawHazard(ctx, { x: h.x - ox, y: h.y - oy, kind: h.kind, phase: h.phase, radius: h.radius, angle: h.angle, length: h.length, width: h.width,
-      t: h.t, dur: h.dur, returning: h.returning, reflected: h.reflected });
+      t: h.t, dur: h.dur, reflected: h.reflected, killer: !!killer && h === killer });
   }
 }
 function tileKind(ch) { return ch === '#' ? 'wall' : ch === 'o' ? 'pillar' : ch === 'L' ? 'hurt' : ch === 'W' ? 'slow' : ch === 'G' ? 'bush' : 'floor'; }
@@ -2200,10 +2422,11 @@ function renderDungeon() {
   }
   for (const f of D.fruits) {
     const x = f.x - ox, y = f.y - oy; if (!onScr(x, y, 40)) continue;
-    Art.drawFruit(ctx, { x, y, dungeon: id, eating: f.eating, eatT: f.eating ? Math.min(3, f.eatT) : 0, eatDur: 3 });
+    Art.drawFruit(ctx, { x, y, dungeon: id });
   }
-  drawHazards(D.hz, true, ox, oy);
-  if (D.ring.m) Art.drawCaptureRing(ctx, { x: D.ring.m.x - ox, y: D.ring.m.y - oy, t: D.ring.t, dur: captureDur() });
+  const kz = D.down && D.down.kobj && D.down.kobj.kind ? D.down.kobj : null;       // 致命的投射物 / 射線(定格標亮)
+  const kb = D.down && D.down.kobj && !D.down.kobj.kind ? D.down.kobj : null;      // 致命的爆炸
+  drawHazards(D.hz, true, ox, oy, kz);
   for (const k of D.kegs) {
     if (k.mode === 'gone') continue;   // 炸掉就不畫、不擋路
     const x = k.x - ox, y = k.y - oy; if (!onScr(x, y, 140)) continue;
@@ -2212,34 +2435,52 @@ function renderDungeon() {
   }
   for (const m of D.mons) {
     const x = m.x - ox, y = m.y - oy; if (!onScr(x, y, 90)) continue;
+    const pw = m.sp === 'penguin' && m.warnH && !m.warnH.dead ? m.warnH : null;   // 企鵝的射線預警就是牠的前搖
+    const wu = m.windup || !!pw;
     Art.drawWildMonster(ctx, { x, y, species: m.sp, hp: m.hp, maxHp: m.maxHp, hit: m.hitT > 0, weak: isWeak(m),
-      stunLeft: m.stun, stunDur: 2, lassoed: m.lassoed, casting: m.casting, move: m.move, moveT: m.moveT, moveDur: m.moveDur, dir: m.face });
+      stunLeft: m.stun, stunDur: 2, lassoed: m.lassoed, casting: m.casting, move: m.move, moveT: m.moveT, moveDur: m.moveDur, dir: m.face,
+      windup: wu, windupT: pw ? Math.min(0.7, pw.t) : (m.windup ? m.windupT : 0.6), windupDur: pw ? 0.7 : (m.windup ? m.windupDur : 0.6),
+      aim: m.windup ? m.aim : null,
+      escapeT: Math.min(0.4, m.escapeT), escapeDur: 0.4 });
   }
   if (D.lasso) {
     const L = D.lasso, m = L.m;
     Art.drawLasso(ctx, { x1: T.x - ox, y1: T.y - oy, x2: m.x - ox, y2: m.y - oy, progress: clamp(Math.abs(L.sum) / (Math.PI * 2), 0, 1),
       t: L.t, limit: L.limit, len: dist(T.x, T.y, m.x, m.y), maxLen: 220 });
   }
-  Art.drawTamer(ctx, { x: T.x - ox, y: T.y - oy, facing: T.facing, weapon: T.weapon, dashing: !!T.dash, blink: T.invuln > 0,
-    lassoing: !!D.lasso, slowed: T.slowT > 0, hidden: !!T.hidden });
+  if (D.rope) {
+    const R = D.rope;
+    let hx = R.x, hy = R.y;
+    if (R.phase === 'back') { const k = clamp(R.t / ROPE_BACK, 0, 1); hx = R.hx + (T.x - R.hx) * k; hy = R.hy + (T.y - R.hy) * k; }
+    Art.drawRopeThrow(ctx, { x1: T.x - ox, y1: T.y - oy, x2: hx - ox, y2: hy - oy, phase: R.phase, t: R.phase === 'back' ? Math.min(ROPE_BACK, R.t) : R.t, dur: R.phase === 'back' ? ROPE_BACK : R.dur });
+  }
+  const dn = D.down;
+  Art.drawTamer(ctx, { x: T.x - ox, y: T.y - oy, facing: T.facing, weapon: T.weapon, dashing: !!T.dash, blink: !dn && T.invuln > 0,
+    lassoing: !!D.lasso, slowed: T.slowT > 0, hidden: !!T.hidden,
+    down: !!dn, downT: dn ? Math.min(dn.dur, dn.t) : 1.5, downDur: 1.5 });
   for (const f of D.fx) {
     Art.drawWeaponFx(ctx, { x: f.x - ox, y: f.y - oy, weapon: f.weapon, move: f.move, shape: f.shape, angle: f.angle, spread: f.spread,
       radius: f.radius, length: f.length, width: f.width, t: f.t, dur: f.dur });
   }
-  drawHazards(D.hz, false, ox, oy);
+  drawHazards(D.hz, false, ox, oy, kz);
   for (const b of D.blasts) {
     const x = b.x - ox, y = b.y - oy; if (!onScr(x, y, 140)) continue;
-    Art.drawBlast(ctx, { x, y, radius: 130, t: b.t, dur: b.dur });
+    Art.drawBlast(ctx, { x, y, radius: 130, t: b.t, dur: b.dur, killer: b === kb });
   }
   { const hb = D.hb;
     Art.drawHeartBar(ctx, { x: T.x - ox, y: T.y - oy - 46, hearts: T.hearts, maxHearts: T.maxHearts,
       fx: hb.fx, fxT: hb.fx === 'none' ? 2 : Math.min(2, hb.t), fxDur: 2, delta: hb.fx === 'none' ? 0 : hb.delta }); }
-  for (const f of D.floats) Art.drawFloatText(ctx, { x: f.x - ox, y: f.y - oy - f.t * 30, text: f.text, kind: f.kind, t: f.t, dur: f.dur });
+  for (const f of D.floats) Art.drawFloatText(ctx, { x: f.x - ox, y: f.y - oy - (f.kind === 'hint' ? 0 : f.t * 30), text: f.text, kind: f.kind, t: f.t, dur: f.dur });
   ctx.restore();
-  renderTutorial();
+  if (dn) Art.drawDownFx(ctx, { x: T.x - ox, y: T.y - oy, cause: dn.cause, t: Math.min(dn.dur, dn.t), dur: dn.dur });
+  renderTutorial(false);
   Art.drawHud(ctx, hudState());
   renderTutNote();
   if (D.prompt) Art.drawExitPrompt(ctx, { choice: D.prompt.choice, t: D.prompt.t });
+  if (D.picker) {
+    Art.drawWeaponPicker(ctx, { options: D.picker.options, index: D.picker.index, t: D.picker.t });
+    renderTutorial(true);
+  }
 }
 
 function renderShow() {
@@ -2310,7 +2551,7 @@ function renderSetup1() {
   if (b) Art.drawMonsterInfo(ctx, monsterInfoState(b, 480, 555));
   Art.drawButton(ctx, { x: 960, y: 470, w: 220, h: 70, label: '下一步', selected: s.zone === 'next' });
   if (G.day !== 0) Art.drawButton(ctx, { x: 960, y: 570, w: 220, h: 70, label: '回選地點', selected: s.zone === 'back' });
-  for (const f of UI.floats) Art.drawFloatText(ctx, { x: f.x, y: f.y - f.t * 30, text: f.text, kind: f.kind, t: f.t, dur: f.dur });
+  for (const f of UI.floats) Art.drawFloatText(ctx, { x: f.x, y: f.y - (f.kind === 'hint' ? 0 : f.t * 30), text: f.text, kind: f.kind, t: f.t, dur: f.dur });
   Art.drawHud(ctx, hudState());
   renderTutorial();
 }
@@ -2351,7 +2592,7 @@ function render() {
   switch (scene) {
     case 'title': Art.drawTitle(ctx, { t: TITLE_T }); break;
     case 'calendar': Art.drawCalendar(ctx, { day: G.day, dayMax: DAY_MAX, t: Math.min(CAL.t, CAL.dur), dur: CAL.dur, log: G.log.slice() }); break;
-    case 'intermission': Art.drawIntermission(ctx, { t: IM.t, ready: IM.t >= 0.6, monsters: ['monkey', 'monkey'] }); break;
+    case 'intermission': Art.drawIntermission(ctx, { t: IM.t, ready: IM.t >= 0.6, monsters: ['monkey', 'monkey', 'monkey'] }); break;
     case 'place': {
       Art.drawBackground(ctx, { scene: 'place' });
       const notes = ['抓魔物 · 過一天', '賺滿意度 · 過一天', '買東西 · 不花時間'], places = ['dungeon', 'show', 'shop'];
@@ -2370,7 +2611,7 @@ function render() {
     case 'dungeon': renderDungeon(); break;
     case 'dresult':
       Art.drawBackground(ctx, { scene: 'dresult' });
-      Art.drawDungeonResult(ctx, { reason: DR.reason, captures: DR.captures, kills: DR.kills, gold: DR.gold });
+      Art.drawDungeonResult(ctx, { reason: DR.reason, cause: DR.cause || '', captures: DR.captures, kills: DR.kills, gold: DR.gold });
       Art.drawHud(ctx, hudState());
       break;
     case 'setup1': renderSetup1(); break;
