@@ -1,0 +1,92 @@
+{
+ "game": "WebGame_DungeonZoo",
+ "build": "polish-3",
+ "startedAt": "2026-10-15T15:38:18.400Z",
+ "finished": false,
+ "events": [
+  {
+   "t": 0,
+   "type": "session_start",
+   "replay": false
+  },
+  {
+   "t": 0,
+   "type": "day_start",
+   "day": 0
+  },
+  {
+   "t": 0.53,
+   "type": "dungeon_start",
+   "day": 0,
+   "dungeon": "meadow",
+   "weapon": "club",
+   "hearts": 3,
+   "ropes": 4
+  },
+  {
+   "t": 0.53,
+   "type": "tutorial_show",
+   "stage": 1,
+   "day": 0,
+   "scene": "dungeon"
+  },
+  {
+   "t": 1.75,
+   "type": "tutorial_done",
+   "stage": 1,
+   "day": 0,
+   "took": 1.2
+  },
+  {
+   "t": 2.35,
+   "type": "tutorial_show",
+   "stage": 2,
+   "day": 0,
+   "scene": "dungeon"
+  },
+  {
+   "t": 3.48,
+   "type": "tutorial_done",
+   "stage": 2,
+   "day": 0,
+   "took": 1.1
+  },
+  {
+   "t": 5.12,
+   "type": "tutorial_show",
+   "stage": 3,
+   "day": 0,
+   "scene": "dungeon"
+  },
+  {
+   "t": 5.12,
+   "type": "tutorial_show",
+   "stage": 6,
+   "day": 0,
+   "scene": "dungeon"
+  },
+  {
+   "t": 6.57,
+   "type": "tutorial_done",
+   "stage": 3,
+   "day": 0,
+   "took": 1.5
+  },
+  {
+   "t": 7.17,
+   "type": "tutorial_show",
+   "stage": 4,
+   "day": 0,
+   "scene": "dungeon"
+  },
+  {
+   "t": 42.86,
+   "type": "lasso_break",
+   "dungeon": "meadow",
+   "species": "monkey",
+   "reason": "timeout",
+   "x": 1188,
+   "y": 267
+  }
+ ]
+}

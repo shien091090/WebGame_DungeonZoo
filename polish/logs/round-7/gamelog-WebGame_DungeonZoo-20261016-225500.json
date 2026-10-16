@@ -1,0 +1,48 @@
+{
+ "game": "WebGame_DungeonZoo",
+ "build": "polish-7",
+ "startedAt": "2026-10-16T14:51:30.614Z",
+ "finished": false,
+ "events": [
+  {
+   "t": 0,
+   "type": "session_start",
+   "replay": false
+  },
+  {
+   "t": 0,
+   "type": "day_start",
+   "day": 0
+  },
+  {
+   "t": 1.98,
+   "type": "dungeon_start",
+   "day": 0,
+   "dungeon": "meadow",
+   "weapon": "club",
+   "hearts": 3,
+   "ropes": 3
+  },
+  {
+   "t": 1.98,
+   "type": "quest",
+   "action": "show",
+   "count": 0,
+   "took": 0
+  },
+  {
+   "t": 4.53,
+   "type": "quest",
+   "action": "bar",
+   "count": 0,
+   "took": 2.5
+  },
+  {
+   "t": 4.53,
+   "type": "tutorial_show",
+   "stage": 1,
+   "day": 0,
+   "scene": "dungeon"
+  }
+ ]
+}

@@ -1,0 +1,2618 @@
+{
+ "game": "WebGame_DungeonZoo",
+ "build": "polish-7",
+ "startedAt": "2026-10-16T14:55:00.398Z",
+ "finished": true,
+ "events": [
+  {
+   "t": 0,
+   "type": "session_start",
+   "replay": false
+  },
+  {
+   "t": 0,
+   "type": "day_start",
+   "day": 0
+  },
+  {
+   "t": 1.98,
+   "type": "dungeon_start",
+   "day": 0,
+   "dungeon": "meadow",
+   "weapon": "club",
+   "hearts": 3,
+   "ropes": 3
+  },
+  {
+   "t": 1.98,
+   "type": "quest",
+   "action": "show",
+   "count": 0,
+   "took": 0
+  },
+  {
+   "t": 4.49,
+   "type": "quest",
+   "action": "bar",
+   "count": 0,
+   "took": 2.5
+  },
+  {
+   "t": 4.49,
+   "type": "tutorial_show",
+   "stage": 1,
+   "day": 0,
+   "scene": "dungeon"
+  },
+  {
+   "t": 9.96,
+   "type": "tutorial_done",
+   "stage": 1,
+   "day": 0,
+   "took": 5.5,
+   "cut": false
+  },
+  {
+   "t": 10.57,
+   "type": "tutorial_show",
+   "stage": 2,
+   "day": 0,
+   "scene": "dungeon"
+  },
+  {
+   "t": 13.58,
+   "type": "tutorial_done",
+   "stage": 2,
+   "day": 0,
+   "took": 3,
+   "cut": false
+  },
+  {
+   "t": 14.19,
+   "type": "tutorial_show",
+   "stage": 3,
+   "day": 0,
+   "scene": "dungeon"
+  },
+  {
+   "t": 29.07,
+   "type": "weapon_switch",
+   "dungeon": "meadow",
+   "from": "club",
+   "to": "rope",
+   "auto": false,
+   "elapsed": 12,
+   "pausedFor": 12.5
+  },
+  {
+   "t": 29.07,
+   "type": "tutorial_show",
+   "stage": 7,
+   "day": 0,
+   "scene": "dungeon"
+  },
+  {
+   "t": 29.07,
+   "type": "tutorial_done",
+   "stage": 3,
+   "day": 0,
+   "took": 14.9,
+   "cut": false
+  },
+  {
+   "t": 29.67,
+   "type": "tutorial_show",
+   "stage": 4,
+   "day": 0,
+   "scene": "dungeon"
+  },
+  {
+   "t": 30.63,
+   "type": "rope_throw",
+   "dungeon": "meadow",
+   "result": "lasso",
+   "species": "monkey",
+   "weak": true,
+   "dist": null,
+   "elapsed": 13.6
+  },
+  {
+   "t": 30.63,
+   "type": "tutorial_done",
+   "stage": 4,
+   "day": 0,
+   "took": 1,
+   "cut": false
+  },
+  {
+   "t": 31.24,
+   "type": "tutorial_show",
+   "stage": 5,
+   "day": 0,
+   "scene": "dungeon"
+  },
+  {
+   "t": 35.63,
+   "type": "lasso_break",
+   "dungeon": "meadow",
+   "species": "monkey",
+   "reason": "timeout",
+   "x": 679,
+   "y": 288
+  },
+  {
+   "t": 39.29,
+   "type": "rope_throw",
+   "dungeon": "meadow",
+   "result": "lasso",
+   "species": "monkey",
+   "weak": true,
+   "dist": 63,
+   "elapsed": 22.3
+  },
+  {
+   "t": 42.56,
+   "type": "capture",
+   "dungeon": "meadow",
+   "species": "monkey",
+   "num": 1,
+   "elapsed": 25.5,
+   "x": 818,
+   "y": 328,
+   "ropesLeft": 2
+  },
+  {
+   "t": 42.56,
+   "type": "quest",
+   "action": "progress",
+   "count": 1,
+   "took": 40.6
+  },
+  {
+   "t": 42.56,
+   "type": "tutorial_done",
+   "stage": 5,
+   "day": 0,
+   "took": 11.3,
+   "cut": false
+  },
+  {
+   "t": 47.6,
+   "type": "rope_throw",
+   "dungeon": "meadow",
+   "result": "escape",
+   "species": "monkey",
+   "weak": false,
+   "dist": null,
+   "elapsed": 30.6
+  },
+  {
+   "t": 47.6,
+   "type": "tutorial_show",
+   "stage": 6,
+   "day": 0,
+   "scene": "dungeon"
+  },
+  {
+   "t": 51.1,
+   "type": "rope_throw",
+   "dungeon": "meadow",
+   "result": "miss",
+   "species": null,
+   "weak": false,
+   "dist": null,
+   "elapsed": 34.1
+  },
+  {
+   "t": 51.83,
+   "type": "rope_throw",
+   "dungeon": "meadow",
+   "result": "miss",
+   "species": null,
+   "weak": false,
+   "dist": null,
+   "elapsed": 34.8
+  },
+  {
+   "t": 53.27,
+   "type": "rope_throw",
+   "dungeon": "meadow",
+   "result": "miss",
+   "species": null,
+   "weak": false,
+   "dist": null,
+   "elapsed": 36.2
+  },
+  {
+   "t": 58.77,
+   "type": "weapon_switch",
+   "dungeon": "meadow",
+   "from": "rope",
+   "to": "club",
+   "auto": false,
+   "elapsed": 39.1,
+   "pausedFor": 2.7
+  },
+  {
+   "t": 58.77,
+   "type": "tutorial_done",
+   "stage": 6,
+   "day": 0,
+   "took": 11.2,
+   "cut": false
+  },
+  {
+   "t": 70.88,
+   "type": "weapon_switch",
+   "dungeon": "meadow",
+   "from": "club",
+   "to": "rope",
+   "auto": false,
+   "elapsed": 45,
+   "pausedFor": 6.2
+  },
+  {
+   "t": 72.69,
+   "type": "rope_throw",
+   "dungeon": "meadow",
+   "result": "lasso",
+   "species": "monkey",
+   "weak": true,
+   "dist": 39,
+   "elapsed": 46.8
+  },
+  {
+   "t": 76.46,
+   "type": "capture",
+   "dungeon": "meadow",
+   "species": "monkey",
+   "num": 2,
+   "elapsed": 50.6,
+   "x": 1149,
+   "y": 115,
+   "ropesLeft": 1
+  },
+  {
+   "t": 76.46,
+   "type": "quest",
+   "action": "progress",
+   "count": 2,
+   "took": 74.5
+  },
+  {
+   "t": 84.91,
+   "type": "weapon_switch",
+   "dungeon": "meadow",
+   "from": "rope",
+   "to": "club",
+   "auto": false,
+   "elapsed": 54.1,
+   "pausedFor": 4.9
+  },
+  {
+   "t": 91.83,
+   "type": "weapon_switch",
+   "dungeon": "meadow",
+   "from": "club",
+   "to": "rope",
+   "auto": false,
+   "elapsed": 59.4,
+   "pausedFor": 1.6
+  },
+  {
+   "t": 95.3,
+   "type": "rope_throw",
+   "dungeon": "meadow",
+   "result": "lasso",
+   "species": "monkey",
+   "weak": true,
+   "dist": null,
+   "elapsed": 62.9
+  },
+  {
+   "t": 98.46,
+   "type": "capture",
+   "dungeon": "meadow",
+   "species": "monkey",
+   "num": 3,
+   "elapsed": 66.1,
+   "x": 689,
+   "y": 160,
+   "ropesLeft": 0
+  },
+  {
+   "t": 98.46,
+   "type": "weapon_switch",
+   "dungeon": "meadow",
+   "from": "rope",
+   "to": "club",
+   "auto": true,
+   "elapsed": 66.1,
+   "pausedFor": 0
+  },
+  {
+   "t": 98.46,
+   "type": "quest",
+   "action": "done",
+   "count": 3,
+   "took": 96.5
+  },
+  {
+   "t": 98.46,
+   "type": "tutorial_done",
+   "stage": 7,
+   "day": 0,
+   "took": 69.4,
+   "cut": false
+  },
+  {
+   "t": 99.47,
+   "type": "dungeon_end",
+   "day": 0,
+   "dungeon": "meadow",
+   "reason": "tutorial",
+   "dur": 66.1,
+   "captures": [
+    "monkey",
+    "monkey",
+    "monkey"
+   ],
+   "kills": 0,
+   "heartsLost": 0,
+   "gold": 0
+  },
+  {
+   "t": 101.46,
+   "type": "intermission",
+   "action": "show"
+  },
+  {
+   "t": 111.97,
+   "type": "intermission",
+   "action": "leave",
+   "took": 10.5
+  },
+  {
+   "t": 111.97,
+   "type": "tutorial_show",
+   "stage": 8,
+   "day": 0,
+   "scene": "setup1"
+  },
+  {
+   "t": 116.74,
+   "type": "tutorial_done",
+   "stage": 8,
+   "day": 0,
+   "took": 4.8,
+   "cut": false
+  },
+  {
+   "t": 117.34,
+   "type": "tutorial_show",
+   "stage": 9,
+   "day": 0,
+   "scene": "setup1"
+  },
+  {
+   "t": 126.83,
+   "type": "tutorial_done",
+   "stage": 9,
+   "day": 0,
+   "took": 9.5,
+   "cut": false
+  },
+  {
+   "t": 127.42,
+   "type": "tutorial_show",
+   "stage": 10,
+   "day": 0,
+   "scene": "setup2"
+  },
+  {
+   "t": 132.93,
+   "type": "tutorial_done",
+   "stage": 10,
+   "day": 0,
+   "took": 5.5,
+   "cut": false
+  },
+  {
+   "t": 133.54,
+   "type": "tutorial_show",
+   "stage": 11,
+   "day": 0,
+   "scene": "setup2"
+  },
+  {
+   "t": 155.6,
+   "type": "tutorial_done",
+   "stage": 11,
+   "day": 0,
+   "took": 22.1,
+   "cut": false
+  },
+  {
+   "t": 156.2,
+   "type": "tutorial_show",
+   "stage": 12,
+   "day": 0,
+   "scene": "setup2"
+  },
+  {
+   "t": 160.81,
+   "type": "tutorial_done",
+   "stage": 12,
+   "day": 0,
+   "took": 4.6,
+   "cut": false
+  },
+  {
+   "t": 161.42,
+   "type": "tutorial_show",
+   "stage": 13,
+   "day": 0,
+   "scene": "setup2"
+  },
+  {
+   "t": 164.52,
+   "type": "setup_done",
+   "day": 0,
+   "roster": [
+    {
+     "species": "monkey",
+     "num": 1
+    },
+    {
+     "species": "monkey",
+     "num": 2
+    },
+    {
+     "species": "monkey",
+     "num": 3
+    }
+   ],
+   "rows": [
+    {
+     "cue": "wait",
+     "program": "spot"
+    },
+    {
+     "cue": "wait",
+     "program": "all"
+    },
+    {
+     "cue": "",
+     "program": ""
+    },
+    {
+     "cue": "",
+     "program": ""
+    }
+   ]
+  },
+  {
+   "t": 164.53,
+   "type": "heat_tier",
+   "day": 0,
+   "tier": "cheer",
+   "heat": 75,
+   "elapsed": 0
+  },
+  {
+   "t": 164.54,
+   "type": "tutorial_done",
+   "stage": 13,
+   "day": 0,
+   "took": 3.1,
+   "cut": false
+  },
+  {
+   "t": 165.13,
+   "type": "tutorial_show",
+   "stage": 14,
+   "day": 0,
+   "scene": "show"
+  },
+  {
+   "t": 165.53,
+   "type": "heat_tier",
+   "day": 0,
+   "tier": "clap",
+   "heat": 73,
+   "elapsed": 1
+  },
+  {
+   "t": 165.98,
+   "type": "heat_tier",
+   "day": 0,
+   "tier": "cheer",
+   "heat": 75,
+   "elapsed": 1.5
+  },
+  {
+   "t": 170.53,
+   "type": "program_fire",
+   "day": 0,
+   "row": 0,
+   "cue": "wait",
+   "program": "spot",
+   "elapsed": 6,
+   "targets": 1
+  },
+  {
+   "t": 170.53,
+   "type": "tutorial_done",
+   "stage": 14,
+   "day": 0,
+   "took": 5.4,
+   "cut": false
+  },
+  {
+   "t": 171.13,
+   "type": "tutorial_show",
+   "stage": 15,
+   "day": 0,
+   "scene": "show"
+  },
+  {
+   "t": 174.18,
+   "type": "mark_peak",
+   "day": 0,
+   "species": "monkey",
+   "num": 3,
+   "marks": 3,
+   "elapsed": 9.7
+  },
+  {
+   "t": 175.51,
+   "type": "mark_peak",
+   "day": 0,
+   "species": "monkey",
+   "num": 3,
+   "marks": 4,
+   "elapsed": 11
+  },
+  {
+   "t": 176.53,
+   "type": "program_fire",
+   "day": 0,
+   "row": 1,
+   "cue": "wait",
+   "program": "all",
+   "elapsed": 12,
+   "targets": 3
+  },
+  {
+   "t": 176.53,
+   "type": "tutorial_done",
+   "stage": 15,
+   "day": 0,
+   "took": 5.4,
+   "cut": false
+  },
+  {
+   "t": 176.57,
+   "type": "mark_peak",
+   "day": 0,
+   "species": "monkey",
+   "num": 1,
+   "marks": 3,
+   "elapsed": 12
+  },
+  {
+   "t": 177.13,
+   "type": "tutorial_show",
+   "stage": 16,
+   "day": 0,
+   "scene": "show"
+  },
+  {
+   "t": 178.42,
+   "type": "mark_peak",
+   "day": 0,
+   "species": "monkey",
+   "num": 1,
+   "marks": 4,
+   "elapsed": 13.9
+  },
+  {
+   "t": 181.13,
+   "type": "tutorial_done",
+   "stage": 16,
+   "day": 0,
+   "took": 4,
+   "cut": false
+  },
+  {
+   "t": 181.74,
+   "type": "tutorial_show",
+   "stage": 18,
+   "day": 0,
+   "scene": "show"
+  },
+  {
+   "t": 182.53,
+   "type": "program_fire",
+   "day": 0,
+   "row": 0,
+   "cue": "wait",
+   "program": "spot",
+   "elapsed": 18,
+   "targets": 1
+  },
+  {
+   "t": 185.74,
+   "type": "tutorial_done",
+   "stage": 18,
+   "day": 0,
+   "took": 4,
+   "cut": false
+  },
+  {
+   "t": 186.34,
+   "type": "tutorial_show",
+   "stage": 19,
+   "day": 0,
+   "scene": "show"
+  },
+  {
+   "t": 188.53,
+   "type": "program_fire",
+   "day": 0,
+   "row": 1,
+   "cue": "wait",
+   "program": "all",
+   "elapsed": 24,
+   "targets": 3
+  },
+  {
+   "t": 190.52,
+   "type": "heat_tier",
+   "day": 0,
+   "tier": "clap",
+   "heat": 74,
+   "elapsed": 26
+  },
+  {
+   "t": 191.34,
+   "type": "tutorial_done",
+   "stage": 19,
+   "day": 0,
+   "took": 5,
+   "cut": false
+  },
+  {
+   "t": 194.53,
+   "type": "program_fire",
+   "day": 0,
+   "row": 0,
+   "cue": "wait",
+   "program": "spot",
+   "elapsed": 30,
+   "targets": 1
+  },
+  {
+   "t": 194.53,
+   "type": "show_end",
+   "day": 0,
+   "reason": "time",
+   "dur": 30,
+   "satisfaction": 158,
+   "gold": 121,
+   "fameGain": 158,
+   "bestChain": 3,
+   "performs": 60,
+   "angryPerforms": 49,
+   "heatAvg": 79,
+   "heatMax": 86,
+   "tierSec": {
+    "quiet": 0,
+    "clap": 4.5,
+    "cheer": 25.5,
+    "frenzy": 0
+   },
+   "maxMarksPeak": 4,
+   "looseHeat": null
+  },
+  {
+   "t": 201.2,
+   "type": "day_start",
+   "day": 1
+  },
+  {
+   "t": 203.21,
+   "type": "tutorial_show",
+   "stage": 20,
+   "day": 1,
+   "scene": "place"
+  },
+  {
+   "t": 211.1,
+   "type": "place_choose",
+   "day": 1,
+   "place": "dungeon"
+  },
+  {
+   "t": 211.1,
+   "type": "tutorial_done",
+   "stage": 20,
+   "day": 1,
+   "took": 7.9,
+   "cut": false
+  },
+  {
+   "t": 215.61,
+   "type": "place_choose",
+   "day": 1,
+   "place": "shop"
+  },
+  {
+   "t": 215.61,
+   "type": "tutorial_show",
+   "stage": 21,
+   "day": 1,
+   "scene": "shop"
+  },
+  {
+   "t": 216.38,
+   "type": "tutorial_done",
+   "stage": 21,
+   "day": 1,
+   "took": 0.8,
+   "cut": false
+  },
+  {
+   "t": 270.07,
+   "type": "place_choose",
+   "day": 1,
+   "place": "show"
+  },
+  {
+   "t": 275.77,
+   "type": "setup_back",
+   "day": 1,
+   "from": "setup1",
+   "to": "place"
+  },
+  {
+   "t": 276.64,
+   "type": "place_choose",
+   "day": 1,
+   "place": "dungeon"
+  },
+  {
+   "t": 287.75,
+   "type": "dungeon_start",
+   "day": 1,
+   "dungeon": "lake",
+   "weapon": "club",
+   "hearts": 3,
+   "ropes": 3
+  },
+  {
+   "t": 288.73,
+   "type": "tutorial_show",
+   "stage": 22,
+   "day": 1,
+   "scene": "dungeon"
+  },
+  {
+   "t": 291.13,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1020,
+   "y": 719
+  },
+  {
+   "t": 291.14,
+   "type": "tutorial_done",
+   "stage": 22,
+   "day": 1,
+   "took": 2.4,
+   "cut": false
+  },
+  {
+   "t": 293.64,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1202,
+   "y": 683
+  },
+  {
+   "t": 298.98,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1260,
+   "y": 698
+  },
+  {
+   "t": 302.47,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1044,
+   "y": 601
+  },
+  {
+   "t": 305.88,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 600,
+   "y": 689
+  },
+  {
+   "t": 306.68,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 542,
+   "y": 689
+  },
+  {
+   "t": 310.87,
+   "type": "kill",
+   "dungeon": "lake",
+   "species": "lily",
+   "by": "weapon",
+   "x": 255,
+   "y": 679
+  },
+  {
+   "t": 318.16,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "fruit",
+   "action": "drop",
+   "x": 450,
+   "y": 690
+  },
+  {
+   "t": 323.91,
+   "type": "player_hit",
+   "dungeon": "lake",
+   "source": "pollen",
+   "x": 232,
+   "y": 745,
+   "heartsLeft": 2,
+   "elapsed": 36.2
+  },
+  {
+   "t": 324.92,
+   "type": "tutorial_show",
+   "stage": 23,
+   "day": 1,
+   "scene": "dungeon"
+  },
+  {
+   "t": 327.32,
+   "type": "player_hit",
+   "dungeon": "lake",
+   "source": "pollen",
+   "x": 306,
+   "y": 721,
+   "heartsLeft": 1,
+   "elapsed": 39.6
+  },
+  {
+   "t": 328.71,
+   "type": "fruit_eat",
+   "dungeon": "lake",
+   "heartsAfter": 2,
+   "elapsed": 41,
+   "x": 423,
+   "y": 682
+  },
+  {
+   "t": 328.71,
+   "type": "tutorial_done",
+   "stage": 23,
+   "day": 1,
+   "took": 3.8,
+   "cut": false
+  },
+  {
+   "t": 331.07,
+   "type": "player_hit",
+   "dungeon": "lake",
+   "source": "pollen",
+   "x": 497,
+   "y": 736,
+   "heartsLeft": 1,
+   "elapsed": 43.3
+  },
+  {
+   "t": 338.33,
+   "type": "weapon_switch",
+   "dungeon": "lake",
+   "from": "club",
+   "to": "rope",
+   "auto": false,
+   "elapsed": 47.7,
+   "pausedFor": 2.9
+  },
+  {
+   "t": 339.23,
+   "type": "rope_throw",
+   "dungeon": "lake",
+   "result": "lasso",
+   "species": "lily",
+   "weak": true,
+   "dist": 59,
+   "elapsed": 48.6
+  },
+  {
+   "t": 340.65,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 361,
+   "y": 843
+  },
+  {
+   "t": 341.89,
+   "type": "capture",
+   "dungeon": "lake",
+   "species": "lily",
+   "num": 1,
+   "elapsed": 51.2,
+   "x": 276,
+   "y": 784,
+   "ropesLeft": 2
+  },
+  {
+   "t": 348.28,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 541,
+   "y": 678
+  },
+  {
+   "t": 351.21,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 962,
+   "y": 701
+  },
+  {
+   "t": 359.08,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 599,
+   "y": 204
+  },
+  {
+   "t": 359.75,
+   "type": "rope_throw",
+   "dungeon": "lake",
+   "result": "miss",
+   "species": null,
+   "weak": false,
+   "dist": null,
+   "elapsed": 69.1
+  },
+  {
+   "t": 360.23,
+   "type": "rope_throw",
+   "dungeon": "lake",
+   "result": "miss",
+   "species": null,
+   "weak": false,
+   "dist": null,
+   "elapsed": 69.6
+  },
+  {
+   "t": 360.42,
+   "type": "rope_throw",
+   "dungeon": "lake",
+   "result": "miss",
+   "species": null,
+   "weak": false,
+   "dist": null,
+   "elapsed": 69.7
+  },
+  {
+   "t": 364.37,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 181,
+   "y": 314
+  },
+  {
+   "t": 365.67,
+   "type": "dungeon_end",
+   "day": 1,
+   "dungeon": "lake",
+   "reason": "time",
+   "dur": 75,
+   "captures": [
+    "lily"
+   ],
+   "kills": 1,
+   "heartsLost": 3,
+   "gold": 3
+  },
+  {
+   "t": 367.45,
+   "type": "day_start",
+   "day": 2
+  },
+  {
+   "t": 370.62,
+   "type": "place_choose",
+   "day": 2,
+   "place": "dungeon"
+  },
+  {
+   "t": 371.89,
+   "type": "dungeon_start",
+   "day": 2,
+   "dungeon": "lake",
+   "weapon": "club",
+   "hearts": 3,
+   "ropes": 3
+  },
+  {
+   "t": 374.55,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 960,
+   "y": 661
+  },
+  {
+   "t": 376.71,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 599,
+   "y": 689
+  },
+  {
+   "t": 385.18,
+   "type": "weapon_switch",
+   "dungeon": "lake",
+   "from": "club",
+   "to": "rope",
+   "auto": false,
+   "elapsed": 11.8,
+   "pausedFor": 1.5
+  },
+  {
+   "t": 386.17,
+   "type": "player_hit",
+   "dungeon": "lake",
+   "source": "pollen",
+   "x": 259,
+   "y": 880,
+   "heartsLeft": 2,
+   "elapsed": 12.8
+  },
+  {
+   "t": 386.45,
+   "type": "rope_throw",
+   "dungeon": "lake",
+   "result": "miss",
+   "species": null,
+   "weak": false,
+   "dist": null,
+   "elapsed": 13
+  },
+  {
+   "t": 387.12,
+   "type": "rope_throw",
+   "dungeon": "lake",
+   "result": "miss",
+   "species": null,
+   "weak": false,
+   "dist": null,
+   "elapsed": 13.7
+  },
+  {
+   "t": 387.44,
+   "type": "rope_throw",
+   "dungeon": "lake",
+   "result": "lasso",
+   "species": "lily",
+   "weak": true,
+   "dist": null,
+   "elapsed": 14
+  },
+  {
+   "t": 389.67,
+   "type": "capture",
+   "dungeon": "lake",
+   "species": "lily",
+   "num": 2,
+   "elapsed": 16.3,
+   "x": 321,
+   "y": 781,
+   "ropesLeft": 2
+  },
+  {
+   "t": 390.9,
+   "type": "rope_throw",
+   "dungeon": "lake",
+   "result": "miss",
+   "species": null,
+   "weak": false,
+   "dist": null,
+   "elapsed": 17.5
+  },
+  {
+   "t": 392.88,
+   "type": "weapon_switch",
+   "dungeon": "lake",
+   "from": "rope",
+   "to": "club",
+   "auto": false,
+   "elapsed": 18.5,
+   "pausedFor": 1
+  },
+  {
+   "t": 393.89,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "fruit",
+   "action": "drop",
+   "x": 450,
+   "y": 690
+  },
+  {
+   "t": 394.96,
+   "type": "fruit_eat",
+   "dungeon": "lake",
+   "heartsAfter": 3,
+   "elapsed": 20.5,
+   "x": 422,
+   "y": 681
+  },
+  {
+   "t": 399.29,
+   "type": "weapon_switch",
+   "dungeon": "lake",
+   "from": "club",
+   "to": "rope",
+   "auto": false,
+   "elapsed": 22.7,
+   "pausedFor": 2.2
+  },
+  {
+   "t": 402.02,
+   "type": "weapon_switch",
+   "dungeon": "lake",
+   "from": "rope",
+   "to": "club",
+   "auto": false,
+   "elapsed": 24.4,
+   "pausedFor": 1
+  },
+  {
+   "t": 403.14,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 263,
+   "y": 360
+  },
+  {
+   "t": 409.11,
+   "type": "weapon_switch",
+   "dungeon": "lake",
+   "from": "club",
+   "to": "rope",
+   "auto": false,
+   "elapsed": 28.4,
+   "pausedFor": 3.1
+  },
+  {
+   "t": 409.98,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 224,
+   "y": 359
+  },
+  {
+   "t": 410.67,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 181,
+   "y": 248
+  },
+  {
+   "t": 410.75,
+   "type": "rope_throw",
+   "dungeon": "lake",
+   "result": "miss",
+   "species": null,
+   "weak": false,
+   "dist": null,
+   "elapsed": 30
+  },
+  {
+   "t": 411.35,
+   "type": "rope_throw",
+   "dungeon": "lake",
+   "result": "miss",
+   "species": null,
+   "weak": false,
+   "dist": null,
+   "elapsed": 30.6
+  },
+  {
+   "t": 411.62,
+   "type": "rope_throw",
+   "dungeon": "lake",
+   "result": "lasso",
+   "species": "lily",
+   "weak": true,
+   "dist": null,
+   "elapsed": 30.9
+  },
+  {
+   "t": 412.13,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 181,
+   "y": 271
+  },
+  {
+   "t": 413.71,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 185,
+   "y": 241
+  },
+  {
+   "t": 413.77,
+   "type": "capture",
+   "dungeon": "lake",
+   "species": "lily",
+   "num": 3,
+   "elapsed": 33,
+   "x": 237,
+   "y": 247,
+   "ropesLeft": 1
+  },
+  {
+   "t": 415.6,
+   "type": "rope_throw",
+   "dungeon": "lake",
+   "result": "miss",
+   "species": null,
+   "weak": false,
+   "dist": null,
+   "elapsed": 34.9
+  },
+  {
+   "t": 417.19,
+   "type": "rope_throw",
+   "dungeon": "lake",
+   "result": "miss",
+   "species": null,
+   "weak": false,
+   "dist": null,
+   "elapsed": 36.5
+  },
+  {
+   "t": 420,
+   "type": "weapon_switch",
+   "dungeon": "lake",
+   "from": "rope",
+   "to": "club",
+   "auto": false,
+   "elapsed": 37.9,
+   "pausedFor": 1.4
+  },
+  {
+   "t": 423.1,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 360,
+   "y": 813
+  },
+  {
+   "t": 426.3,
+   "type": "weapon_switch",
+   "dungeon": "lake",
+   "from": "club",
+   "to": "rope",
+   "auto": false,
+   "elapsed": 43,
+   "pausedFor": 1.1
+  },
+  {
+   "t": 427.45,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 360,
+   "y": 856
+  },
+  {
+   "t": 427.72,
+   "type": "rope_throw",
+   "dungeon": "lake",
+   "result": "lasso",
+   "species": "lily",
+   "weak": true,
+   "dist": 47,
+   "elapsed": 44.5
+  },
+  {
+   "t": 430.12,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 361,
+   "y": 857
+  },
+  {
+   "t": 430.14,
+   "type": "capture",
+   "dungeon": "lake",
+   "species": "lily",
+   "num": 4,
+   "elapsed": 46.9,
+   "x": 450,
+   "y": 767,
+   "ropesLeft": 0
+  },
+  {
+   "t": 430.14,
+   "type": "weapon_switch",
+   "dungeon": "lake",
+   "from": "rope",
+   "to": "club",
+   "auto": true,
+   "elapsed": 46.9,
+   "pausedFor": 0
+  },
+  {
+   "t": 435.36,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 299,
+   "y": 355
+  },
+  {
+   "t": 436.89,
+   "type": "kill",
+   "dungeon": "lake",
+   "species": "lily",
+   "by": "weapon",
+   "x": 194,
+   "y": 300
+  },
+  {
+   "t": 437.36,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 182,
+   "y": 299
+  },
+  {
+   "t": 441.85,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 541,
+   "y": 208
+  },
+  {
+   "t": 444.69,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1200,
+   "y": 211
+  },
+  {
+   "t": 446.88,
+   "type": "kill",
+   "dungeon": "lake",
+   "species": "monkey",
+   "by": "weapon",
+   "x": 1492,
+   "y": 390
+  },
+  {
+   "t": 450.26,
+   "type": "kill",
+   "dungeon": "lake",
+   "species": "monkey",
+   "by": "weapon",
+   "x": 1830,
+   "y": 570
+  },
+  {
+   "t": 455.37,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1258,
+   "y": 698
+  },
+  {
+   "t": 455.97,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1079,
+   "y": 698
+  },
+  {
+   "t": 457.69,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 599,
+   "y": 687
+  },
+  {
+   "t": 458.26,
+   "type": "dungeon_end",
+   "day": 2,
+   "dungeon": "lake",
+   "reason": "time",
+   "dur": 75,
+   "captures": [
+    "lily",
+    "lily",
+    "lily"
+   ],
+   "kills": 3,
+   "heartsLost": 1,
+   "gold": 9
+  },
+  {
+   "t": 458.26,
+   "type": "dungeon_unlock",
+   "day": 2,
+   "dungeon": "tower",
+   "fame": 158
+  },
+  {
+   "t": 458.31,
+   "type": "day_start",
+   "day": 3
+  },
+  {
+   "t": 462.89,
+   "type": "place_choose",
+   "day": 3,
+   "place": "shop"
+  },
+  {
+   "t": 494.09,
+   "type": "shop_buy",
+   "day": 3,
+   "item": "tutti",
+   "cost": 30,
+   "goldLeft": 133
+  },
+  {
+   "t": 532.95,
+   "type": "shop_buy",
+   "day": 3,
+   "item": "cold",
+   "cost": 20,
+   "goldLeft": 113
+  },
+  {
+   "t": 537.83,
+   "type": "place_choose",
+   "day": 3,
+   "place": "show"
+  },
+  {
+   "t": 560.72,
+   "type": "setup_back",
+   "day": 3,
+   "from": "setup2",
+   "to": "setup1"
+  },
+  {
+   "t": 609.24,
+   "type": "setup_done",
+   "day": 3,
+   "roster": [
+    {
+     "species": "lily",
+     "num": 1
+    },
+    {
+     "species": "lily",
+     "num": 2
+    },
+    {
+     "species": "lily",
+     "num": 3
+    },
+    {
+     "species": "lily",
+     "num": 4
+    },
+    {
+     "species": "monkey",
+     "num": 1
+    },
+    {
+     "species": "monkey",
+     "num": 2
+    },
+    {
+     "species": "monkey",
+     "num": 3
+    }
+   ],
+   "rows": [
+    {
+     "cue": "wait",
+     "program": "all"
+    },
+    {
+     "cue": "wait",
+     "program": "spot"
+    },
+    {
+     "cue": "wait",
+     "program": "all"
+    },
+    {
+     "cue": "cold",
+     "program": "tutti"
+    }
+   ]
+  },
+  {
+   "t": 609.24,
+   "type": "heat_tier",
+   "day": 3,
+   "tier": "clap",
+   "heat": 60,
+   "elapsed": 0
+  },
+  {
+   "t": 614.5,
+   "type": "heat_tier",
+   "day": 3,
+   "tier": "quiet",
+   "heat": 41,
+   "elapsed": 5.3
+  },
+  {
+   "t": 615.24,
+   "type": "program_fire",
+   "day": 3,
+   "row": 0,
+   "cue": "wait",
+   "program": "all",
+   "elapsed": 6,
+   "targets": 7
+  },
+  {
+   "t": 621.24,
+   "type": "program_fire",
+   "day": 3,
+   "row": 1,
+   "cue": "wait",
+   "program": "spot",
+   "elapsed": 12,
+   "targets": 1
+  },
+  {
+   "t": 627.24,
+   "type": "program_fire",
+   "day": 3,
+   "row": 2,
+   "cue": "wait",
+   "program": "all",
+   "elapsed": 18,
+   "targets": 7
+  },
+  {
+   "t": 628.75,
+   "type": "program_fire",
+   "day": 3,
+   "row": 3,
+   "cue": "cold",
+   "program": "tutti",
+   "elapsed": 19.5,
+   "targets": 0
+  },
+  {
+   "t": 634.75,
+   "type": "program_fire",
+   "day": 3,
+   "row": 0,
+   "cue": "wait",
+   "program": "all",
+   "elapsed": 25.5,
+   "targets": 7
+  },
+  {
+   "t": 640.75,
+   "type": "program_fire",
+   "day": 3,
+   "row": 1,
+   "cue": "wait",
+   "program": "spot",
+   "elapsed": 31.5,
+   "targets": 1
+  },
+  {
+   "t": 646.75,
+   "type": "program_fire",
+   "day": 3,
+   "row": 2,
+   "cue": "wait",
+   "program": "all",
+   "elapsed": 37.5,
+   "targets": 7
+  },
+  {
+   "t": 648.25,
+   "type": "program_fire",
+   "day": 3,
+   "row": 3,
+   "cue": "cold",
+   "program": "tutti",
+   "elapsed": 39,
+   "targets": 0
+  },
+  {
+   "t": 654.24,
+   "type": "show_end",
+   "day": 3,
+   "reason": "time",
+   "dur": 45,
+   "satisfaction": 138,
+   "gold": 114,
+   "fameGain": 138,
+   "bestChain": 1,
+   "performs": 79,
+   "angryPerforms": 0,
+   "heatAvg": 23,
+   "heatMax": 60,
+   "tierSec": {
+    "quiet": 39.7,
+    "clap": 5.3,
+    "cheer": 0,
+    "frenzy": 0
+   },
+   "maxMarksPeak": 0,
+   "looseHeat": null
+  },
+  {
+   "t": 660.93,
+   "type": "day_start",
+   "day": 4
+  },
+  {
+   "t": 667.69,
+   "type": "place_choose",
+   "day": 4,
+   "place": "dungeon"
+  },
+  {
+   "t": 670.74,
+   "type": "dungeon_start",
+   "day": 4,
+   "dungeon": "tower",
+   "weapon": "club",
+   "hearts": 3,
+   "ropes": 3
+  },
+  {
+   "t": 676.61,
+   "type": "player_hit",
+   "dungeon": "tower",
+   "source": "hurt",
+   "x": 1003,
+   "y": 616,
+   "heartsLeft": 2,
+   "elapsed": 5.9
+  },
+  {
+   "t": 681.43,
+   "type": "object_use",
+   "dungeon": "tower",
+   "object": "keg",
+   "action": "blast",
+   "x": 1050,
+   "y": 330
+  },
+  {
+   "t": 686.82,
+   "type": "object_use",
+   "dungeon": "tower",
+   "object": "crackwall",
+   "action": "break",
+   "x": 1230,
+   "y": 210
+  },
+  {
+   "t": 693.2,
+   "type": "object_use",
+   "dungeon": "tower",
+   "object": "keg",
+   "action": "blast",
+   "x": 1530,
+   "y": 210
+  },
+  {
+   "t": 699.51,
+   "type": "weapon_switch",
+   "dungeon": "tower",
+   "from": "club",
+   "to": "rope",
+   "auto": false,
+   "elapsed": 26.2,
+   "pausedFor": 2.5
+  },
+  {
+   "t": 700.9,
+   "type": "player_hit",
+   "dungeon": "tower",
+   "source": "hurt",
+   "x": 1687,
+   "y": 225,
+   "heartsLeft": 1,
+   "elapsed": 27.6
+  },
+  {
+   "t": 700.93,
+   "type": "rope_throw",
+   "dungeon": "tower",
+   "result": "miss",
+   "species": null,
+   "weak": false,
+   "dist": null,
+   "elapsed": 27.7
+  },
+  {
+   "t": 701.48,
+   "type": "rope_throw",
+   "dungeon": "tower",
+   "result": "miss",
+   "species": null,
+   "weak": false,
+   "dist": null,
+   "elapsed": 28.2
+  },
+  {
+   "t": 703.02,
+   "type": "rope_throw",
+   "dungeon": "tower",
+   "result": "miss",
+   "species": null,
+   "weak": false,
+   "dist": null,
+   "elapsed": 29.8
+  },
+  {
+   "t": 703.41,
+   "type": "player_hit",
+   "dungeon": "tower",
+   "source": "feather",
+   "x": 1587,
+   "y": 377,
+   "heartsLeft": 0,
+   "elapsed": 30.1
+  },
+  {
+   "t": 703.41,
+   "type": "player_down",
+   "dungeon": "tower",
+   "source": "feather",
+   "cause": "被〔標靶鸚鵡的羽毛〕打倒了",
+   "x": 1587,
+   "y": 377,
+   "elapsed": 30.1
+  },
+  {
+   "t": 704.93,
+   "type": "dungeon_end",
+   "day": 4,
+   "dungeon": "tower",
+   "reason": "down",
+   "dur": 30.1,
+   "captures": [],
+   "kills": 0,
+   "heartsLost": 3,
+   "gold": 0
+  },
+  {
+   "t": 706.33,
+   "type": "day_start",
+   "day": 5
+  },
+  {
+   "t": 710.71,
+   "type": "place_choose",
+   "day": 5,
+   "place": "dungeon"
+  },
+  {
+   "t": 716.06,
+   "type": "dungeon_start",
+   "day": 5,
+   "dungeon": "lake",
+   "weapon": "club",
+   "hearts": 3,
+   "ropes": 3
+  },
+  {
+   "t": 718.04,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 960,
+   "y": 707
+  },
+  {
+   "t": 719.25,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1202,
+   "y": 691
+  },
+  {
+   "t": 722.07,
+   "type": "kill",
+   "dungeon": "lake",
+   "species": "monkey",
+   "by": "weapon",
+   "x": 1518,
+   "y": 597
+  },
+  {
+   "t": 723.94,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1578,
+   "y": 358
+  },
+  {
+   "t": 725.07,
+   "type": "kill",
+   "dungeon": "lake",
+   "species": "monkey",
+   "by": "weapon",
+   "x": 1556,
+   "y": 250
+  },
+  {
+   "t": 726.56,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1518,
+   "y": 241
+  },
+  {
+   "t": 728.25,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1259,
+   "y": 215
+  },
+  {
+   "t": 729.65,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 838,
+   "y": 215
+  },
+  {
+   "t": 730.45,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 599,
+   "y": 215
+  },
+  {
+   "t": 732.82,
+   "type": "kill",
+   "dungeon": "lake",
+   "species": "lily",
+   "by": "weapon",
+   "x": 456,
+   "y": 196
+  },
+  {
+   "t": 733.85,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 300,
+   "y": 339
+  },
+  {
+   "t": 736.02,
+   "type": "kill",
+   "dungeon": "lake",
+   "species": "lily",
+   "by": "weapon",
+   "x": 393,
+   "y": 595
+  },
+  {
+   "t": 736.02,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "fruit",
+   "action": "drop",
+   "x": 450,
+   "y": 690
+  },
+  {
+   "t": 743.71,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 541,
+   "y": 679
+  },
+  {
+   "t": 745.77,
+   "type": "exit_prompt",
+   "dungeon": "lake",
+   "action": "show",
+   "elapsed": 29.7,
+   "captures": 0,
+   "heartsLeft": 3
+  },
+  {
+   "t": 748.99,
+   "type": "exit_prompt",
+   "dungeon": "lake",
+   "action": "stay",
+   "elapsed": 29.7,
+   "captures": 0,
+   "heartsLeft": 3
+  },
+  {
+   "t": 750.11,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1200,
+   "y": 685
+  },
+  {
+   "t": 752.89,
+   "type": "kill",
+   "dungeon": "lake",
+   "species": "monkey",
+   "by": "weapon",
+   "x": 1290,
+   "y": 853
+  },
+  {
+   "t": 756.3,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1592,
+   "y": 360
+  },
+  {
+   "t": 758.46,
+   "type": "kill",
+   "dungeon": "lake",
+   "species": "monkey",
+   "by": "weapon",
+   "x": 1830,
+   "y": 146
+  },
+  {
+   "t": 759.62,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1579,
+   "y": 241
+  },
+  {
+   "t": 761.44,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1259,
+   "y": 216
+  },
+  {
+   "t": 762.88,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 838,
+   "y": 199
+  },
+  {
+   "t": 763.68,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 599,
+   "y": 199
+  },
+  {
+   "t": 765.08,
+   "type": "kill",
+   "dungeon": "lake",
+   "species": "lily",
+   "by": "weapon",
+   "x": 507,
+   "y": 215
+  },
+  {
+   "t": 768.94,
+   "type": "kill",
+   "dungeon": "lake",
+   "species": "lily",
+   "by": "weapon",
+   "x": 233,
+   "y": 573
+  },
+  {
+   "t": 771.17,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 541,
+   "y": 701
+  },
+  {
+   "t": 772.57,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 962,
+   "y": 701
+  },
+  {
+   "t": 773.37,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1201,
+   "y": 701
+  },
+  {
+   "t": 780.27,
+   "type": "weapon_switch",
+   "dungeon": "lake",
+   "from": "club",
+   "to": "rope",
+   "auto": false,
+   "elapsed": 59.8,
+   "pausedFor": 1.2
+  },
+  {
+   "t": 780.83,
+   "type": "rope_throw",
+   "dungeon": "lake",
+   "result": "lasso",
+   "species": "monkey",
+   "weak": true,
+   "dist": 33,
+   "elapsed": 60.3
+  },
+  {
+   "t": 782.62,
+   "type": "capture",
+   "dungeon": "lake",
+   "species": "monkey",
+   "num": 4,
+   "elapsed": 62.1,
+   "x": 1712,
+   "y": 829,
+   "ropesLeft": 2
+  },
+  {
+   "t": 785.62,
+   "type": "rope_throw",
+   "dungeon": "lake",
+   "result": "escape",
+   "species": "monkey",
+   "weak": false,
+   "dist": 101,
+   "elapsed": 65.1
+  },
+  {
+   "t": 785.96,
+   "type": "rope_throw",
+   "dungeon": "lake",
+   "result": "escape",
+   "species": "monkey",
+   "weak": false,
+   "dist": 76,
+   "elapsed": 65.5
+  },
+  {
+   "t": 786.79,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1619,
+   "y": 267
+  },
+  {
+   "t": 788.49,
+   "type": "weapon_switch",
+   "dungeon": "lake",
+   "from": "rope",
+   "to": "club",
+   "auto": false,
+   "elapsed": 67.1,
+   "pausedFor": 0.9
+  },
+  {
+   "t": 792.04,
+   "type": "weapon_switch",
+   "dungeon": "lake",
+   "from": "club",
+   "to": "rope",
+   "auto": false,
+   "elapsed": 69.8,
+   "pausedFor": 0.8
+  },
+  {
+   "t": 792.99,
+   "type": "rope_throw",
+   "dungeon": "lake",
+   "result": "miss",
+   "species": null,
+   "weak": false,
+   "dist": null,
+   "elapsed": 70.8
+  },
+  {
+   "t": 793.26,
+   "type": "rope_throw",
+   "dungeon": "lake",
+   "result": "lasso",
+   "species": "monkey",
+   "weak": true,
+   "dist": 74,
+   "elapsed": 71.1
+  },
+  {
+   "t": 794.59,
+   "type": "capture",
+   "dungeon": "lake",
+   "species": "monkey",
+   "num": 5,
+   "elapsed": 72.4,
+   "x": 1812,
+   "y": 111,
+   "ropesLeft": 1
+  },
+  {
+   "t": 796.2,
+   "type": "object_use",
+   "dungeon": "lake",
+   "object": "bush",
+   "action": "hide",
+   "x": 1587,
+   "y": 241
+  },
+  {
+   "t": 797.21,
+   "type": "dungeon_end",
+   "day": 5,
+   "dungeon": "lake",
+   "reason": "time",
+   "dur": 75,
+   "captures": [
+    "monkey",
+    "monkey"
+   ],
+   "kills": 8,
+   "heartsLost": 0,
+   "gold": 24
+  },
+  {
+   "t": 799.77,
+   "type": "day_start",
+   "day": 6
+  },
+  {
+   "t": 807.27,
+   "type": "place_choose",
+   "day": 6,
+   "place": "show"
+  },
+  {
+   "t": 834.46,
+   "type": "setup_back",
+   "day": 6,
+   "from": "setup2",
+   "to": "setup1"
+  },
+  {
+   "t": 871.39,
+   "type": "setup_done",
+   "day": 6,
+   "roster": [
+    {
+     "species": "lily",
+     "num": 4
+    },
+    {
+     "species": "monkey",
+     "num": 1
+    },
+    {
+     "species": "monkey",
+     "num": 2
+    },
+    {
+     "species": "monkey",
+     "num": 3
+    },
+    {
+     "species": "monkey",
+     "num": 4
+    },
+    {
+     "species": "monkey",
+     "num": 5
+    }
+   ],
+   "rows": [
+    {
+     "cue": "cold",
+     "program": "spot"
+    },
+    {
+     "cue": "cold",
+     "program": "spot"
+    },
+    {
+     "cue": "cold",
+     "program": "spot"
+    },
+    {
+     "cue": "cold",
+     "program": "all"
+    }
+   ]
+  },
+  {
+   "t": 871.39,
+   "type": "heat_tier",
+   "day": 6,
+   "tier": "clap",
+   "heat": 60,
+   "elapsed": 0
+  },
+  {
+   "t": 876.4,
+   "type": "program_fire",
+   "day": 6,
+   "row": 0,
+   "cue": "cold",
+   "program": "spot",
+   "elapsed": 5,
+   "targets": 1
+  },
+  {
+   "t": 881.4,
+   "type": "program_fire",
+   "day": 6,
+   "row": 1,
+   "cue": "cold",
+   "program": "spot",
+   "elapsed": 10,
+   "targets": 1
+  },
+  {
+   "t": 886.4,
+   "type": "program_fire",
+   "day": 6,
+   "row": 2,
+   "cue": "cold",
+   "program": "spot",
+   "elapsed": 15,
+   "targets": 1
+  },
+  {
+   "t": 904.25,
+   "type": "mark_peak",
+   "day": 6,
+   "species": "lily",
+   "num": 4,
+   "marks": 3,
+   "elapsed": 32.9
+  },
+  {
+   "t": 906.8,
+   "type": "mark_peak",
+   "day": 6,
+   "species": "lily",
+   "num": 4,
+   "marks": 4,
+   "elapsed": 35.4
+  },
+  {
+   "t": 910.64,
+   "type": "program_fire",
+   "day": 6,
+   "row": 3,
+   "cue": "cold",
+   "program": "all",
+   "elapsed": 39.2,
+   "targets": 6
+  },
+  {
+   "t": 911.59,
+   "type": "mark_peak",
+   "day": 6,
+   "species": "lily",
+   "num": 4,
+   "marks": 4,
+   "elapsed": 40.2
+  },
+  {
+   "t": 916.39,
+   "type": "show_end",
+   "day": 6,
+   "reason": "time",
+   "dur": 45,
+   "satisfaction": 283,
+   "gold": 155,
+   "fameGain": 283,
+   "bestChain": 4,
+   "performs": 110,
+   "angryPerforms": 62,
+   "heatAvg": 62,
+   "heatMax": 75,
+   "tierSec": {
+    "quiet": 0,
+    "clap": 45,
+    "cheer": 0,
+    "frenzy": 0
+   },
+   "maxMarksPeak": 4,
+   "looseHeat": null
+  },
+  {
+   "t": 920.63,
+   "type": "day_start",
+   "day": 7
+  },
+  {
+   "t": 926.87,
+   "type": "place_choose",
+   "day": 7,
+   "place": "dungeon"
+  },
+  {
+   "t": 936.67,
+   "type": "dungeon_start",
+   "day": 7,
+   "dungeon": "tower",
+   "weapon": "club",
+   "hearts": 3,
+   "ropes": 3
+  },
+  {
+   "t": 941.3,
+   "type": "object_use",
+   "dungeon": "tower",
+   "object": "crackwall",
+   "action": "break",
+   "x": 1230,
+   "y": 690
+  },
+  {
+   "t": 950.66,
+   "type": "player_hit",
+   "dungeon": "tower",
+   "source": "feather",
+   "x": 1604,
+   "y": 728,
+   "heartsLeft": 2,
+   "elapsed": 14
+  },
+  {
+   "t": 955.51,
+   "type": "weapon_switch",
+   "dungeon": "tower",
+   "from": "club",
+   "to": "rope",
+   "auto": false,
+   "elapsed": 16.5,
+   "pausedFor": 2.3
+  },
+  {
+   "t": 956.03,
+   "type": "rope_throw",
+   "dungeon": "tower",
+   "result": "lasso",
+   "species": "parrot",
+   "weak": true,
+   "dist": 110,
+   "elapsed": 17
+  },
+  {
+   "t": 959.03,
+   "type": "capture",
+   "dungeon": "tower",
+   "species": "parrot",
+   "num": 1,
+   "elapsed": 20.1,
+   "x": 1687,
+   "y": 756,
+   "ropesLeft": 2
+  },
+  {
+   "t": 968.06,
+   "type": "weapon_switch",
+   "dungeon": "tower",
+   "from": "rope",
+   "to": "club",
+   "auto": false,
+   "elapsed": 27.6,
+   "pausedFor": 1.5
+  },
+  {
+   "t": 968.23,
+   "type": "object_use",
+   "dungeon": "tower",
+   "object": "keg",
+   "action": "blast",
+   "x": 1530,
+   "y": 390
+  },
+  {
+   "t": 970.01,
+   "type": "player_hit",
+   "dungeon": "tower",
+   "source": "feather",
+   "x": 1622,
+   "y": 459,
+   "heartsLeft": 1,
+   "elapsed": 29.6
+  },
+  {
+   "t": 978.75,
+   "type": "object_use",
+   "dungeon": "tower",
+   "object": "keg",
+   "action": "blast",
+   "x": 750,
+   "y": 330
+  },
+  {
+   "t": 978.76,
+   "type": "player_hit",
+   "dungeon": "tower",
+   "source": "blast",
+   "x": 662,
+   "y": 337,
+   "heartsLeft": 0,
+   "elapsed": 38.3
+  },
+  {
+   "t": 978.76,
+   "type": "player_down",
+   "dungeon": "tower",
+   "source": "blast",
+   "cause": "被〔爆炸桶〕炸倒了",
+   "x": 662,
+   "y": 337,
+   "elapsed": 38.3
+  },
+  {
+   "t": 980.26,
+   "type": "dungeon_end",
+   "day": 7,
+   "dungeon": "tower",
+   "reason": "down",
+   "dur": 38.3,
+   "captures": [
+    "parrot"
+   ],
+   "kills": 0,
+   "heartsLost": 3,
+   "gold": 0
+  },
+  {
+   "t": 980.26,
+   "type": "dungeon_unlock",
+   "day": 7,
+   "dungeon": "snow",
+   "fame": 579
+  },
+  {
+   "t": 980.44,
+   "type": "game_end",
+   "fame": 579,
+   "stars": 0,
+   "goldEarned": 426,
+   "bestChain": 4,
+   "days": [
+    "dungeon",
+    "dungeon",
+    "show",
+    "dungeon",
+    "dungeon",
+    "show",
+    "dungeon"
+   ],
+   "bankSize": 10
+  }
+ ]
+}

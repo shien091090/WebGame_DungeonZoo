@@ -1,6 +1,8 @@
 # 音效 / 音樂素材來源
 
-授權統計: CC0 69 項(Kenney 52 檔 + OpenGameArt 5 檔 + OpenGameArt 12 段內嵌)、CC BY 4.0 7 項(背景音樂 5 檔 + 觀眾歡呼 2 檔)。另有 1 個程式產生的音效(heat_warn, 無外部素材, 不列)。
+授權統計: CC0 85 項(Kenney 59 檔 + OpenGameArt 9 檔 + OpenGameArt 17 段內嵌)、CC BY 4.0 8 項(背景音樂 5 檔 + 觀眾歡呼 2 檔 + 卡通馬蹄 1 檔; 馬蹄原錄音是 CC0, 但轉製者的整包頁面標 CC BY 4.0, 保守起見照 CC BY 署名)。另有 1 個程式產生的音效(heat_warn, 無外部素材, 不列)。
+
+打磨第 8 輪異動: 刪除 sfx_weapon_menu.ogg、sfx_freeze_glass.ogg、sfx_mark_add.ogg 與內嵌段 freeze_all(對應事件 spec 不再用); sfx_cheer.ogg 保留, 改給 confetti_burst 用。新增 15 個檔(Kenney 10 檔、OpenGameArt 5 檔)與 6 段內嵌, 給本輪新增的 13 個事件用; 其他檔案不動。
 
 打磨第 7 輪異動: 新增內嵌段 quest_show、quest_done(Fupi「Win Jingle」, CC0); assets/ 檔案不動。
 
@@ -24,7 +26,17 @@ https://creativecommons.org/licenses/by/4.0/
 
 Crowd cheering: "Free Crowd Cheering Sounds" by Gregor Quendel (gregorquendel.com)
 Licensed under CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+
+Hooves: "Horse gallop on different surfaces" by congusbongus (opengameart.org),
+adapted from "cartoon horse gallop.wav" by martian (freesound.org, CC0)
+Licensed under CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
 ```
+
+## 卡通馬蹄(assets/, CC BY 4.0)
+
+| 檔名 | 事件 | 原始頁面(原檔名) | 作者 | 授權 | 剪輯 |
+|---|---|---|---|---|---|
+| sfx_rush_hooves.mp3 | rush(馬蹄層, 三輪) | https://opengameart.org/content/horse-gallop-on-different-surfaces (archive.zip 內的 clicky.mp3) | congusbongus 轉製; 原錄音 martian「cartoon horse gallop.wav」https://freesound.org/people/martian/sounds/393857/ | 包內 credits.txt 標這個檔的來源為 CC0; 頁面整包標 CC BY 4.0(混 CC0 與 CC BY), 保守起見照 CC BY 4.0 署名 | 無(播放時速度 1.15) |
 
 ## 觀眾歡呼聲(assets/, CC BY 4.0)
 
@@ -47,7 +59,7 @@ Licensed under CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
 
 ## 短音效(assets/, CC0)
 
-除最後五列(OpenGameArt)外全部出自 Kenney(https://kenney.nl), 頁面標示 CC0。檔案為原檔直接複製改名, 未剪輯; 音量、音高(播放速度)與截斷長度在 sound.js 裡調。sound.js 另以 base64 內嵌同一份 ogg 供 Web Audio 解碼。
+原始頁面是 kenney.nl 的出自 Kenney(頁面標示 CC0), 其餘出自 OpenGameArt(作者欄另列)。檔案為原檔直接複製改名, 未剪輯; 音量、音高(播放速度)與截斷長度在 sound.js 裡調。sound.js 另以 base64 內嵌同一份 ogg 供 Web Audio 解碼。
 
 | 檔名 | 事件 | 原始頁面(原檔名) | 作者 | 授權 | 剪輯 |
 |---|---|---|---|---|---|
@@ -83,10 +95,8 @@ Licensed under CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
 | sfx_calm.ogg | calm | https://kenney.nl/assets/digital-audio (phaserDown2.ogg) | Kenney | CC0 | 無 |
 | sfx_special.ogg | special | https://kenney.nl/assets/digital-audio (zapTwoTone.ogg) | Kenney | CC0 | 無 |
 | sfx_angry_perform.ogg | angry_perform(原 red_perform, 打磨第 2 輪改名, 素材不變) | https://kenney.nl/assets/music-jingles (jingles_HIT00.ogg) | Kenney | CC0 | 無 |
-| sfx_freeze_glass.ogg | freeze_all(開頭脆響疊層) | https://kenney.nl/assets/impact-sounds (impactGlass_heavy_001.ogg) | Kenney | CC0 | 無(播放時速度 1.1) |
 | sfx_chain.ogg | chain | https://kenney.nl/assets/interface-sounds (pluck_002.ogg) | Kenney | CC0 | 無(播放時依段數升調) |
 | sfx_cue_fire.ogg | cue_fire | https://kenney.nl/assets/interface-sounds (confirmation_001.ogg) | Kenney | CC0 | 無 |
-| sfx_mark_add.ogg | mark_add | https://kenney.nl/assets/interface-sounds (bong_001.ogg) | Kenney | CC0 | 無(播放時依標記數升調) |
 | sfx_loose.ogg | loose | https://kenney.nl/assets/impact-sounds (impactBell_heavy_001.ogg) | Kenney | CC0 | 無 |
 | sfx_crowd_step_1.ogg | crowd_flee | https://kenney.nl/assets/impact-sounds (footstep_concrete_000.ogg) | Kenney | CC0 | 無 |
 | sfx_crowd_step_2.ogg | crowd_flee | https://kenney.nl/assets/impact-sounds (footstep_concrete_002.ogg) | Kenney | CC0 | 無 |
@@ -100,13 +110,26 @@ Licensed under CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
 | sfx_player_down_hit.ogg | player_down(重擊層) | https://kenney.nl/assets/impact-sounds (impactPunch_heavy_002.ogg) | Kenney | CC0 | 無 |
 | sfx_player_down_fall.ogg | player_down(倒地層) | https://kenney.nl/assets/impact-sounds (impactSoft_heavy_003.ogg) | Kenney | CC0 | 無(播放時速度 0.85) |
 | sfx_player_down_tone.ogg | player_down(遺憾撥弦層) | https://kenney.nl/assets/music-jingles (jingles_PIZZI05.ogg) | Kenney | CC0 | 無(播放時速度 0.89) |
-| sfx_weapon_menu.ogg | weapon_menu | https://kenney.nl/assets/rpg-audio (cloth4.ogg) | Kenney | CC0 | 無(播放時跳過開頭 25 毫秒) |
 | sfx_rope_escape_slap.ogg | rope_escape(輕拍層) | https://kenney.nl/assets/impact-sounds (impactGeneric_light_001.ogg) | Kenney | CC0 | 無 |
 | sfx_fruit_eat_ding.ogg | fruit_eat(回復小叮層) | https://kenney.nl/assets/interface-sounds (glass_005.ogg) | Kenney | CC0 | 無(播放時速度 1.5 / 2.0 各一聲) |
-| sfx_rope_escape_boing.mp3 | rope_escape(彈簧層) | https://opengameart.org/node/183321 「Silly Sound Effects」(blung_0.mp3) | EZduzziteh | CC0 | 無(播放時速度 1.1) |
+| sfx_stairs_step_1.ogg | stairs_down(腳步, 第 1、3 步與回音) | https://kenney.nl/assets/impact-sounds (footstep_wood_000.ogg) | Kenney | CC0 | 無(播放時速度 1.0 → 0.82 逐步降低) |
+| sfx_stairs_step_2.ogg | stairs_down(腳步, 第 2、4 步與回音) | https://kenney.nl/assets/impact-sounds (footstep_wood_002.ogg) | Kenney | CC0 | 同上 |
+| sfx_boost_get.ogg | boost_get(鋼鼓上揚句) | https://kenney.nl/assets/music-jingles (jingles_STEEL10.ogg) | Kenney | CC0 | 無(播放時速度 1.26, 升 4 個半音) |
+| sfx_boost_ding.ogg | boost_get(尾端玻璃叮) | https://kenney.nl/assets/interface-sounds (glass_006.ogg) | Kenney | CC0 | 無(播放時速度 1.5) |
+| sfx_chest_latch.ogg | chest_open(金屬扣「喀」) | https://kenney.nl/assets/rpg-audio (metalLatch.ogg) | Kenney | CC0 | 無 |
+| sfx_chest_creak.ogg | chest_open(木頭吱呀) | https://kenney.nl/assets/rpg-audio (creak3.ogg) | Kenney | CC0 | 無(播放時速度 1.1) |
+| sfx_sparkle.ogg | chest_open、card_get(閃光) | https://kenney.nl/assets/interface-sounds (glass_003.ogg) | Kenney | CC0 | 無(播放時速度 1.5~3.0) |
+| sfx_card_get.ogg | card_get(鋼鼓上行跑句) | https://kenney.nl/assets/music-jingles (jingles_STEEL02.ogg) | Kenney | CC0 | 無(播放時速度 1.15) |
+| sfx_parade_horn.ogg | parade(小號層) | https://kenney.nl/assets/music-jingles (jingles_SAX15.ogg) | Kenney | CC0 | 無(播放時速度 1.12) |
+| sfx_rush_hit.ogg | rush_hit(「碰」) | https://kenney.nl/assets/impact-sounds (impactPunch_medium_001.ogg) | Kenney | CC0 | 無 |
+| sfx_rope_escape_boing.mp3 | rope_escape(彈簧層)、gather(收尾「啵」)、rush_hit(彈開) | https://opengameart.org/node/183321 「Silly Sound Effects」(blung_0.mp3) | EZduzziteh | CC0 | 無(播放時速度 rope_escape 1.1、gather 1.5、rush_hit 0.8) |
+| sfx_firecracker_a.ogg | firecracker(劈啪) | https://opengameart.org/content/25-cc0-bang-firework-sfx (25-CC0-bang-sfx.zip 內的 shot_03.ogg) | rubberduck | CC0 | 無(播放時速度 1.7~2.3) |
+| sfx_firecracker_b.ogg | firecracker(劈啪) | https://opengameart.org/content/25-cc0-bang-firework-sfx (25-CC0-bang-sfx.zip 內的 shot_01.ogg) | rubberduck | CC0 | 同上 |
+| sfx_confetti_bang.ogg | confetti_burst(大砰) | https://opengameart.org/content/25-cc0-bang-firework-sfx (25-CC0-bang-sfx.zip 內的 bang_06.ogg) | rubberduck | CC0 | 無 |
+| sfx_confetti_crackle.ogg | confetti_burst(煙火劈啪尾音) | https://opengameart.org/content/25-cc0-bang-firework-sfx (25-CC0-bang-sfx.zip 內的 fw_03.ogg) | rubberduck | CC0 | 無 |
 | sfx_fruit_eat.ogg | fruit_eat(咬一口) | https://opengameart.org/content/7-eating-crunches (crunch_-_tito.zip 內的 crunch.4.ogg) | StarNinjas(作者說明由其弟 Tito 錄製) | CC0 | 無(播放時跳過開頭 0.118 秒靜音) |
 | sfx_intermission.ogg | intermission | https://opengameart.org/content/classic-fanfare-lick (fanfare.ogg) | fvcalderan | CC0 | 無。作者在留言說明是自己用 GarageBand 內建樂器演奏, 非套用現成樂句 |
-| sfx_cheer.ogg | cheer | https://opengameart.org/content/cheers-0 (cheers.ogg) | Nocturnal_Vanguard | CC0 | 無 |
+| sfx_cheer.ogg | confetti_burst(觀眾「耶—」層; 打磨第 8 輪前給 cheer 用) | https://opengameart.org/content/cheers-0 (cheers.ogg) | Nocturnal_Vanguard | CC0 | 無 |
 | sfx_crowd_unrest.ogg | crowd_frenzy(循環, 騷動疊層) | https://opengameart.org/content/crowd-shoutingspeaking-ambience (crowd_shouting.ogg) | StarNinjas | CC0 | 只留開頭約 10.2 秒(依 Ogg 頁截斷、最後一頁標結尾並重算檢查碼, 未重新編碼); 播放時去頭 0.6 秒、尾段 1.5 秒交叉淡化進開頭做成循環。作者表示樂見署名但不強制 |
 
 ## 內嵌於 sound.js 的音效(無獨立檔, CC0)
@@ -119,7 +142,6 @@ Licensed under CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
 | attack_sword | attack(weapon: sword) | https://opengameart.org/content/swishes-sound-pack (swish-13.wav) | artisticdude | CC0 | 同上 |
 | attack_spear | attack(weapon: spear) | https://opengameart.org/content/swishes-sound-pack (swish-11.wav) | artisticdude | CC0 | 同上 |
 | skill | skill | https://opengameart.org/content/swishes-sound-pack (swish-7.wav) | artisticdude | CC0 | 同上 |
-| freeze_all | freeze_all | https://opengameart.org/content/freeze-spell-0 (freeze.wav) | artisticdude | CC0 | 去頭尾靜音(從 0.10 秒起)、混成單聲道、48 kHz 降為 24 kHz、尾端淡出 0.25 秒、峰值正規化 −1 dBFS; 播放時 1.6 秒收掉 |
 | show_end | show_end | https://opengameart.org/content/applause-in-a-large-hall-or-church (applause-clapping-church-crowd-immersive.wav) | eXpl0it3r | CC0 | 取全曲最響的 3 秒(4.6~7.6 秒), 淡入 0.03 秒、淡出 0.9 秒, 單聲道 22.05 kHz, 峰值正規化 −1 dBFS |
 | exit_prompt | exit_prompt | https://opengameart.org/content/doorbell (doorbell.wav) | frosty ham | CC0 | 混成單聲道、48 kHz 降為 22.05 kHz、剪掉尾端 −50 dB 以下、淡出 0.15 秒、峰值正規化 −1 dBFS(0.93 秒, C5 → A4 兩音) |
 | crowd_clap | crowd_clap(循環) | https://opengameart.org/content/applause-in-a-large-hall-or-church (applause-clapping-church-crowd-immersive.wav) | eXpl0it3r | CC0 | 從掌聲漸弱的尾段(33.0~36.8 秒)切出 16 個單拍, 以 5 人各自節奏、拍一陣停一下的方式重新散佈成 6 秒首尾相接的循環(約每秒 10 拍), 單聲道 22.05 kHz, 峰值正規化 −3 dBFS |
@@ -128,6 +150,13 @@ Licensed under CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
 | quest_show | quest_show | https://opengameart.org/content/win-jingle (winjingle.zip 內的 WinBrass.wav、WinSteelDrums.wav) | Fupi | CC0 | 取兩軌開頭 0~1.0 秒(前兩個和弦), 銅管 1.0 + 鋼鼓 0.35 混成單聲道、44.1 kHz 降為 22.05 kHz, 淡入 2 毫秒、0.86~1.0 秒淡出, 峰值正規化 −1 dBFS(1.0 秒) |
 | quest_done | quest_done | https://opengameart.org/content/win-jingle (winjingle.zip 內的 WinBrass.wav、WinSteelDrums.wav、WinPizzicato.wav) | Fupi | CC0 | 取三軌 0~2.4 秒(整段樂句), 銅管 1.0 + 鋼鼓 0.35 + 撥弦 0.5 混成單聲道, 以視窗化 sinc 重新取樣加速 2 倍(音高升八度)並輸出 22.05 kHz, 淡入 2 毫秒、1.04~1.14 秒淡出, 峰值正規化 −1 dBFS(1.14 秒) |
 
+| parade_snare | parade(小鼓, 四擊) | https://opengameart.org/content/an-interesting-snare-drum-sound (best_snare.wav) | Spring Spring | CC0 | 去掉開頭靜音、取 0.25 秒、0.08 秒淡出, 混成單聲道、48 kHz 降為 22.05 kHz, 峰值正規化 −1 dBFS |
+| scatter | scatter | https://opengameart.org/content/air-whoosh (whoosh2.wav) | pyranostudios | CC0 | 取循環中一次下降段 1.10~1.95 秒, 淡入 10 毫秒、淡出 0.25 秒, 單聲道 22.05 kHz, 峰值正規化 −1 dBFS(0.85 秒) |
+| gather | gather | https://opengameart.org/content/air-whoosh (whoosh2.wav) | pyranostudios | CC0 | 取上升段 0.80~1.32 秒, 重新取樣加速 1.15 倍, 淡入 20 毫秒、淡出 40 毫秒, 單聲道 22.05 kHz, 峰值正規化 −1 dBFS(0.45 秒) |
+| rush_growl | rush(低吼層) | https://opengameart.org/content/rpg-sound-pack (rpg_sound_pack.zip 內的 NPC/giant/giant2.wav) | artisticdude | CC0 | 取開頭 0.75 秒、重新取樣放慢 0.8 倍(音高降低)、去開頭靜音、淡出 0.12 秒, 單聲道 22.05 kHz, 峰值正規化 −1 dBFS(0.92 秒) |
+| rain | rain | https://opengameart.org/content/rain-loopable (Rain OGG.zip 內的 2.ogg) | Ylmir | CC0 | 取 5.0~6.6 秒, 淡入 0.06 秒、淡出 0.45 秒, 混成單聲道、44.1 kHz 降為 22.05 kHz, 峰值正規化 −1 dBFS(1.6 秒) |
+| confetti_charge | confetti_charge | https://opengameart.org/content/air-whoosh (whoosh2.wav)+ https://opengameart.org/content/overloading-sound (overloading.wav) | pyranostudios + jwiese | 兩者 CC0(overloading 頁面同時列 CC BY 3.0 與 CC0, 選 CC0) | 吸入: whoosh2 的上升段 0.80~1.40 秒; 蓄力: overloading 的 0.4~2.0 秒重新取樣加速 1.6 倍(1.0 秒, 音高一路上升), 音量 0.45 → 1 漸強; 兩段 60 毫秒等功率交叉淡化接起, 單聲道 22.05 kHz, 峰值正規化 −1 dBFS(1.54 秒) |
+
 ## 核對
 
-assets/ 共 64 個檔 = 背景音樂 5 列 + 觀眾歡呼 2 列 + 短音效 57 列; 另 12 段內嵌於 sound.js(heat_warn 為程式產生, 不在此表)。沒有未登記的檔。
+assets/ 共 76 個檔 = 背景音樂 5 列 + 觀眾歡呼 2 列 + 卡通馬蹄 1 列 + 短音效 68 列; 另 17 段內嵌於 sound.js(heat_warn 為程式產生, 不在此表)。沒有未登記的檔。
