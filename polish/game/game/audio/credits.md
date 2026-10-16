@@ -1,6 +1,8 @@
 # 音效 / 音樂素材來源
 
-授權統計: CC0 67 項(Kenney 52 檔 + OpenGameArt 5 檔 + OpenGameArt 10 段內嵌)、CC BY 4.0 7 項(背景音樂 5 檔 + 觀眾歡呼 2 檔)。另有 1 個程式產生的音效(heat_warn, 無外部素材, 不列)。
+授權統計: CC0 69 項(Kenney 52 檔 + OpenGameArt 5 檔 + OpenGameArt 12 段內嵌)、CC BY 4.0 7 項(背景音樂 5 檔 + 觀眾歡呼 2 檔)。另有 1 個程式產生的音效(heat_warn, 無外部素材, 不列)。
+
+打磨第 7 輪異動: 新增內嵌段 quest_show、quest_done(Fupi「Win Jingle」, CC0); assets/ 檔案不動。
 
 打磨第 6 輪異動: 無(素材全部沿用)。
 
@@ -123,7 +125,9 @@ Licensed under CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
 | crowd_clap | crowd_clap(循環) | https://opengameart.org/content/applause-in-a-large-hall-or-church (applause-clapping-church-crowd-immersive.wav) | eXpl0it3r | CC0 | 從掌聲漸弱的尾段(33.0~36.8 秒)切出 16 個單拍, 以 5 人各自節奏、拍一陣停一下的方式重新散佈成 6 秒首尾相接的循環(約每秒 10 拍), 單聲道 22.05 kHz, 峰值正規化 −3 dBFS |
 | rope_throw | rope_throw | https://opengameart.org/content/swishes-sound-pack (swish-6.wav) | artisticdude | CC0 | 剪掉開頭 15 毫秒、混成單聲道、44.1 kHz 降為 22.05 kHz、尾端淡出 15 毫秒、峰值正規化 −1 dBFS(0.12 秒) |
 | clock_tick | clock_tick | https://opengameart.org/content/ticking-clock (ticks.zip 內的 ticking clock - tick1.wav) | bart | CC0 | 剪掉開頭 32 毫秒靜音、取 0.135 秒、淡入 1 毫秒、淡出 20 毫秒, 混成單聲道 44.1 kHz 16-bit, 峰值正規化 −1 dBFS。作者表示樂見署名但不強制 |
+| quest_show | quest_show | https://opengameart.org/content/win-jingle (winjingle.zip 內的 WinBrass.wav、WinSteelDrums.wav) | Fupi | CC0 | 取兩軌開頭 0~1.0 秒(前兩個和弦), 銅管 1.0 + 鋼鼓 0.35 混成單聲道、44.1 kHz 降為 22.05 kHz, 淡入 2 毫秒、0.86~1.0 秒淡出, 峰值正規化 −1 dBFS(1.0 秒) |
+| quest_done | quest_done | https://opengameart.org/content/win-jingle (winjingle.zip 內的 WinBrass.wav、WinSteelDrums.wav、WinPizzicato.wav) | Fupi | CC0 | 取三軌 0~2.4 秒(整段樂句), 銅管 1.0 + 鋼鼓 0.35 + 撥弦 0.5 混成單聲道, 以視窗化 sinc 重新取樣加速 2 倍(音高升八度)並輸出 22.05 kHz, 淡入 2 毫秒、1.04~1.14 秒淡出, 峰值正規化 −1 dBFS(1.14 秒) |
 
 ## 核對
 
-assets/ 共 64 個檔 = 背景音樂 5 列 + 觀眾歡呼 2 列 + 短音效 57 列; 另 10 段內嵌於 sound.js(heat_warn 為程式產生, 不在此表)。沒有未登記的檔。
+assets/ 共 64 個檔 = 背景音樂 5 列 + 觀眾歡呼 2 列 + 短音效 57 列; 另 12 段內嵌於 sound.js(heat_warn 為程式產生, 不在此表)。沒有未登記的檔。

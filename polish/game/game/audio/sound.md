@@ -50,7 +50,9 @@
 | rope_throw | rope_throw(本輪新增) | 丟出捕捉繩的那一刻(按鍵當下) | — | 內嵌 PCM(輕的揮動聲, 0.12 秒, 11 毫秒到峰值一成); 播放時加速 1.1~1.2 倍, 比普攻輕快 | 0.45 | 0.06 |
 | rope_escape | rope_escape(本輪新增) | 繩子打中**沒虛弱**的魔物、被掙脫彈開的那一刻 | — | sfx_rope_escape_slap.ogg(輕拍「啪」)+ sfx_rope_escape_boing.mp3(卡通彈簧「啵嚶」) | 0.4 + 1.0 | 0.1 |
 | capture_ready | capture_ready(本輪改用途) | 繩子**套上虛弱的魔物**、繩子收緊的那一刻 | — | sfx_capture_ready.ogg(皮帶扣「喀啦」, 沿用) | 0.8 | 0.1 |
-| capture | capture | 繞圈完成、收服成功 | — | sfx_capture.ogg | 0.75 | 0.1 |
+| capture | capture | 繞圈完成、收服成功。**見習草地收服第 3 隻那一刻不要呼叫**(改播 quest_done; 第 1、2 隻照常) | — | sfx_capture.ogg | 0.75 | 0.1 |
+| quest_show | quest_show(打磨第 7 輪新增) | 見習草地任務卡「任務: 收服 3 隻火柴猴」跳出的那一刻(一次; 背景音樂 dungeon 已在播, 疊在上面即可)。任務卡縮成任務列時不用另外呼叫 | — | 內嵌 PCM(Win Jingle 的前兩個和弦, 原速, 銅管 + 鋼鼓, 1.0 秒; 6 毫秒內出聲) | 0.65 | 0.5 |
+| quest_done | quest_done(打磨第 7 輪新增) | 見習草地收服第 3 隻、任務列轉綠打勾的那一刻(一次; 取代這一刻的 capture 與教學第 7 階段的 tutorial_done)。1.0 秒定格結束、結算出現時照常呼叫 `dungeon_end` | — | 內嵌 PCM(同一段 Win Jingle 完整樂句, 加速 2 倍, 銅管 + 鋼鼓 + 撥弦; 約 1.05 秒在主和弦收尾, 檔長 1.14 秒含淡出) | 1.2(量得約比 capture 響 3 dB) | 0.5 |
 | lasso_break | lasso_break | 套索斷掉(timeout / distance / hit 都是) | — | sfx_lasso_break.ogg | 0.8 | 0.1 |
 | kill | kill | 魔物被打倒(任何方式) | — | sfx_kill.ogg | 0.7 | 0.06 |
 | bush_hide | bush_hide | 馴獸師進入草叢格(從非草叢走進草叢的那一刻) | — | sfx_bush_hide.ogg | 0.7 | 0.2 |
@@ -86,7 +88,7 @@
 | coin_tally | coin_tally | 結算畫面數字每跳一次(可每幀呼叫, 間隔會自動擋) | — | sfx_coin_tally.ogg | 0.4 | 0.06 |
 | buy | buy | 商店購買 / 裝備成功 | — | sfx_buy.ogg | 0.7 | 0.1 |
 | unlock | unlock | 「新地下城開放」提示冒出、暗號 / 節目上架提示冒出 | — | sfx_unlock.ogg | 0.65 | 0.3 |
-| tutorial_done | tutorial_done | 教學階段完成(播完成特效的那一刻) | — | sfx_tutorial_done.ogg | 0.5 | 0.2 |
+| tutorial_done | tutorial_done | 教學階段完成(播完成特效的那一刻)。**收服第 3 隻火柴猴時教學第 7 階段的完成不要呼叫**(那一刻只播 quest_done) | — | sfx_tutorial_done.ogg | 0.5 | 0.2 |
 | star | star | 總結算每顆星亮起 | `index`: 第幾顆, 從 0 起算; 一顆比一顆高 | sfx_star.ogg | 0.7 | 0.05 |
 
 - 本輪拿掉 `upgrade`(個別升級移除); 呼叫了也只是靜默忽略
@@ -130,6 +132,10 @@
 | fruit_eat + heal | 理論上不同時。fruit_eat 是咬一口 + 兩聲很小的叮, heal 是鋼鼓樂句, 一輕一重 |
 | intermission + playMusic('setup') | 同一刻呼叫即可; 音樂淡入 0.5 秒, 小號先出頭 |
 | loose + crowd_flee + stopMusic | 三個可以同一幀呼叫; 腳步聲自帶錯開, 不會跟鐘聲擠在同一點 |
+| quest_done(收服第 3 隻)+ capture + tutorial_done | spec: 這一刻只播 quest_done。RD 照 spec 不呼叫另外兩個即可; 萬一同一刻多呼叫了也沒關係: quest_done 之後 0.3 秒內的 capture / tutorial_done 自動丟掉, 早 0.1 秒內先響的 capture / tutorial_done 會被 quest_done 立刻收掉 |
+| quest_done → dungeon_end | 不重疊: quest_done 約 1.05 秒收尾, dungeon_end 在 1.0 秒定格後、結算出現時才呼叫; 最多重疊 0.05 秒淡出尾巴 |
+| quest_show + 背景音樂 dungeon | quest_show 疊在音樂上(spec), 不壓低音樂; 音樂音量 0.30、quest_show 0.65, 銅管和弦應浮在上面(兩者實際響度比待試玩) |
+| quest_show 與 quest_done 的辨識 | 同一段旋律的頭與完整版: 任務卡只放前兩個和弦、原速、停在未解決的和弦上(「任務來了」); 任務完成是整句、加速一倍、多一層撥弦、收在主和弦(「做到了」)。兩者相隔至少數十秒, 不會同時出現 |
 | tutorial_done 撞上 capture / cue_fire / unlock / show_start | 那幾個剛響過(0.2 秒內)時, tutorial_done 自動延後 0.5 秒, 讓主事件先講完 |
 | hit_monster + kill + monster_weak | 都會響; kill 是錢幣聲、monster_weak 是高音叮, 跟打擊聲頻段錯開 |
 | keg_blast + kill + player_hurt | 都會響; 爆炸桶連鎖時 keg_blast 同時最多 3 聲 |
@@ -137,6 +143,11 @@
 | coin_tally 每幀呼叫 | 間隔 0.06 秒自動擋, 大約每秒 16 下 |
 
 ## 理念或經驗落實
+
+- 打磨第 7 輪: 既有事件的素材、音量、opts 全部沿用; 只新增 quest_show、quest_done。風格照「撥弦 / 鋼鼓 / 銅管當成就音」: 從 OpenGameArt 的 CC0「Win Jingle」(作者 Fupi, 同一段旋律附十幾種樂器的 WAV)取銅管、鋼鼓、撥弦三軌自己混, 跟 capture(Kenney 撥弦)、heal(鋼鼓)、intermission(小號)同一家族。也比過 Kenney 音樂短樂句包的撥弦 / 鋼鼓 / 薩克斯 50 首(上揚的多是全音階跑動, 不像勝利收尾; 薩克斯音色太悶, 起音 40~90 毫秒)與 cynicmusic 的 CC0 勝利號角(11.8 秒太長)
+- 照「先挑 WAV」: Win Jingle 有 WAV 原檔, 所以能在 Node 裡直接量起音、包絡、和弦位置, 剪輯後以 PCM 內嵌(兩段合計約 125 KB base64)。spec 要「約 1 秒」, 原句 2.1 秒, 任務完成用帶抗混疊的重新取樣加速 2 倍(不是硬剪, 保留整句的起承轉合); 任務卡只取前兩個和弦, 原速
+- 相對音量照量出來的響度換算: 最響 50 毫秒響度 quest_done −12.6 dB、capture −11.6 dB(×0.75 後 −14.1), spec 要「比 capture 更大」, 音量設 1.2 → −11.0, 大約大 3 dB; quest_show 設 0.65 → −13.8, 跟 capture 差不多、比 quest_done 小。實際聽感待試玩
+- 同時觸發的讓位寫在 sound.js 裡(收服第 3 隻只留 quest_done), RD 多呼叫也不會三聲疊在一起
 
 - 打磨第 6 輪: spec 寫明音效與音樂沒有增刪、沒有改用途, 所有事件、素材、音量、opts 全部沿用第 5 輪, 只在 ui_denied 補註見習表演改成 3 隻。重新跑過語法檢查與冒煙測試(有 / 沒有 Web Audio 兩種情況, init 前呼叫、每個事件、每個 opts、未知名稱、靜音切換), credits 與 assets/ 對帳 64 = 64
 

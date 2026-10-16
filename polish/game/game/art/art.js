@@ -199,7 +199,9 @@
     bush: '#2f8a3e', bushHi: '#58c06a', // 草叢(圓葉叢, 無尖角)
     water: '#5ab4ff',           // 回復泉水
     hittable: 'rgba(255,210,74,0.8)', // 金色虛線 = 你打得到 / 打得破的場景物(裂牆、有果子的果樹)
-    tutorBg: '#fff6e0', tutorInk: '#1a2030', tutorOk: '#2fb060' // 教學泡泡專用(明暗與全畫面面板反轉)
+    tutorBg: '#fff6e0', tutorInk: '#1a2030', tutorOk: '#2fb060', // 教學泡泡專用(明暗與全畫面面板反轉)
+    questDone: '#2fb060',       // 見習草地任務完成的綠底(第 7 輪; = 教學完成打勾章的綠: 「做完了」同一個顏色)
+    questPop: '#ffe14d'         // 任務列數字彈一下時的亮黃
   };
   var PLACE = {
     dungeon: { name: '地下城', color: '#58b86a' },
@@ -1698,7 +1700,7 @@
   function drawPickerPanel(ctx, s) {
     var layer = S(s.layer, 'cue') === 'program' ? 'program' : 'cue';
     var opts = Array.isArray(s.options) ? s.options : [];
-    var n = Math.min(13, opts.length), idx = Math.floor(N(s.index, 0)), RH = 44;
+    var n = Math.min(12, opts.length), idx = Math.floor(N(s.index, 0)), RH = 44;
     var accent = layer === 'cue' ? P.cue : P.program;
     var X = 760, W = 460, Y = 60;
     ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 16;
@@ -2591,12 +2593,14 @@
       if (msg) { ctx.save(); ctx.beginPath(); ctx.rect(932, 0, 62, 50); ctx.clip(); richLine(ctx, msg, 932, 25, { size: 14, align: 'left', color: P.textDim, maxW: 62 }); ctx.restore(); }
       return;
     }
-    if (tmax > 0) {
+    // 見習草地(第 7 輪): 第 1 行中段 x 420~860 整段留給 drawQuestBanner 的任務列, 這裡不畫時間條, 地下城名最寬到 x 410
+    var meadow = dg && s.dungeon === 'meadow';
+    if (tmax > 0 && !meadow) {
       timeBar(ctx, 470, 16, 260, 18, tl, tmax);
       T(ctx, Math.ceil(Math.max(0, tl)) + ' 秒', 744, 25, { size: 19, align: 'left', color: tl / tmax < 0.2 ? '#ff8a8a' : P.text });
     }
     var dn = DUN[s.dungeon] ? DUN[s.dungeon].name : '';
-    if (dg && dn) T(ctx, dn, 160, 25, { size: 20, align: 'left', color: DUN[s.dungeon].color, maxW: 300 });
+    if (dg && dn) T(ctx, dn, 160, 25, { size: 20, align: 'left', color: DUN[s.dungeon].color, maxW: meadow ? 250 : 300 });
     if (!dg) {
       if (msg) richLine(ctx, msg, tmax > 0 ? 880 : 640, 25, { size: 17, color: '#d8e0ee', maxW: tmax > 0 ? 200 : 600 });
       return;
@@ -2930,6 +2934,131 @@
   }
 
 
+  // ───────────── 見習草地任務卡 / 任務列(第 7 輪新增) ─────────────
+  // 一行多段字(各段自己的顏色), 整行超過 maxW 時等比縮字; pop 段以自己的中心放大 popS 倍。回傳實際寬度
+  function questSegs(ctx, segs, x, y, size, maxW, popS) {
+    function width(sz) {
+      ctx.save(); ctx.font = 'bold ' + sz + 'px ' + FONT;
+      var w = 0; for (var i = 0; i < segs.length; i++) w += ctx.measureText(segs[i].s).width;
+      ctx.restore(); return w;
+    }
+    var w = width(size);
+    if (maxW && w > maxW && w > 0) { size = Math.max(9, Math.floor(size * maxW / w)); w = width(size); }
+    var cx = x - w / 2;
+    ctx.save(); ctx.font = 'bold ' + size + 'px ' + FONT;
+    for (var i = 0; i < segs.length; i++) {
+      var sg = segs[i], sw = ctx.measureText(sg.s).width;
+      if (sg.pop && popS > 1.001) {
+        ctx.save(); ctx.translate(cx + sw / 2, y); ctx.scale(popS, popS);
+        T(ctx, sg.s, 0, 0, { size: size, color: sg.popColor || sg.color });
+        ctx.restore();
+      } else T(ctx, sg.s, cx, y, { size: size, align: 'left', color: sg.color });
+      cx += sw;
+    }
+    ctx.restore();
+    return w;
+  }
+  // 任務頭像: 深色圓底 + 萊姆圈(= 收服列頭像框同一個「要收 / 收到的」語意) + 魔物本體
+  function questHead(ctx, sp, cx, cy, r) {
+    circle(ctx, cx, cy, r); ctx.fillStyle = '#141925'; ctx.fill();
+    ctx.strokeStyle = P.capture; ctx.lineWidth = Math.max(1.5, r * 0.07); ctx.stroke();
+    ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r - 1, 0, TAU); ctx.clip();
+    ctx.translate(cx + (sp === 'tanuki' ? r * 0.1 : 0), cy + r * 0.04);
+    paintSpecies(ctx, sp, r * (sp === 'tanuki' ? 0.55 : 0.68), {});
+    ctx.restore();
+  }
+  function drawQuestBanner(ctx, s) {
+    var ph = S(s.phase, 'bar');
+    if (ph !== 'card' && ph !== 'shrink' && ph !== 'done') ph = 'bar';
+    var t = Math.max(0, N(s.t, 0));
+    var dur = N(s.dur, ph === 'card' ? 2 : (ph === 'done' ? 1 : 0.5)); if (!(dur > 0)) dur = ph === 'card' ? 2 : (ph === 'done' ? 1 : 0.5);
+    var sp = spKey(S(s.species, 'monkey'));
+    var goal = Math.max(1, Math.floor(N(s.goal, 3)));
+    var cnt = clamp(Math.floor(N(s.count, 0)), 0, goal);
+    if (ph === 'done') cnt = goal;
+    var popDur = N(s.popDur, 0.4); if (!(popDur > 0)) popDur = 0.4;
+    var popT = N(s.popT, popDur);
+    var pp = (popT >= 0 && popT < popDur) ? popT / popDur : -1;   // -1 = 沒在彈
+    var popS = pp >= 0 ? 1 + 0.4 * Math.sin(Math.PI * pp) : 1;      // 1.0 → 1.4 → 1.0
+    var name = SP[sp].name;
+
+    // ── 任務卡 / 縮小: 版面插值 ──
+    var bigTitle = [{ s: '任務: ', color: P.capture }, { s: '收服 ' + goal + ' 隻' + name, color: P.text }];
+    function drawCard(alpha) {
+      // 卡片內容(以卡片中心為原點, 720×220 版面)
+      ctx.save(); ctx.globalAlpha *= alpha;
+      questHead(ctx, sp, -262, 0, 64);
+      questSegs(ctx, bigTitle, 78, -26, 48, 470, 1);
+      richLine(ctx, '打虛弱 → 丟繩 → 繞一圈', 78, 42, { size: 22, color: '#d8e0ee', maxW: 470 });
+      ctx.restore();
+    }
+    function barBody(done, flash) {
+      // 任務列 400×40(以列中心為原點)
+      rr(ctx, -200, -20, 400, 40, 11);
+      ctx.fillStyle = done ? P.questDone : 'rgba(26,32,48,0.97)'; ctx.fill();
+      if (flash > 0) { rr(ctx, -200, -20, 400, 40, 11); ctx.fillStyle = 'rgba(255,255,255,' + (0.28 * flash).toFixed(3) + ')'; ctx.fill(); }
+      rr(ctx, -200, -20, 400, 40, 11); ctx.strokeStyle = done ? '#bff5c8' : P.capture; ctx.lineWidth = 2.5; ctx.stroke();
+    }
+    function barText(done) {
+      questHead(ctx, sp, -178, 0, 15);
+      if (done) {
+        questSegs(ctx, [{ s: '任務完成! ', color: '#ffffff' }, { s: cnt + '/' + goal, color: '#ffffff', pop: true, popColor: P.questPop }], -4, 1, 21, 290, popS);
+      } else {
+        questSegs(ctx, [{ s: '任務: ', color: P.capture }, { s: '收服' + name + ' ', color: P.text }, { s: String(cnt), color: P.text, pop: true, popColor: P.questPop }, { s: '/' + goal, color: P.text }], 14, 1, 20, 330, popS);
+      }
+    }
+
+    if (ph === 'card') {
+      // 全畫面壓暗 0.45(地圖、馴獸師、魔物仍看得到)+ 卡片 720×220 @ (640,380); 前 0.25 秒 0.6 → 1.0 倍(緩出, 不過衝)
+      ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fillRect(0, 0, 1280, 720);
+      var q = clamp(t / 0.25, 0, 1), e = 1 - Math.pow(1 - q, 3), sc = 0.6 + 0.4 * e;
+      ctx.translate(640, 380); ctx.scale(sc, sc); ctx.globalAlpha *= 0.35 + 0.65 * e;
+      ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 6;
+      rr(ctx, -360, -110, 720, 220, 20); ctx.fillStyle = 'rgba(35,42,58,0.98)'; ctx.fill(); ctx.restore();
+      rr(ctx, -360, -110, 720, 220, 20); ctx.strokeStyle = P.capture; ctx.lineWidth = 4; ctx.stroke();
+      rr(ctx, -348, -98, 696, 196, 14); ctx.strokeStyle = 'rgba(198,240,70,0.25)'; ctx.lineWidth = 1.5; ctx.stroke();
+      drawCard(1);
+      return;
+    }
+    if (ph === 'shrink') {
+      // 0.5 秒: 中心 (640,380) → (640,25)、720×220 → 400×40(緩出); 壓暗 0.45 → 0; 卡片內容淡出、任務列內容淡入
+      var p = clamp(t / dur, 0, 1), k = 1 - Math.pow(1 - p, 3);
+      var cy = 380 + (25 - 380) * k, w = 720 + (400 - 720) * k, h = 220 + (40 - 220) * k;
+      if (k < 1) { ctx.fillStyle = 'rgba(0,0,0,' + (0.45 * (1 - k)).toFixed(3) + ')'; ctx.fillRect(0, 0, 1280, 720); }
+      ctx.translate(640, cy);
+      var r = 20 + (11 - 20) * k;
+      rr(ctx, -w / 2, -h / 2, w, h, r); ctx.fillStyle = 'rgba(30,37,52,0.98)'; ctx.fill();
+      ctx.save(); rr(ctx, -w / 2, -h / 2, w, h, r); ctx.clip();
+      var cs = Math.min(w / 720, h / 220);
+      var ca = clamp(1 - k / 0.6, 0, 1);
+      if (ca > 0) { ctx.save(); ctx.scale(cs, cs); drawCard(ca); ctx.restore(); }
+      var ba = clamp((k - 0.4) / 0.6, 0, 1);
+      if (ba > 0) { ctx.save(); ctx.globalAlpha *= ba; barText(false); ctx.restore(); }
+      ctx.restore();
+      rr(ctx, -w / 2, -h / 2, w, h, r); ctx.strokeStyle = P.capture; ctx.lineWidth = 4 + (2.5 - 4) * k; ctx.stroke();
+      return;
+    }
+    // ── 任務列 / 任務完成: 400×40 @ (640,25) ──
+    ctx.translate(640, 25);
+    if (ph === 'done') {
+      // 前 0.4 秒整條 1.0 → 1.1 → 1.0(放大後 440×44, 在 HUD 帶 y 3~47 內)
+      var dq = clamp(t / 0.4, 0, 1), bs = t < 0.4 ? 1 + 0.1 * Math.sin(Math.PI * dq) : 1;
+      ctx.scale(bs, bs);
+      barBody(true, t < 0.4 ? 1 - dq : 0);
+      barText(true);
+      // 右端打勾: 白圓 + 綠勾, 前 0.25 秒由小彈大
+      var cq = clamp(t / 0.25, 0, 1), ck = 0.3 + 0.7 * (1 - Math.pow(1 - cq, 3));
+      ctx.save(); ctx.translate(177, 0); ctx.scale(ck, ck);
+      circle(ctx, 0, 0, 13); ctx.fillStyle = '#ffffff'; ctx.fill(); ctx.strokeStyle = '#1f7a44'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.strokeStyle = P.questDone; ctx.lineWidth = 3.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.beginPath(); ctx.moveTo(-6, 0); ctx.lineTo(-1.5, 5); ctx.lineTo(6.5, -5); ctx.stroke();
+      ctx.restore();
+      return;
+    }
+    barBody(false, pp >= 0 ? Math.sin(Math.PI * pp) : 0);
+    barText(false);
+  }
+
   // ───────────── 匯出 ─────────────
   window.Art = {
     canvas: { width: 1280, height: 720 },
@@ -2982,6 +3111,7 @@
     drawFloatText: wrap(drawFloatText),
     drawResultPanel: wrap(drawResultPanel),
     drawHud: wrap(drawHud),
+    drawQuestBanner: wrap(drawQuestBanner),
     drawTutorial: wrap(drawTutorial)
   };
 })();

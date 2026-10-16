@@ -6,7 +6,7 @@
 const CW = (Art.canvas && Art.canvas.width) || 1280;
 const CH = (Art.canvas && Art.canvas.height) || 720;
 const DAY_MAX = 7;
-const BUILD = 'polish-6';
+const BUILD = 'polish-7';
 const PENDING_KEY = 'gamelog-WebGame_DungeonZoo-pending';
 const SHELF_FAME = [100, 200, 350, 500];   // 商店上架名聲門檻(0 一開始就上架)
 const ROWS = 4;                            // 暗號節目單列數
@@ -138,7 +138,6 @@ const PROJ = {
 
 const CUES = [
   { key: 'wait',    name: '過 6 秒',      desc: '上一個節目演完 6 秒後',     price: 0,  fame: 0 },
-  { key: 'perf1',   name: '有人表演',     desc: '有任何一隻表演了',         price: 0,  fame: 0 },
   { key: 'angry1',  name: '任一怪物生氣', desc: '有一隻生氣了',             price: 20, fame: 0 },
   { key: 'cold',    name: '冷場',         desc: '一半以上的魔物冷掉了',     price: 20, fame: 0 },
   { key: 'angry3',  name: '三隻怪物生氣', desc: '場上同時有 3 隻生氣',      price: 30, fame: 100 },
@@ -289,7 +288,7 @@ function newRun(replay) {
     bank: [], cap: { lily: 0, monkey: 0, beetle: 0, parrot: 0, penguin: 0, tanuki: 0 },
     unlocked: { lake: true, tower: false, snow: false },
     unlockQueue: [], shelfSeen: {},
-    ownedCues: { wait: true, perf1: true }, ownedProgs: { all: true, spot: true },
+    ownedCues: { wait: true }, ownedProgs: { all: true, spot: true },
     rows: emptyRows(), stageInit: false,
     log: ['', '', '', '', '', '', ''],
     placeCur: 0,
@@ -509,7 +508,7 @@ const TUT_CHAIN = { 1: 2, 3: 4, 8: 9, 10: 11, 11: 12, 12: 13, 14: 15, 15: 16 }; 
 function tutWatch() {
   if (scene === 'dungeon' && D) {
     if (D.id === 'meadow') {
-      tutTrig(1);
+      if (!D.quest || D.quest.phase === 'bar' || D.quest.phase === 'done') tutTrig(1);   // 任務列就位後才出現
       if (TUT.done[2] && D.mons.some(m => !m.dead && isWeak(m))) tutTrig(3);
     }
     if (D.lasso) tutTrig(5);
@@ -544,8 +543,9 @@ function noteDone() {
   if (!n || n.phase !== 'show') return;
   n.phase = 'done'; n.doneT = 0;
   ev('tutorial_done', { stage: 7, day: G.day, took: +((Date.now() - TUT.logged[7]) / 1000).toFixed(1), cut: false });
-  Snd.play('tutorial_done');
+  if (!questDone()) Snd.play('tutorial_done');
 }
+function questDone() { return !!(D && D.quest && D.quest.phase === 'done'); }   // 任務完成定格中只播 quest_done
 function noteUpdate(dt) {
   const n = TUT.note;
   if (!n) return;
@@ -594,7 +594,7 @@ function tutUpdate(dt) {
       if (def.ok(c)) {
         c.phase = 'done'; c.doneT = 0;
         ev('tutorial_done', { stage: c.id, day: G.day, took: +((Date.now() - TUT.logged[c.id]) / 1000).toFixed(1), cut: false });
-        Snd.play('tutorial_done');
+        if (!questDone()) Snd.play('tutorial_done');
         if (TUT_CHAIN[c.id]) tutTrig(TUT_CHAIN[c.id]);
       } else if (!here) {
         TUT.cur = null;   // 離開該階段的場景: 收起來, 條件成立時再出現
@@ -791,6 +791,8 @@ function startDungeon(id) {
     ropes: ropeMaxNow(), tamer: null, caps: [], kills: 0, killGold: 0, heartsLost: 0, endT: -1, hidden: false, respawnT: id === 'meadow' ? 3 : 10,
     exit: null, prompt: null, capPop: 0,
     rope: null, picker: null, down: null, dying: null, zWait: false, xWait: false,
+    // 見習草地任務卡 / 任務列(第 41c 條): card 2.0 → shrink 0.5 → bar(常駐)→ done 1.0
+    quest: id === 'meadow' ? { phase: 'card', t: 0, clock: 0, popT: 0.4 } : null,
   };
   let sx = 0, sy = 0;
   for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) {
@@ -810,6 +812,37 @@ function startDungeon(id) {
   for (const n of D.nests) spawnWild(n);
   ev('dungeon_start', { day: G.day, dungeon: id, weapon: G.weapon, hearts: mh, ropes: D.ropes });
   setScene('dungeon');
+  if (D.quest) { ev('quest', { action: 'show', count: 0, took: 0 }); Snd.play('quest_show'); }
+}
+// 任務卡 / 縮小期間(2.5 秒)與任務完成定格(1.0 秒): 整個地下城停住, 不接受按鍵; 回傳 true = 這幀已處理完
+function updateQuest(dt) {
+  const Q = D.quest;
+  if (!Q) return false;
+  Q.clock += dt;
+  if (Q.popT < 0.4) Q.popT = Math.min(0.4, Q.popT + dt);
+  if (Q.phase === 'card') {
+    Q.t += dt;
+    if (Q.t >= 2.0) { Q.phase = 'shrink'; Q.t = 0; }
+    return true;
+  }
+  if (Q.phase === 'shrink') {
+    Q.t += dt;
+    if (Q.t >= 0.5) { Q.phase = 'bar'; Q.t = 0; ev('quest', { action: 'bar', count: D.caps.length, took: +Q.clock.toFixed(1) }); }
+    return true;
+  }
+  if (Q.phase === 'done') {
+    // 定格: 只有飄字、特效、心列、任務列動畫照播
+    Q.t += dt;
+    for (const f of D.fx) f.t += dt;
+    D.fx = D.fx.filter(f => f.t < f.dur);
+    for (const f of D.floats) f.t += dt;
+    D.floats = D.floats.filter(f => f.t < f.dur);
+    const hb = D.hb;
+    if (hb.fx !== 'none') { hb.t += dt; if (hb.t >= 2) { hb.fx = 'none'; hb.t = 2; hb.delta = 0; } }
+    if (Q.t >= 1.0) endDungeon('tutorial');
+    return true;
+  }
+  return false;
 }
 
 function spawnWild(n) {
@@ -1402,7 +1435,9 @@ function captureDone() {
   G.cap[m.sp]++;
   D.caps.push(m.sp); D.capPop = 0;
   addDFloat(m.x, m.y - 40, '收服!', 'capture');
-  Snd.play('capture'); tut('capture');
+  const Q = D.quest, finalCap = !!Q && D.caps.length >= 3;
+  if (!finalCap) Snd.play('capture');   // 任務完成那一刻只播 quest_done, 不疊 capture
+  tut('capture');
   ev('capture', { dungeon: D.id, species: m.sp, num: b.num, elapsed: +D.elapsed.toFixed(1), x: Math.round(m.x), y: Math.round(m.y), ropesLeft: D.ropes });
   m.dead = true; m.nest.mon = null; m.nest.respawn = D.respawnT;
   D.lasso = null;
@@ -1411,7 +1446,14 @@ function captureDone() {
     setHand(G.weapon, true, 0);
     addDFloat(D.tamer.x, D.tamer.y - 96, '繩子用完了', 'hint', 1.5);
   }
-  if (D.id === 'meadow' && D.caps.length >= 3 && D.endT < 0) D.endT = 0.7;   // 讓最後一個教學完成特效播完再結束
+  if (Q) {
+    Q.popT = 0;
+    if (finalCap) {
+      Q.phase = 'done'; Q.t = 0;   // 任務完成: 定格 1.0 秒後才進結算
+      ev('quest', { action: 'done', count: D.caps.length, took: +Q.clock.toFixed(1) });
+      Snd.play('quest_done');
+    } else ev('quest', { action: 'progress', count: D.caps.length, took: +Q.clock.toFixed(1) });
+  }
 }
 function updateCapture(dt) {
   const T = D.tamer;
@@ -1559,6 +1601,7 @@ function checkExit() {
 function updateDungeon(dt) {
   // 倒下動畫: 定格 0.3 + 倒下 1.2, 期間其他一切定格、不接受按鍵
   if (D.down) { D.down.t += dt; if (D.down.t >= D.down.dur) endDungeon('down'); return; }
+  if (updateQuest(dt)) return;
   if (D.prompt) { updateExitPrompt(dt); return; }
   if (D.picker) { updatePicker(dt); return; }
   if (pressed.c) { openPicker(); return; }
@@ -1592,7 +1635,6 @@ function updateDungeon(dt) {
     else { startDown(); return; }
   }
   if (D.timed && D.timeLeft <= 0) { endDungeon('time'); return; }
-  if (D.endT >= 0) { D.endT -= dt; if (D.endT <= 0) { endDungeon('tutorial'); return; } }
   checkExit();
 }
 function endDungeon(reason) {
@@ -1758,7 +1800,7 @@ function startShow() {
   S = {
     tutorial, left: tutorial ? 30 : 45, total: tutorial ? 30 : 45, clock: 0, mons: [], hz: [], floats: [], banner: null,
     rows: G.rows.map((r, i) => (tutorial && i >= 2 ? { cue: '', prog: '', complete: false } : { cue: r.cue, prog: r.prog, complete: !!(r.cue && r.prog) })),
-    cur: -1, waitT: 0, sinceFire: 0, fires: 0, ev: { chain3: false, multi3: false, perf1: false }, satSince: 0, cheer: 0,
+    cur: -1, waitT: 0, sinceFire: 0, fires: 0, ev: { chain3: false, multi3: false }, satSince: 0, cheer: 0,
     move: null, spots: [], sat: 0, best: 0, performs: 0, angryPerforms: 0, loose: null,
     fences: { top: [], bottom: [] }, vis: { top: [], bottom: [] },
     heat: 0, tierIdx: 0, lowT: 0, tierT: 0.4, frenzyT: 0, heatSum: 0, heatDt: 0, heatMax: 0, tierSec: [0, 0, 0, 0],
@@ -1837,7 +1879,6 @@ function perform(m, chain) {
   if (chain > S.best) S.best = chain;
   if (chain > G.bestChain) G.bestChain = chain;
   if (chain >= 3) S.ev.chain3 = true;
-  S.ev.perf1 = true;
   const cast = newCast(m, chain, false);
   cast.angry = isAngry(m);
   if (cast.angry) { S.angryPerforms++; Snd.once('angry_perform'); if (!TUT.done[18]) { TUT.angryMon = m; tutTrig(18); } }
@@ -2037,7 +2078,6 @@ function cueTrue(key) {
   const act = S.mons;
   switch (key) {
     case 'wait': return S.sinceFire >= 6;
-    case 'perf1': return S.ev.perf1;
     case 'angry1': return act.some(isAngry);
     case 'angry3': return act.filter(isAngry).length >= 3;
     case 'half': { const a = act.filter(isAngry).length; return a >= 1 && a * 2 >= act.length; }
@@ -2064,7 +2104,7 @@ function updateProgram(dt) {
     const idx = S.cur;
     S.cur = nextComplete(S.cur);
     S.waitT = 1.5; S.sinceFire = 0;
-    S.ev = { chain3: false, multi3: false, perf1: false }; S.satSince = 0; S.fires++;
+    S.ev = { chain3: false, multi3: false }; S.satSince = 0; S.fires++;
     const n = fireProgram(row);
     ev('program_fire', { day: G.day, row: idx, cue: row.cue, program: row.prog, elapsed: +S.clock.toFixed(1), targets: n });
     Snd.play('cue_fire'); tut('fired');
@@ -2343,12 +2383,12 @@ function hudMessage() {
     case 'select': return '[←][→] 選擇 [Z] 進入 [X] 返回';
     case 'dungeon': {
       if (D.down) return '';
+      if (D.quest && D.quest.phase !== 'bar') return '';   // 任務卡、縮小、任務完成期間沒有訊息
       if (D.prompt) return '[←][→] 選擇 [Z] 決定 [X] 留下';
       if (D.picker) return '[←][→] 選擇 [Z] 換上 [X] 取消';
       if (D.kegs.some(k => k.mode === 'fuse' && dist(k.x, k.y, D.tamer.x, D.tamer.y) <= 130 + 18)) return '爆炸桶要爆了 快跑!';
       if (D.lasso) return '繞牠一圈!';
       if (D.tamer.hidden) return '躲藏中';
-      if (D.id === 'meadow') return '收服火柴猴 ' + Math.min(3, D.caps.length) + '/3 [C] 換武器';
       const w = D.tamer.weapon;
       return w === 'sword' ? '[Z] 攻擊 [X] 擊暈 [C] 換武器' : w === 'spear' ? '[Z] 攻擊 [X] 突進 [C] 換武器' : w === 'rope' ? '[Z] 丟繩 [C] 換武器' : '[Z] 攻擊 [C] 換武器';
     }
@@ -2472,6 +2512,14 @@ function renderDungeon() {
   renderTutorial(false);
   Art.drawHud(ctx, hudState());
   renderTutNote();
+  if (D.quest) {
+    const Q = D.quest;
+    const dur = Q.phase === 'card' ? 2.0 : Q.phase === 'shrink' ? 0.5 : Q.phase === 'done' ? 1.0 : 0.5;
+    const qt = Q.phase === 'bar' ? 0.5 : Math.min(dur, Q.t);
+    const idle = Q.phase === 'card' || Q.phase === 'shrink';
+    Art.drawQuestBanner(ctx, { phase: Q.phase, t: qt, dur, species: 'monkey', count: D.caps.length, goal: 3,
+      popT: idle ? 0.4 : Q.popT, popDur: 0.4 });
+  }
   if (D.prompt) Art.drawExitPrompt(ctx, { choice: D.prompt.choice, t: D.prompt.t });
   if (D.picker) {
     Art.drawWeaponPicker(ctx, { options: D.picker.options, index: D.picker.index, t: D.picker.t });
