@@ -2,6 +2,8 @@
 
 授權統計: CC0 67 項(Kenney 52 檔 + OpenGameArt 5 檔 + OpenGameArt 10 段內嵌)、CC BY 4.0 7 項(背景音樂 5 檔 + 觀眾歡呼 2 檔)。另有 1 個程式產生的音效(heat_warn, 無外部素材, 不列)。
 
+打磨第 6 輪異動: 無(素材全部沿用)。
+
 打磨第 5 輪異動: 新增 9 個檔(Kenney 7 檔、OpenGameArt 2 檔)與 1 段內嵌(rope_throw), 給本輪新增的 6 個事件用; 既有檔案不動。
 
 打磨第 4 輪異動: 新增內嵌段 clock_tick(bart 的 CC0 時鐘單拍)。keg_fuse 素材不變, 只把播放長度從 0.6 秒改成 0.95 秒。

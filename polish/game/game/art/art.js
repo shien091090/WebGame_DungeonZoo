@@ -2771,17 +2771,21 @@
       }
     }
     // 三步圖解
-    var steps = ['① 選 2 隻上台','② 排暗號節目單: 什麼時候 → 演什麼', '③ 開演, 看牠們表演賺觀眾滿意度'];
+    var steps = ['① 選 3 隻上台','② 排暗號節目單: 什麼時候 → 演什麼', '③ 開演, 看牠們表演賺觀眾滿意度'];
     for (var k = 0; k < 3; k++) {
       var px = 222 + k * 418, py = 568;
       panel(ctx, px - 198, py - 58, 396, 116, 14, '#232a3a', P.line);
       ctx.save(); ctx.translate(px, py - 22);
       if (k === 0) {
-        // 怪物庫一格: 頭像 + 上台勾
-        rr(ctx, -34, -26, 68, 52, 8); ctx.fillStyle = P.panelHi; ctx.fill(); ctx.strokeStyle = ONSTAGE; ctx.lineWidth = 2; ctx.stroke();
-        ctx.save(); ctx.translate(4, 2); paintSpecies(ctx, 'monkey', 16, { dir: 1 }); ctx.restore();
-        circle(ctx, -24, -16, 8); ctx.fillStyle = ONSTAGE; ctx.fill(); ctx.strokeStyle = P.outline; ctx.lineWidth = 1.2; ctx.stroke();
-        ctx.strokeStyle = '#10131b'; ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(-28, -16); ctx.lineTo(-25, -13); ctx.lineTo(-20, -19); ctx.stroke();
+        // 怪物庫 3 格(3 隻全上台): 每格頭像 + 上台勾
+        for (var q = -1; q <= 1; q++) {
+          ctx.save(); ctx.translate(q * 74, 0);
+          rr(ctx, -32, -26, 64, 52, 8); ctx.fillStyle = P.panelHi; ctx.fill(); ctx.strokeStyle = ONSTAGE; ctx.lineWidth = 2; ctx.stroke();
+          ctx.save(); ctx.translate(4, 2); paintSpecies(ctx, 'monkey', 15, { dir: 1 }); ctx.restore();
+          circle(ctx, -22, -16, 8); ctx.fillStyle = ONSTAGE; ctx.fill(); ctx.strokeStyle = P.outline; ctx.lineWidth = 1.2; ctx.stroke();
+          ctx.strokeStyle = '#10131b'; ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(-26, -16); ctx.lineTo(-23, -13); ctx.lineTo(-18, -19); ctx.stroke();
+          ctx.restore();
+        }
       } else if (k === 1) {
         // 暗號格 → 節目格
         cellBox(ctx, -62, 0, 96, 40, P.cue, true); iconCue(ctx, 'wait', -56, 0, 13, 1);
@@ -2801,31 +2805,42 @@
     if (ready && (t % 1) < 0.62) richLine(ctx, '按 [Z] 繼續', 640, 674, { size: 28, color: '#ffffff' });
   }
 
-  // ───────────── 今天去哪: 場所卡 360×420 ─────────────
+  // ───────────── 今天去哪: 場所卡(大卡 440×440 地下城 / 表演; 小卡 260×300 商店), 全部依 w,h 縮放 ─────────────
   function drawPlaceCard(ctx, s) {
     var pl = PLACE[s.place] ? s.place : 'dungeon', info = PLACE[pl], sel = B(s.selected);
+    var big0 = pl !== 'shop';
+    var w = Math.max(120, N(s.w, big0 ? 440 : 260)), h = Math.max(140, N(s.h, big0 ? 440 : 300));
+    var big = w >= 360;                       // 大卡 / 小卡的字級與插圖分檔
+    var hw = w / 2, hh = h / 2, r = big ? 18 : 14;
+    var band = Math.round(h * 0.19);          // 頂色帶高約 h 的 19%
+    var nameSz = big ? 44 : 28, noteSz = big ? 22 : 16, iconS = big ? 100 : 56;
+    var noteY = hh - h * 0.14;                // 小字在卡下緣上方約 h 的 14%
+    var iconY = (-hh + band + noteY) / 2 - iconS * 0.1;
     ctx.translate(N(s.x, 0), N(s.y, 0));
-    panel(ctx, -180, -210, 360, 420, 16, sel ? P.panelHi : P.panel, sel ? '#5a6a90' : P.line);
-    ctx.save(); rr(ctx, -178, -208, 356, 76, 14); ctx.clip();
-    ctx.fillStyle = info.color; ctx.globalAlpha = sel ? 0.95 : 0.6; ctx.fillRect(-180, -210, 360, 80); ctx.restore();
-    T(ctx, info.name, 0, -170, { size: 36, color: '#ffffff' });
+    ctx.beginPath(); ctx.rect(-hw, -hh, w, h); ctx.clip(); // 畫面邊界 = 判定邊界
+    panel(ctx, -hw + 1, -hh + 1, w - 2, h - 2, r, sel ? P.panelHi : P.panel, sel ? '#5a6a90' : P.line);
+    ctx.save(); rr(ctx, -hw + 2, -hh + 2, w - 4, band - 4, r - 2); ctx.clip();
+    ctx.fillStyle = info.color; ctx.globalAlpha = sel ? 0.95 : 0.6; ctx.fillRect(-hw, -hh, w, band); ctx.restore();
+    T(ctx, info.name, 0, -hh + band / 2, { size: nameSz, color: '#ffffff', maxW: w - 30 });
     // 插圖
-    var rg = ctx.createRadialGradient(0, 10, 10, 0, 10, 130);
+    var gr = Math.min(hw, (noteY - (-hh + band)) / 2) * 1.1;
+    var rg = ctx.createRadialGradient(0, iconY, 10, 0, iconY, gr);
     rg.addColorStop(0, 'rgba(255,255,255,' + (sel ? 0.12 : 0.05) + ')'); rg.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = rg; ctx.fillRect(-170, -120, 340, 260);
-    ell(ctx, 0, 92, 110, 16, 0); ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fill();
-    placeIcon(ctx, pl, 0, 20, 82, sel ? 1 : 0.75);
-    if (pl === 'dungeon') { ctx.save(); ctx.translate(0, 58); ctx.globalAlpha *= sel ? 1 : 0.75; paintSpecies(ctx, 'monkey', 18, { dir: 1 }); ctx.restore(); }
-    // 小字
+    ctx.fillStyle = rg; ctx.fillRect(-hw + 8, -hh + band, w - 16, noteY - (-hh + band) - noteSz);
+    ell(ctx, 0, iconY + iconS * 0.88, iconS * 1.3, iconS * 0.19, 0); ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fill();
+    placeIcon(ctx, pl, 0, iconY, iconS, sel ? 1 : 0.75);
+    if (pl === 'dungeon') { ctx.save(); ctx.translate(0, iconY + iconS * 0.7); ctx.globalAlpha *= sel ? 1 : 0.75; paintSpecies(ctx, 'monkey', 18 * iconS / 82, { dir: 1 }); ctx.restore(); }
+    // 小字(要放得進 w − 40)
     var note = S(s.note, '');
-    T(ctx, note, 0, 150, { size: 20, color: sel ? '#ffffff' : '#c8d0e0', maxW: 320 });
-    if (sel) selectFrame(ctx, -180, -210, 360, 420, 16);
+    T(ctx, note, 0, noteY, { size: noteSz, color: sel ? '#ffffff' : '#c8d0e0', maxW: w - 40 });
+    if (sel) selectFrame(ctx, -hw, -hh, w, h, r);
   }
 
   // ───────────── 新手教學泡泡(明暗與全畫面面板反轉: 淺紙底 + 深字; 只給教學用) ─────────────
   function tutorKey(ctx, key, x, y, pressed, hop) {
     ctx.save(); ctx.translate(x, y - hop);
     // 大鍵帽 34×34: 和文字裡的小鍵帽同一個長相(淺頂面 + 下緣厚邊); 按過的 = 綠頂面白箭頭 + 右上打勾
+    // 每顆只畫一個符號: 方向鍵的箭頭由 keyCap 畫; circle 傳空字串給 keyCap(不畫字), 繞圈箭頭在下面另畫。不可再疊字母(polish-5 疊了「Z」→ 看起來像鍵疊在一起)
     keyCap(ctx, key === 'circle' ? '' : key, 0, 0, 34, { lit: pressed });
     var ink = pressed ? '#ffffff' : P.tutorInk;
     ctx.fillStyle = ink; ctx.strokeStyle = ink; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
@@ -2834,12 +2849,11 @@
       var ea = Math.PI * 1.35, ex = Math.cos(ea) * 9, ey = -1 + Math.sin(ea) * 9;
       ctx.save(); ctx.translate(ex, ey); ctx.rotate(ea + Math.PI / 2);
       ctx.beginPath(); ctx.moveTo(5, 0); ctx.lineTo(-3, -5); ctx.lineTo(-3, 5); ctx.closePath(); ctx.fill(); ctx.restore();
-    } else {
-      T(ctx, key === 'x' ? 'X' : 'Z', 0, -1, { size: 19, color: ink, stroke: false });
     }
     if (pressed) {
-      circle(ctx, 12, -12, 6.5); ctx.fillStyle = '#ffffff'; ctx.fill(); ctx.strokeStyle = P.tutorInk; ctx.lineWidth = 1.5; ctx.stroke();
-      ctx.strokeStyle = P.tutorOk; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(9, -12); ctx.lineTo(11.5, -9.5); ctx.lineTo(15, -14.5); ctx.stroke();
+      // 右上小勾: 圓心 (10,-10) 半徑 6(含框線最遠到 16.75), 整個在鍵帽 34×34 框內
+      circle(ctx, 10, -10, 6); ctx.fillStyle = '#ffffff'; ctx.fill(); ctx.strokeStyle = P.tutorInk; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.strokeStyle = P.tutorOk; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(7, -10); ctx.lineTo(9.5, -7.5); ctx.lineTo(13, -12.5); ctx.stroke();
     }
     ctx.restore();
   }
@@ -2887,7 +2901,8 @@
     // 文字裡的 [Z] [C] [↓] [←][→] 等標記畫成小鍵帽, 和字同一行(附註不畫鍵帽: 照樣解析, 但 RD 給的附註文字沒有標記)
     richLine(ctx, text, note && done ? bx - 14 : bx, hasK ? by - 21 : by, { size: note ? 15 : 20, color: note ? '#3a4254' : P.tutorInk, stroke: false, maxW: note ? (done ? 270 : 318) : (done ? 250 : 296) });
     if (hasK) {
-      var gap = 8, tw = keys.length * 34 + (keys.length - 1) * gap, k0 = bx - tw / 2 + 17;
+      // 一橫排、照陣列順序, 每顆 34×34、間距 12(4 顆整排 172 寬, 以 bx 為中心), 中心 y = by + 22
+      var gap = 12, tw = keys.length * 34 + (keys.length - 1) * gap, k0 = bx - tw / 2 + 17;
       for (var i = 0; i < keys.length; i++) {
         var hop = 0;
         if (done) { var hq = (dq - i * 0.08) / 0.2; if (hq > 0 && hq < 1) hop = Math.sin(Math.PI * hq) * 6; }

@@ -6,7 +6,7 @@
 const CW = (Art.canvas && Art.canvas.width) || 1280;
 const CH = (Art.canvas && Art.canvas.height) || 720;
 const DAY_MAX = 7;
-const BUILD = 'polish-5';
+const BUILD = 'polish-6';
 const PENDING_KEY = 'gamelog-WebGame_DungeonZoo-pending';
 const SHELF_FAME = [100, 200, 350, 500];   // 商店上架名聲門檻(0 一開始就上架)
 const ROWS = 4;                            // 暗號節目單列數
@@ -332,7 +332,9 @@ function maxHeartsNow() { return 3 + G.armorBought; }
 function ropeMaxNow() { return 3 + G.ropeBought; }
 function xCdBase(w) { return w === 'sword' ? 3 : w === 'spear' ? 1.2 : 0; }
 function xCdMax() { return D && D.tamer ? xCdBase(D.tamer.weapon) : xCdBase(G.weapon); }
-const STAGE_MAX_TUT = 2;   // 見習表演只能上台 2 隻
+const STAGE_MAX_TUT = 3;   // 見習表演 3 隻全上台
+// 「今天去哪?」三張卡: 地下城、表演大卡 440×440, 商店小卡 260×300(中心 y 385)
+const PLACE_CARDS = [{ x: 260, y: 385, w: 440, h: 440 }, { x: 720, y: 385, w: 440, h: 440 }, { x: 1110, y: 385, w: 260, h: 300 }];
 
 function checkUnlock() {
   for (const id of DUNGEON_ORDER) {
@@ -456,12 +458,12 @@ const TS = {
     ok: c => !!D && D.tamer.weapon !== 'rope' },
   7: { note: true, where: () => inMeadow(), text: () => '每次收服都會用掉 1 條繩子, 最多 ' + ropeMaxNow() + ' 條', keys: () => [],
     tgt: () => ({ x: 40 + 11 * (ropeMaxNow() - 1), y: 60, hh: 0 }), ok: () => !!D && D.caps.length >= 3 },
-  8: { where: () => scene === 'setup1' && G.day === 0, text: () => '[Z] 選 2 隻上台 ' + stageCount() + '/2', keys: () => [],
+  8: { where: () => scene === 'setup1' && G.day === 0, text: () => '[Z] 選 3 隻上台 ' + stageCount() + '/3', keys: () => [],
     tgt: () => {
       let i = G.s1.zone === 'grid' ? G.s1.cur : G.bank.findIndex(b => !b.on);
       if (i < 0) i = 0;
       const c = slotCenter(i); return { x: c.x, y: c.y, hh: 55 };
-    }, ok: () => stageCount() === 2 },
+    }, ok: () => stageCount() === 3 },
   9: { where: () => scene === 'setup1' && G.day === 0, text: () => '[↓] 再 [Z] 下一步', keys: () => [],
     tgt: () => ({ x: 1070, y: 505, hh: 35 }), ok: () => scene === 'setup2' },
   10: { where: () => scene === 'setup2' && G.day === 0, text: () => '[Z] 選暗號: 什麼時候演', keys: () => [],
@@ -487,7 +489,7 @@ const TS = {
     tgt: () => { const m = TUT.markMon; return m && S && S.mons.indexOf(m) >= 0 ? { x: m.x, y: m.y, hh: 72 } : null; },
     tick: (c, dt) => { c.t += dt; }, ok: c => c.t >= 5 || (!!TUT.markMon && TUT.markMon.marks === 0 && c.t > 0.3) },
   20: { where: () => scene === 'place', text: () => '[←][→] 選 [Z] 決定', keys: () => [],
-    tgt: () => ({ x: 240 + 400 * (G.placeCur), y: 370, hh: 210 }), ok: c => c.flags.placeChosen },
+    tgt: () => { const pc = PLACE_CARDS[G.placeCur]; return { x: pc.x, y: pc.y, hh: pc.h / 2 }; }, ok: c => c.flags.placeChosen },
   21: { where: () => scene === 'shop', text: () => '[←][→] 換分頁', keys: () => [], tgt: () => ({ x: 640, y: 85, hh: 25 }), ok: c => c.flags.tab },
   22: { where: () => inDungeon() && D.id === 'lake', text: () => '躲進草叢 魔物看不到你', keys: () => [],
     tgt: () => (D.bushes.length ? objTgt(nearestOf(D.bushes)) : null), ok: c => c.flags.hide },
@@ -1667,13 +1669,7 @@ function setup1Input() {
       const b = G.bank[s.cur];
       if (b.on) { b.on = false; Snd.play('ui_cancel'); }
       else if (stageCount() < stageLimit()) { b.on = true; Snd.play('ui_confirm'); }
-      else {
-        Snd.play('ui_denied');
-        if (G.day === 0) {   // 見習表演只能上台 2 隻
-          setupHint('見習表演 只能上台 2 隻', 480, 450);
-          ev('setup_denied', { day: G.day, reason: 'max2', count: stageCount() });
-        }
-      }
+      else Snd.play('ui_denied');   // 見習日 3 隻就是全部(上限 = 怪物庫數), 實際碰不到; 提示與埋點已拿掉
     }
     fixScroll(s, 'cur', n);
   } else if (s.zone === 'next') {
@@ -1684,9 +1680,9 @@ function setup1Input() {
       if (need) { Snd.play('ui_confirm'); G.s2 = { row: 0, col: 0, panel: null }; setScene('setup2'); }
       else {
         Snd.play('ui_denied');
-        if (G.day === 0) {   // 見習日一定要選滿 2 隻
-          setupHint('要選 2 隻上台 才能下一步', 1070, 450);
-          ev('setup_denied', { day: G.day, reason: 'need2', count: stageCount() });
+        if (G.day === 0) {   // 見習日一定要選滿 3 隻
+          setupHint('要選 3 隻上台 才能下一步', 1070, 450);
+          ev('setup_denied', { day: G.day, reason: 'need3', count: stageCount() });
         }
       }
     }
@@ -2596,7 +2592,7 @@ function render() {
     case 'place': {
       Art.drawBackground(ctx, { scene: 'place' });
       const notes = ['抓魔物 · 過一天', '賺滿意度 · 過一天', '買東西 · 不花時間'], places = ['dungeon', 'show', 'shop'];
-      for (let i = 0; i < 3; i++) Art.drawPlaceCard(ctx, { x: 240 + 400 * i, y: 370, place: places[i], note: notes[i], selected: PL.zone === 'card' && i === G.placeCur });
+      for (let i = 0; i < 3; i++) Art.drawPlaceCard(ctx, { x: PLACE_CARDS[i].x, y: PLACE_CARDS[i].y, w: PLACE_CARDS[i].w, h: PLACE_CARDS[i].h, place: places[i], note: notes[i], selected: PL.zone === 'card' && i === G.placeCur });
       Art.drawButton(ctx, { x: 1060, y: 640, w: 190, h: 60, label: Snd.muted ? '聲音 關' : '聲音 開', selected: PL.zone === 'sound' });
       if (PL.notice) Art.drawFloatText(ctx, { x: 640, y: 110, text: PL.notice.text, kind: 'unlock', t: PL.notice.t, dur: 1.5 });
       Art.drawHud(ctx, hudState());
