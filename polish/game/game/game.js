@@ -6,7 +6,7 @@
 const CW = (Art.canvas && Art.canvas.width) || 1280;
 const CH = (Art.canvas && Art.canvas.height) || 720;
 const DAY_MAX = 4;
-const BUILD = 'polish-10';
+const BUILD = 'polish-11';
 const PENDING_KEY = 'gamelog-WebGame_DungeonZoo-pending';
 const SHELF_FAME = [200, 500, 1000];           // 商店上架名聲門檻(0 一開始就上架)
 const ROWS = 4;                            // 暗號節目單列數
@@ -335,7 +335,7 @@ let CAL = null;     // 日曆過場
 let PL = null;      // 出發準備
 let SEL = { cur: 0 };
 let WS = null;      // 選武器
-let IM = null;      // 見習過場
+let IM = null;      // 進場過場
 let DR = null;      // 地下城結算
 let SR = null;      // 表演結算
 let RS = null;      // 總結算
@@ -2026,24 +2026,28 @@ function endDungeon(reason) {
 function dresultInput() {
   if (!pressed.z) return;
   Snd.play('ui_confirm');
-  if (G.day === 0) startIntermission();
-  else enterPrep('show', 0);
+  startIntermission();   // 每天都播進場過場(第 4b 條)
 }
 
 
-// 見習過場: 見習草地 → 見習表演之間; 出現 0.6 秒後才接受 Z
+// 進場過場(第 4b 條): 地下城結算之後每天都播; 馴獸師帶著這趟收服的魔物走進帳篷; 出現 0.6 秒後才接受 Z
 function startIntermission() {
-  IM = { t: 0 };
-  ev('intermission', { action: 'show' });
+  const mons = G.day === 0 ? ['monkey', 'monkey', 'monkey'] : (DR ? DR.captures.slice() : []);
+  IM = { t: 0, mons, n: mons.length, pops: 0, cheered: false };
+  ev('intermission', { action: 'show', day: G.day, count: IM.n, species: mons.slice() });
   setScene('intermission');
   Snd.play('intermission');
 }
 function intermissionInput(dt) {
   IM.t += dt;
+  const allInT = 2.05 + 0.25 * IM.n;
+  // 每隻魔物走到門的時刻 t_k = 1.75 + 0.25k(k = 1..n)播 enter_pop; 全員進門播 intermission_cheer
+  while (IM.pops < IM.n && IM.t >= 1.75 + 0.25 * (IM.pops + 1)) { IM.pops++; Snd.play('enter_pop'); }
+  if (!IM.cheered && IM.t >= allInT) { IM.cheered = true; Snd.play('intermission_cheer'); }
   if (IM.t >= 0.6 && pressed.z) {
-    ev('intermission', { action: 'leave', took: +IM.t.toFixed(1) });
+    ev('intermission', { action: 'leave', day: G.day, count: IM.n, species: IM.mons.slice(), took: +IM.t.toFixed(1), allIn: IM.t >= allInT });
     Snd.play('ui_confirm');
-    enterSetup1();
+    if (G.day === 0) enterSetup1(); else enterPrep('show', 0);
   }
 }
 
@@ -3299,7 +3303,7 @@ function render() {
   switch (scene) {
     case 'title': Art.drawTitle(ctx, { t: TITLE_T }); break;
     case 'calendar': Art.drawCalendar(ctx, { day: G.day, dayMax: DAY_MAX, t: Math.min(CAL.t, CAL.dur), dur: CAL.dur, log: G.log.slice() }); break;
-    case 'intermission': Art.drawIntermission(ctx, { t: IM.t, ready: IM.t >= 0.6, monsters: ['monkey', 'monkey', 'monkey'] }); break;
+    case 'intermission': Art.drawIntermission(ctx, { t: IM.t, ready: IM.t >= 0.6, monsters: IM.mons, day: G.day, weapon: G.weapon }); break;
     case 'prep': {
       Art.drawBackground(ctx, bgState('prep'));
       Art.drawPlaceCard(ctx, { x: 440, y: 385, w: 440, h: 440, place: PL.stage === 'dungeon' ? 'dungeon' : 'show',

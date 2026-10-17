@@ -3443,44 +3443,204 @@
     T(ctx, '共 ' + dmax + ' 天', 1150, 610, { size: 26, color: P.textDim });
   }
 
-  // ───────────── 見習過場(見習草地 → 見習表演) ─────────────
+  // ───────────── 進場過場(每天地下城結算 → 表演前): 馴獸師帶著這趟收服的魔物排成一列走進帳篷 ─────────────
+  // 時間公式與 spec 第 4b 條 / RD 音效同一套: 第 k 個(k 0 = 馴獸師)走路 x = 80 − 80k + 320t; 到門 t_k = 1.75 + 0.25k;
+  // 進門 0.3 秒(y 560 → 548、0.75 倍、淡出); 全員進門 allInT = 2.05 + 0.25n, 之後 0.8 秒進門特效, 再之後門光脈動(週期 1.2 秒)
+  function imDoorPath(ctx) {
+    ctx.beginPath(); ctx.moveTo(590, 600); ctx.lineTo(590, 490); ctx.arc(640, 490, 50, Math.PI, 0); ctx.lineTo(690, 600); ctx.closePath();
+  }
+  function imTentBody(ctx) {
+    // 帳篷外框(牆 x 400~880、y 342~600; 屋頂 (370,342) → 尖頂 (640,200) → (910,342))
+    ctx.beginPath();
+    ctx.moveTo(400, 600); ctx.lineTo(400, 342); ctx.lineTo(370, 342);
+    ctx.quadraticCurveTo(520, 300, 640, 200); ctx.quadraticCurveTo(760, 300, 910, 342);
+    ctx.lineTo(880, 342); ctx.lineTo(880, 600); ctx.closePath();
+  }
+  function imTent(ctx, t, flagSw) {
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    // 旗桿 + 旗子(全員進門時晃一下)
+    ctx.strokeStyle = '#8a7a68'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(640, 204); ctx.lineTo(640, 166); ctx.stroke();
+    ctx.save(); ctx.translate(640, 168); ctx.rotate(flagSw);
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(20, -3 + Math.sin(t * 4) * 2, 40, 7); ctx.lineTo(0, 20); ctx.closePath();
+    ctx.fillStyle = PLACE.show.color; ctx.fill(); ctx.strokeStyle = P.outline; ctx.lineWidth = 2; ctx.stroke();
+    ctx.restore();
+    // 牆面: 紅白直條
+    ctx.save(); ctx.beginPath(); ctx.rect(400, 330, 480, 270); ctx.clip();
+    ctx.fillStyle = '#f4ecdc'; ctx.fillRect(400, 330, 480, 270);
+    ctx.fillStyle = '#e05a4a'; for (var sx = 400; sx < 880; sx += 64) ctx.fillRect(sx, 330, 32, 270);
+    // 下段(走道背後 y 480~600)壓暗, 讓走在前面的隊伍跳出來
+    var gs = ctx.createLinearGradient(0, 480, 0, 600);
+    gs.addColorStop(0, 'rgba(20,12,24,0)'); gs.addColorStop(0.35, 'rgba(20,12,24,0.55)'); gs.addColorStop(1, 'rgba(20,12,24,0.7)');
+    ctx.fillStyle = gs; ctx.fillRect(400, 480, 480, 120);
+    ctx.restore();
+    ctx.strokeStyle = P.outline; ctx.lineWidth = 3; ctx.strokeRect(400, 342, 480, 258);
+    // 屋頂: 放射條紋
+    ctx.save();
+    ctx.beginPath(); ctx.moveTo(370, 342); ctx.quadraticCurveTo(520, 300, 640, 200); ctx.quadraticCurveTo(760, 300, 910, 342); ctx.closePath();
+    ctx.fillStyle = '#f4ecdc'; ctx.fill();
+    ctx.save(); ctx.clip();
+    ctx.fillStyle = '#e05a4a';
+    for (var i = 0; i < 9; i += 2) {
+      var xa = 370 + i * 60, xb = xa + 60;
+      ctx.beginPath(); ctx.moveTo(640, 196); ctx.lineTo(xa, 350); ctx.lineTo(xb, 350); ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+    ctx.strokeStyle = P.outline; ctx.lineWidth = 3; ctx.stroke();
+    ctx.restore();
+    // 簷口波浪邊(y 342~372)
+    for (var v = 0; v < 9; v++) {
+      var vx = 385 + v * 60;
+      ctx.beginPath(); ctx.arc(vx + 30, 342, 30, 0, Math.PI); ctx.closePath();
+      ctx.fillStyle = v % 2 ? '#f4ecdc' : '#e05a4a'; ctx.fill(); ctx.strokeStyle = P.outline; ctx.lineWidth = 2.5; ctx.stroke();
+    }
+    // 門上徽章(星)
+    circle(ctx, 640, 405, 21); ctx.fillStyle = '#3a2a48'; ctx.fill(); ctx.strokeStyle = P.gold; ctx.lineWidth = 3; ctx.stroke();
+    starPath(ctx, 640, 406, 13); ctx.fillStyle = P.gold; ctx.fill();
+  }
+  function imDoor(ctx, t, allInT) {
+    // 門洞: 平時暗; 全員進門 → 暖光一閃(0.8 秒)→ 緩慢脈動(週期 1.2 秒)
+    var light = 0, flash = 0;
+    if (t >= allInT) {
+      var e = t - allInT;
+      if (e < 0.8) { var q = e / 0.8; flash = q < 0.15 ? q / 0.15 : 1 - (q - 0.15) / 0.85; light = 0.5 * clamp(q / 0.3, 0, 1) + 0.5 * flash; }
+      else light = 0.42 + 0.18 * Math.sin((e - 0.8) / 1.2 * TAU - Math.PI / 2);
+    }
+    imDoorPath(ctx); ctx.fillStyle = '#1a1220'; ctx.fill();
+    if (light > 0) {
+      ctx.save(); imDoorPath(ctx); ctx.clip();
+      var g = ctx.createRadialGradient(640, 560, 10, 640, 540, 130);
+      g.addColorStop(0, 'rgba(255,226,150,' + (0.95 * light).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,170,80,' + (0.55 * light).toFixed(3) + ')');
+      ctx.fillStyle = g; ctx.fillRect(590, 440, 100, 160); ctx.restore();
+      // 門外暖光暈(clip 在帳篷範圍內)
+      ctx.save(); imTentBody(ctx); ctx.clip();
+      var g2 = ctx.createRadialGradient(640, 520, 40, 640, 520, 200);
+      g2.addColorStop(0, 'rgba(255,210,120,' + (0.35 * light + 0.3 * flash).toFixed(3) + ')'); g2.addColorStop(1, 'rgba(255,210,120,0)');
+      ctx.fillStyle = g2; ctx.fillRect(400, 300, 480, 300); ctx.restore();
+    }
+    imDoorPath(ctx); ctx.strokeStyle = P.outline; ctx.lineWidth = 3; ctx.stroke();
+    // 兩側收起的布簾(門框外 22 寬, y 440~516; 綁繩金球在 y 500; 不伸進走道 y 520 以下)
+    for (var sd = -1; sd <= 1; sd += 2) {
+      var ex = sd < 0 ? 590 : 690;
+      ctx.beginPath(); ctx.moveTo(ex, 440); ctx.lineTo(ex + sd * 22, 440); ctx.quadraticCurveTo(ex + sd * 10, 480, ex + sd * 14, 516); ctx.lineTo(ex, 504); ctx.closePath();
+      ctx.fillStyle = '#b8323a'; ctx.fill(); ctx.strokeStyle = P.outline; ctx.lineWidth = 2; ctx.stroke();
+      circle(ctx, ex + sd * 8, 500, 4); ctx.fillStyle = P.gold; ctx.fill();
+    }
+  }
+  function imStars(ctx, t, allInT) {
+    var e = t - allInT; if (e < 0 || e >= 0.8) return;
+    var pts = [[560, 268], [640, 236], [720, 268]];
+    for (var i = 0; i < 3; i++) {
+      var q = clamp((e - i * 0.08) / 0.6, 0, 1); if (q <= 0) continue;
+      var sc = q < 0.3 ? q / 0.3 * 1.2 : 1.2 - 0.2 * (q - 0.3) / 0.7, al = q < 0.6 ? 1 : 1 - (q - 0.6) / 0.4;
+      ctx.save(); ctx.globalAlpha *= al; ctx.translate(pts[i][0], pts[i][1] - 10 * q); ctx.rotate(q * 0.8);
+      ctx.shadowColor = 'rgba(255,224,138,0.9)'; ctx.shadowBlur = 12;
+      starPath(ctx, 0, 0, 15 * sc); ctx.fillStyle = '#ffe08a'; ctx.fill(); ctx.strokeStyle = '#8a5a10'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.restore();
+    }
+  }
+  function imBunting(ctx, x0, y0, x1, y1, sag, n, t, ph) {
+    var mx = (x0 + x1) / 2, my = (y0 + y1) / 2 + sag;
+    ctx.strokeStyle = '#6a6070'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.quadraticCurveTo(mx, my, x1, y1); ctx.stroke();
+    var cols = ['#e05a4a', '#ffd24a', '#5ad1e6', '#f4ecdc'];
+    for (var i = 1; i < n; i++) {
+      var u = i / n, a = 1 - u;
+      var px = a * a * x0 + 2 * a * u * mx + u * u * x1, py = a * a * y0 + 2 * a * u * my + u * u * y1;
+      if (i % 2) {
+        ctx.beginPath(); ctx.moveTo(px - 9, py); ctx.lineTo(px + 9, py); ctx.lineTo(px, py + 20); ctx.closePath();
+        ctx.fillStyle = cols[(i >> 1) % 4]; ctx.fill(); ctx.strokeStyle = P.outline; ctx.lineWidth = 1.2; ctx.stroke();
+      } else {
+        var on = 0.55 + 0.45 * Math.sin(t * 3 + i * 1.3 + ph);
+        circle(ctx, px, py + 3, 4.5); ctx.fillStyle = 'rgba(255,226,150,' + on.toFixed(2) + ')'; ctx.fill();
+      }
+    }
+  }
+  function imDecor(ctx, t) {
+    // 右半(x 900~1210)馬戲團布置: 立柱 + 海報立牌 + 鼓台; 左邊走道 y 520~600 不放東西
+    ctx.lineJoin = 'round';
+    ctx.fillStyle = '#5a4a3c'; ctx.fillRect(1196, 300, 10, 300); ctx.strokeStyle = P.outline; ctx.lineWidth = 2; ctx.strokeRect(1196, 300, 10, 300);
+    circle(ctx, 1201, 298, 8); ctx.fillStyle = P.gold; ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#5a4a3c'; ctx.fillRect(1020, 540, 8, 60); ctx.fillRect(1142, 540, 8, 60);
+    rr(ctx, 1000, 380, 170, 176, 10); ctx.fillStyle = '#2e2440'; ctx.fill(); ctx.strokeStyle = P.gold; ctx.lineWidth = 4; ctx.stroke();
+    rr(ctx, 1012, 392, 146, 152, 6); ctx.fillStyle = '#f4ecdc'; ctx.fill();
+    ctx.save(); rr(ctx, 1012, 392, 146, 152, 6); ctx.clip();
+    for (var r = 0; r < 8; r++) {
+      ctx.beginPath(); ctx.moveTo(1085, 470); ctx.arc(1085, 470, 120, r * TAU / 8 + t * 0.2, r * TAU / 8 + TAU / 16 + t * 0.2); ctx.closePath();
+      ctx.fillStyle = 'rgba(224,90,74,0.25)'; ctx.fill();
+    }
+    ctx.restore();
+    ctx.save(); ctx.translate(1085, 478); paintSpecies(ctx, 'monkey', 30, { dir: -1 }); ctx.restore();
+    for (var k = 0; k < 3; k++) { starPath(ctx, 1036 + k * 49, 408, 8); ctx.fillStyle = P.gold; ctx.fill(); }
+    ell(ctx, 960, 596, 46, 8, 0); ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fill();
+    ctx.fillStyle = '#3a5a9a'; ctx.fillRect(918, 548, 84, 46);
+    ctx.fillStyle = '#ffd24a';
+    for (var z = 0; z < 4; z++) { ctx.beginPath(); ctx.moveTo(918 + z * 21, 548); ctx.lineTo(928.5 + z * 21, 594); ctx.lineTo(939 + z * 21, 548); ctx.closePath(); ctx.fill(); }
+    ctx.strokeStyle = P.outline; ctx.lineWidth = 2.5; ctx.strokeRect(918, 548, 84, 46);
+    ell(ctx, 960, 548, 42, 9, 0); ctx.fillStyle = '#e05a4a'; ctx.fill(); ctx.stroke();
+  }
+  // 隊伍一員: k 0 = 馴獸師(drawTamer 同畫法, 面向右、拿 weapon), 其他 = 表演場尺寸的魔物(64×64); 影子固定在 y 594
+  function imActor(ctx, k, sp, wp, x, y, sc, al) {
+    ctx.save(); ctx.globalAlpha *= al;
+    ell(ctx, x, 594, 22 * sc, 5 * sc, 0); ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fill();
+    ctx.translate(x, y); ctx.scale(sc, sc);
+    if (k === 0) paintTamer(ctx, { facing: 2, weapon: wp });
+    else paintSpecies(ctx, sp, sp === 'tanuki' ? 20 : 24, { dir: 1 });
+    ctx.restore();
+  }
   function drawIntermission(ctx, s) {
     var t = Math.max(0, N(s.t, 0)), ready = B(s.ready);
-    var mons = (Array.isArray(s.monsters) ? s.monsters : []).slice(0, 6);
+    var mons = Array.isArray(s.monsters) ? s.monsters : [];       // 全部畫出, 不截斷、不收合
+    var n = mons.length, day = clamp(Math.floor(N(s.day, 0)), 0, 99), wp = wpKey(s.weapon);
+    var allInT = 2.05 + 0.25 * n;
     ctx.beginPath(); ctx.rect(0, 0, 1280, 720); ctx.clip();
+    // 夜空 + 幾顆星(避開帳篷)
     var g = ctx.createLinearGradient(0, 0, 0, 720);
     g.addColorStop(0, '#1c1630'); g.addColorStop(0.6, '#241a2e'); g.addColorStop(1, '#120e18');
     ctx.fillStyle = g; ctx.fillRect(0, 0, 1280, 720);
-    // 標題 + 一句話
-    T(ctx, '見習表演', 640, 66, { size: 56, color: '#ffe08a', strokeColor: '#3a1a10', strokeW: 10 });
-    T(ctx, '把剛抓到的火柴猴帶上台表演給觀眾看!', 640, 128, { size: 26, color: '#ffffff', maxW: 1100 });
-    // 第 9 輪: 拿掉下方三步圖解(表演是什麼改由表演引導卡教), 帳篷舞台與隊伍放大往下延伸, 不留空白
-    // 兩道淡淡的舞台聚光(只是氣氛, ≤ 7%)
-    for (var lb = -1; lb <= 1; lb += 2) {
-      ctx.beginPath(); ctx.moveTo(640 + lb * 520, 150); ctx.lineTo(640 + lb * 70, 600); ctx.lineTo(640 + lb * 250, 610); ctx.closePath();
-      ctx.fillStyle = 'rgba(255,236,170,0.07)'; ctx.fill();
+    for (var st = 0; st < 14; st++) {
+      var sx = 40 + hash01(st, 1) * 1200, sy = 170 + hash01(st, 2) * 150;
+      if (sx > 340 && sx < 940) continue;
+      circle(ctx, sx, sy, 1.5 + hash01(st, 3)); ctx.fillStyle = 'rgba(255,240,200,' + (0.25 + 0.25 * Math.sin(t * 2 + st)).toFixed(2) + ')'; ctx.fill();
     }
-    // 帳篷(和場所卡「表演」同一個圖示)+ 舞台
-    ell(ctx, 640, 566, 500, 56, 0); ctx.fillStyle = '#2b2a35'; ctx.fill(); ctx.strokeStyle = '#4a4458'; ctx.lineWidth = 3; ctx.stroke();
-    ell(ctx, 640, 566, 320, 32, 0); ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 2; ctx.stroke();
-    placeIcon(ctx, 'show', 640, 370, 186, 1);
-    // 剛收服的魔物走向舞台(遊戲內畫法; 火柴猴每 1 秒跳一次), 到了之後輪流表演(白環)
-    var n = mons.length;
-    for (var i = 0; i < n; i++) {
-      var sp = spKey(mons[i]);
-      var tx = 640 - (n - 1) * 60 + i * 120, sx = -80 - (n - 1 - i) * 120;
-      var x = Math.min(tx, sx + t * 300), arrived = x >= tx;
-      var y = 548, dy = 0;
-      var hp = ((t + i * 0.4) % 1.0) / 0.3;
-      if (sp === 'monkey' && hp < 1) dy = -Math.sin(Math.PI * hp) * 11;
-      ell(ctx, x, y + 34, 30, 7, 0); ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fill();
-      ctx.save(); ctx.translate(x, y + dy); paintSpecies(ctx, sp, sp === 'tanuki' ? 30 : 34, { dir: 1 }); ctx.restore();
-      if (arrived) {
-        var pc = ((t + i * 1.0) % 2.0) / 0.5;
-        if (pc < 1) { circle(ctx, x, y + dy, 34 + 9 * pc); ctx.strokeStyle = 'rgba(255,255,255,' + (0.9 * (1 - pc)).toFixed(2) + ')'; ctx.lineWidth = 3.5; ctx.stroke(); }
-      }
+    // 地面(y 600 起)+ 通往門口的紅地毯
+    ctx.fillStyle = '#2a2230'; ctx.fillRect(0, 600, 1280, 120);
+    ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.fillRect(0, 600, 1280, 3);
+    ctx.beginPath(); ctx.moveTo(0, 598); ctx.lineTo(700, 598); ctx.lineTo(720, 622); ctx.lineTo(0, 622); ctx.closePath();
+    ctx.fillStyle = '#8a2a36'; ctx.fill();
+    ctx.fillStyle = 'rgba(255,210,74,0.55)'; ctx.fillRect(0, 618, 714, 2);
+    // 旗串(都在 y 520 以上)、帳篷、門、進門特效、右邊布置
+    var fxE = (t >= allInT && t < allInT + 0.8) ? (t - allInT) / 0.8 : -1;
+    var flagSw = fxE >= 0 ? Math.sin(fxE * Math.PI * 5) * 0.45 * (1 - fxE) : 0;
+    imBunting(ctx, 0, 300, 640, 200, 60, 14, t, 0);
+    imBunting(ctx, 640, 200, 1201, 300, 70, 14, t, 2);
+    imTent(ctx, t, flagSw);
+    imDoor(ctx, t, allInT);
+    imStars(ctx, t, allInT);
+    imDecor(ctx, t);
+    // 大字 + 說明
+    T(ctx, day <= 0 ? '見習表演' : '第 ' + day + ' 天 · 表演', 640, 66, { size: 56, color: '#ffe08a', strokeColor: '#3a1a10', strokeW: 10 });
+    var desc = day <= 0 ? '把剛抓到的火柴猴帶上台表演給觀眾看!' : (n >= 1 ? '帶著這趟抓到的 ' + n + ' 隻魔物進場!' : '這趟沒抓到新魔物 帶怪物庫的夥伴上台吧');
+    T(ctx, desc, 640, 128, { size: 26, color: '#ffffff', maxW: 1100 });
+    // 隊伍: 先畫正在進門的(在下), 再畫還在走路的(在上)
+    var k, tk, sp;
+    for (k = 0; k <= n; k++) {
+      tk = 1.75 + 0.25 * k;
+      if (t < tk || t >= tk + 0.3) continue;
+      var q = (t - tk) / 0.3;
+      sp = k === 0 ? '' : spKey(mons[k - 1]);
+      imActor(ctx, k, sp, wp, 640, 560 - 12 * q, 1 - 0.25 * q, 1 - q);
     }
-    // 按 Z 繼續(出現 0.6 秒後; 閃爍週期 1 秒)
+    for (k = 0; k <= n; k++) {
+      tk = 1.75 + 0.25 * k;
+      if (t >= tk) continue;
+      var x = 80 - 80 * k + 320 * t;
+      if (x < -40) break;                       // 後面的更左, 都還在畫面外
+      sp = k === 0 ? '' : spKey(mons[k - 1]);
+      var dy = -Math.abs(Math.sin(x / 80 * Math.PI)) * 4;   // 每走 80 像素一步的上下晃
+      if (sp === 'monkey') { var hp = ((t + k * 0.37) % 1.0) / 0.3; if (hp < 1) dy = -Math.sin(Math.PI * hp) * 10; }
+      imActor(ctx, k, sp, wp, x, 560 + dy, 1, 1);
+    }
+    // 按 [Z] 繼續(0.6 秒後; 閃爍週期 1 秒)
     if (ready && (t % 1) < 0.62) richLine(ctx, '按 [Z] 繼續', 640, 674, { size: 28, color: '#ffffff' });
   }
 

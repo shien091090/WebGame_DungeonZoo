@@ -42,7 +42,9 @@
 | ui_denied | ui_denied | 買不起、未開放、鎖住的列(含「列只能從上往下排」擋下的)、**重複暗號**、暗號還沒選就按表演卡格、見習上台數不對、**繩子用完還按空白鍵** | — | sfx_ui_denied.ogg | 0.55 | 0.08 |
 | title_start | title_start | 開始畫面按 Z(緊接在 init 之後) | — | sfx_title_start.ogg | 0.7 | — |
 | calendar_flip | calendar_flip | 日曆過場開始(翻頁動畫 0~0.6 秒那段的起點) | — | sfx_calendar_flip.ogg | 0.7 | 0.2 |
-| intermission | intermission | 見習過場畫面出現的那一刻(只呼叫一次; 按 Z 離開時不用呼叫, 照常播 ui_confirm) | — | sfx_intermission.ogg(小號 fanfare, 2.9 秒) | 0.7 | 0.5 |
+| intermission | intermission | **進場過場**(上一輪的見習過場, 打磨第 11 輪起每天都播)畫面出現的那一刻(只呼叫一次; 按 Z 離開時不用呼叫, 照常播 ui_confirm) | — | sfx_intermission.ogg(小號 fanfare, 2.9 秒) | 0.7 | 0.5 |
+| enter_pop | enter_pop(打磨第 11 輪新增) | 進場過場裡**每隻魔物**走到帳篷門、開始進門的那一刻(t_k = 1.75 + 0.25k, k ≥ 1; 馴獸師進門不呼叫)。玩家提早按 Z 後, 還沒到時間的不要再呼叫 | `index`(可省略): 第幾隻, 從 1 起。**不傳也可以**: 0.6 秒內連著呼叫會自動一聲比一聲高, 隔超過 0.6 秒從第 1 隻重數 | 內嵌 PCM(泡泡「啵」, 0.085 秒, 1 毫秒內出聲)。沿大調音階往上(do re mi fa sol la si do), 第 8 隻起停在高八度 | 0.3 | 0.08 |
+| intermission_cheer | intermission_cheer(打磨第 11 輪新增) | 進場過場**全員進門**那一刻(allInT = 2.05 + 0.25n; 一隻都沒抓到、只有馴獸師進門時也呼叫, 在 2.05 秒)。一次; 提早按 Z 時沒到時間就不要呼叫 | — | 內嵌 PCM: 觀眾「耶—」+ 一點掌聲(掌聲先墊著 4 毫秒內出聲, 「耶—」約 0.15 秒起來; 整段低通 5 kHz, 像從帳篷裡傳出), 1.05 秒, 0.75 秒起淡出, 跟 0.8 秒的進門特效對齊 | 0.4 | 0.5 |
 | attack | attack | Z 普攻揮出的那一刻(不論有沒有打中) | `weapon`: `'club'`/`'sword'`/`'spear'`, 省略或其他值當 club | 內嵌 PCM(三種武器各一個揮動聲) | 0.5~0.6 | 0.04 |
 | skill | skill | X 武器技發動的那一刻 | `weapon`: 同上(影響音高) | 內嵌 PCM(較重的揮動聲, 放慢) | 0.8 | 0.08 |
 | hit_monster | hit_monster | 馴獸師的普攻 / 武器技打中魔物(每次命中) | — | sfx_hit_monster.ogg | 0.6 | 0.04 |
@@ -122,7 +124,7 @@
 |---|---|---|---|---|---|
 | title | 開始畫面、日曆過場、出發準備 | 進開始畫面、日曆過場、出發準備畫面時 | music_title.mp3(Waunobe March 截段) | 70.6 秒 | 0.40 |
 | dungeon | 選武器、地下城(含見習草地) | 進選武器畫面時(之後進地下城同一首不會重頭); 出口詢問框、拿到卡過場、暫停式引導開著時自動壓到一半(見上方 setMusicDuck 與暫停式引導); 下樓不中斷; 倒下時 play('player_down') 自動停掉 | music_dungeon.mp3(Monster Promenade 截段) | 73.8 秒 | 0.30(壓低時 0.15) |
-| setup | 見習過場、布置第 1、2 步、商店 | 進見習過場、布置第 1 步、商店時; 商店的拿到卡過場時自動壓到一半(card_get), 收下後下一個選單音恢復 | music_setup.mp3(Easy Lemon 60 秒版) | 62.5 秒 | 0.35 |
+| setup | 進場過場(每天)、布置第 1、2 步、商店 | 進進場過場、布置第 1 步、商店時; 商店的拿到卡過場時自動壓到一半(card_get), 收下後下一個選單音恢復 | music_setup.mp3(Easy Lemon 60 秒版) | 62.5 秒 | 0.35 |
 | show | 表演場 | 開演進表演場時; 失控那一刻呼叫 `stopMusic()`; 暫停式引導時自動壓到一半(guide_pause → ui_confirm) | music_show.mp3(Four Beers' Polka 截段) | 73.6 秒 | 0.30 |
 | result | 地下城結算、表演結算、總結算 | 進任一結算畫面時 | music_result.mp3(Happy Boy End Theme) | 53.9 秒 | 0.40 |
 
@@ -162,6 +164,9 @@
 | rope_throw → rope_escape / capture_ready | 先後發生, 不重疊: 丟出是 0.12 秒的揮動聲, 打中後才是「啪 + 啵嚶」(還不行)或皮帶扣「喀啦」(套住了), 兩種結果音色截然不同 |
 | fruit_eat + heal | 理論上不同時。fruit_eat 是咬一口 + 兩聲很小的叮, heal 是鋼鼓樂句, 一輕一重 |
 | intermission + playMusic('setup') | 同一刻呼叫即可; 音樂淡入 0.5 秒, 小號先出頭 |
+| 進場過場: intermission → enter_pop × n → intermission_cheer(打磨第 11 輪) | spec: 出現時 intermission(小號 2.9 秒, 實際有聲到約 2.4 秒); 第一聲 enter_pop 在 2.0 秒, 跟小號尾巴疊著播, 之後每 0.25 秒一聲; intermission_cheer 在 allInT(最後一聲 enter_pop 的 0.3 秒後)。三者都照時間各自呼叫, 不互相壓。「啵」是 0.085 秒的高音泡泡聲(760 Hz 起、一聲比一聲高), 跟小號的長音、群眾聲的質感都不同; 每聲只佔 0.25 秒間隔的三分之一, 連著播是「啵、啵、啵」不會黏成一片。歡呼在最後一聲「啵」收尾 0.2 秒後才進來, 前後接著不重疊 |
+| 進場過場提早按 Z | spec: 只播 ui_confirm, 還沒到時間的 enter_pop / intermission_cheer 由 RD 不再呼叫; 已經在響的讓它播完(本模組不會主動收掉, 「啵」最長 0.085 秒、歡呼 1.05 秒) |
+| intermission_cheer 與 crowd_cheer / confetti_burst 的「耶—」 | 歡呼層跟 confetti_burst 是同一份「耶—」錄音、掌聲層跟 show_end 同一份掌聲, 刻意讓「帳篷裡的觀眾」在過場與表演場是同一群人; 但過場這一聲做了低通(悶一點、像隔著帳篷), 而且只出現在進場過場, 不會跟表演場的聲音同時響 |
 | loose + crowd_flee + stopMusic | 三個可以同一幀呼叫; 腳步聲自帶錯開, 不會跟鐘聲擠在同一點 |
 | quest_done(收服第 3 隻)+ capture + tutorial_done | spec: 這一刻只播 quest_done。RD 照 spec 不呼叫另外兩個即可; 萬一同一刻多呼叫了也沒關係: quest_done 之後 0.3 秒內的 capture / tutorial_done 自動丟掉, 早 0.1 秒內先響的 capture / tutorial_done 會被 quest_done 立刻收掉 |
 | quest_done → dungeon_end | 不重疊: quest_done 約 1.05 秒收尾, dungeon_end 在 1.0 秒定格後、結算出現時才呼叫; 最多重疊 0.05 秒淡出尾巴 |
@@ -181,6 +186,14 @@
 | row_swap + ui_confirm | spec: 互換 / 上下移只播 row_swap。RD 照 spec 不呼叫 ui_confirm 即可(同時呼叫兩個都會響) |
 
 ## 理念或經驗落實
+
+- 打磨第 11 輪: 既有事件的素材、音量、opts 全部沿用(intermission 只是改成每天呼叫, 聲音不變)。只新增 enter_pop、intermission_cheer, **都用現成素材, 沒有程式產生**:
+  - enter_pop 是新素材: OpenGameArt 上 EZduzziteh 的 CC0「pop sounds」(跟 rope_escape / gather / rush_hit 用的卡通「啵嚶」同一位作者, 同一種卡通質感)。另比過 cogitollc 的 CC0「pop sounds」10 個 ogg, 解出來峰值超過 0 dB(削波、偏硬), 不用。挑 pop9: 有清楚音高(約 760 Hz)、0.085 秒、1 毫秒內出聲。spec 寫「約 0.15 秒」, 選短一點是因為每 0.25 秒一聲, 短的才不會黏在一起
+  - 照「成對 / 成串事件取同一個素材、前後呼應」: 進門的「啵」一聲比一聲高(大調音階往上數), 越多隻越往上爬, 對應 spec「越多聲越有抓了好多的成就感」; 9 隻以上停在高八度, 不會高到刺耳
+  - intermission_cheer 不另找新素材: 用本作已登記的觀眾「耶—」(confetti_burst 用的那份)+ 收場掌聲(show_end 那份)重新混成 1.05 秒, 讓過場裡的觀眾跟表演場是同一群人; 整段低通 5 kHz 做出「從帳篷裡傳出」的距離感
+  - 照「即時回饋 / 對齊畫面的音要立即出聲, 刻意漸強的要有立即出聲的層墊著」: 「耶—」原錄音 0.18 秒才到峰值一成, 掌聲層從 0 秒就在(4 毫秒到峰值一成), 對準全員進門特效的第一幀
+  - 照「量最響 50 毫秒響度來設相對音量」: 小號(intermission)含音量約 −19.0 dB; 歡呼設 0.4 → 約 −18.3 dB, 跟小號差不多、是這段過場的收尾高點; 「啵」設 0.3 → 約 −19.8 dB, 單聲短、略低於小號, 連發十聲也不會壓過背景音樂與小號。實際輕重與辨識度待試玩確認
+  - 授權: 新素材 1 個 CC0(EZduzziteh pop9.wav), 以 PCM 內嵌, 沒有新增 assets/ 檔案
 
 - 打磨第 10 輪: spec 寫明沒有新音效, 所有事件、素材、音量、opts 全部沿用第 9 輪, 沒有增刪素材檔。唯一調整: 拿到卡過場改在商店也會出現、而且收下不播音效, 原本「收下時 ui_confirm 恢復音樂」的假設不成立, 所以讓 card_get 造成的壓低在下一個選單音自動恢復(只限 card_get, 不影響出口詢問框與暫停式引導)。事件表與同時觸發照 spec 補上商店買卡的 buy → card_get
 
