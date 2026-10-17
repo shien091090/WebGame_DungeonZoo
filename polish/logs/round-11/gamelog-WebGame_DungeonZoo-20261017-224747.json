@@ -1,0 +1,18 @@
+{
+ "game": "WebGame_DungeonZoo",
+ "build": "polish-11",
+ "startedAt": "2026-10-17T14:46:52.661Z",
+ "finished": false,
+ "events": [
+  {
+   "t": 0,
+   "type": "session_start",
+   "replay": true
+  },
+  {
+   "t": 0,
+   "type": "day_start",
+   "day": 1
+  }
+ ]
+}

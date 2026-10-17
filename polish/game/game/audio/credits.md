@@ -118,13 +118,13 @@ Licensed under CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
 | sfx_player_down_tone.ogg | player_down(遺憾撥弦層) | https://kenney.nl/assets/music-jingles (jingles_PIZZI05.ogg) | Kenney | CC0 | 無(播放時速度 0.89) |
 | sfx_rope_escape_slap.ogg | rope_escape(輕拍層) | https://kenney.nl/assets/impact-sounds (impactGeneric_light_001.ogg) | Kenney | CC0 | 無 |
 | sfx_fruit_eat_ding.ogg | fruit_eat(回復小叮層) | https://kenney.nl/assets/interface-sounds (glass_005.ogg) | Kenney | CC0 | 無(播放時速度 1.5 / 2.0 各一聲) |
-| sfx_stairs_step_1.ogg | stairs_down(腳步, 第 1、3 步與回音) | https://kenney.nl/assets/impact-sounds (footstep_wood_000.ogg) | Kenney | CC0 | 無(播放時速度 1.0 → 0.82 逐步降低) |
-| sfx_stairs_step_2.ogg | stairs_down(腳步, 第 2、4 步與回音) | https://kenney.nl/assets/impact-sounds (footstep_wood_002.ogg) | Kenney | CC0 | 同上 |
+| sfx_stairs_step_1.ogg | stairs_down、stairs_up(腳步, 第 1、3 步與回音) | https://kenney.nl/assets/impact-sounds (footstep_wood_000.ogg) | Kenney | CC0 | 無(播放時速度下樓 1.0 → 0.82 逐步降低、上樓 0.88 → 1.06 逐步升高) |
+| sfx_stairs_step_2.ogg | stairs_down、stairs_up(腳步, 第 2、4 步與回音) | https://kenney.nl/assets/impact-sounds (footstep_wood_002.ogg) | Kenney | CC0 | 同上 |
 | sfx_boost_get.ogg | boost_get(鋼鼓上揚句) | https://kenney.nl/assets/music-jingles (jingles_STEEL10.ogg) | Kenney | CC0 | 無(播放時速度 1.26, 升 4 個半音) |
 | sfx_boost_ding.ogg | boost_get(尾端玻璃叮) | https://kenney.nl/assets/interface-sounds (glass_006.ogg) | Kenney | CC0 | 無(播放時速度 1.5) |
 | sfx_chest_latch.ogg | chest_open(金屬扣「喀」) | https://kenney.nl/assets/rpg-audio (metalLatch.ogg) | Kenney | CC0 | 無 |
 | sfx_chest_creak.ogg | chest_open(木頭吱呀) | https://kenney.nl/assets/rpg-audio (creak3.ogg) | Kenney | CC0 | 無(播放時速度 1.1) |
-| sfx_sparkle.ogg | chest_open、card_get(閃光) | https://kenney.nl/assets/interface-sounds (glass_003.ogg) | Kenney | CC0 | 無(播放時速度 1.5~3.0) |
+| sfx_sparkle.ogg | chest_open、card_get、gold_get(閃光) | https://kenney.nl/assets/interface-sounds (glass_003.ogg) | Kenney | CC0 | 無(播放時速度 1.5~3.0) |
 | sfx_card_get.ogg | card_get(鋼鼓上行跑句) | https://kenney.nl/assets/music-jingles (jingles_STEEL02.ogg) | Kenney | CC0 | 無(播放時速度 1.15) |
 | sfx_parade_horn.ogg | parade(小號層) | https://kenney.nl/assets/music-jingles (jingles_SAX15.ogg) | Kenney | CC0 | 無(播放時速度 1.12) |
 | sfx_rush_hit.ogg | rush_hit(「碰」) | https://kenney.nl/assets/impact-sounds (impactPunch_medium_001.ogg) | Kenney | CC0 | 無 |
@@ -136,6 +136,7 @@ Licensed under CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
 | sfx_firecracker_b.ogg | firecracker(劈啪) | https://opengameart.org/content/25-cc0-bang-firework-sfx (25-CC0-bang-sfx.zip 內的 shot_01.ogg) | rubberduck | CC0 | 同上 |
 | sfx_confetti_bang.ogg | confetti_burst(大砰) | https://opengameart.org/content/25-cc0-bang-firework-sfx (25-CC0-bang-sfx.zip 內的 bang_06.ogg) | rubberduck | CC0 | 無 |
 | sfx_confetti_crackle.ogg | confetti_burst(煙火劈啪尾音) | https://opengameart.org/content/25-cc0-bang-firework-sfx (25-CC0-bang-sfx.zip 內的 fw_03.ogg) | rubberduck | CC0 | 無 |
+| sfx_gold_splash.ogg | gold_get(金幣撒地「嘩啦」, 打磨第 12 輪新增) | https://opengameart.org/content/coin-splash (coinsplash_0.ogg) | LordTomorrow | CC0(頁面 License 欄與 Copyright/Attribution Notice 皆標 CC0) | 無(原檔直接下載改名; 播放時三層錯開, 速度 1.0 / 1.18 / 0.9) |
 | sfx_fruit_eat.ogg | fruit_eat(咬一口) | https://opengameart.org/content/7-eating-crunches (crunch_-_tito.zip 內的 crunch.4.ogg) | StarNinjas(作者說明由其弟 Tito 錄製) | CC0 | 無(播放時跳過開頭 0.118 秒靜音) |
 | sfx_intermission.ogg | intermission | https://opengameart.org/content/classic-fanfare-lick (fanfare.ogg) | fvcalderan | CC0 | 無。作者在留言說明是自己用 GarageBand 內建樂器演奏, 非套用現成樂句 |
 | sfx_cheer.ogg | confetti_burst(觀眾「耶—」層; 打磨第 8 輪前給 cheer 用) | https://opengameart.org/content/cheers-0 (cheers.ogg) | Nocturnal_Vanguard | CC0 | 無 |
@@ -172,4 +173,4 @@ Licensed under CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
 
 ## 核對
 
-assets/ 共 79 個檔 = 背景音樂 5 列 + 觀眾歡呼 2 列 + 卡通馬蹄 1 列 + 短音效 71 列; 另 21 段內嵌於 sound.js(heat_warn 為程式產生, 不在此表)。沒有未登記的檔。
+assets/ 共 80 個檔 = 背景音樂 5 列 + 觀眾歡呼 2 列 + 卡通馬蹄 1 列 + 短音效 72 列(打磨第 12 輪新增 sfx_gold_splash.ogg); 另 21 段內嵌於 sound.js(heat_warn 為程式產生, 不在此表)。沒有未登記的檔。

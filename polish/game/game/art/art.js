@@ -241,8 +241,8 @@
   };
   function effKey(e) { return EFFECT[e] ? e : ''; }
   // 暗號 / 表演卡(第 8 輪換血; 本輪 RD 只會傳下列代號, 其他舊代號畫成虛線空框)
-  var CUE = { wait: '過 6 秒', cold: '冷場', angry3: '三隻怪物生氣', multi3: '一招 3 隻', target1: '有人當標靶', gain30: '當觀眾更滿意', cheering: '觀眾在喝采' };
-  var CUE_DESC = { wait: '上一張表演卡演完 6 秒後', cold: '一半以上的魔物冷掉了', angry3: '場上同時有 3 隻生氣', multi3: '有一招打中 3 隻以上', target1: '有一隻正被當成標靶', gain30: '這列輪到後觀眾滿意度又多了 30', cheering: '觀眾正在喝采' };
+  var CUE = { wait: '過 5 秒', cold: '冷場', angry3: '三隻怪物生氣', multi3: '一招 3 隻', target1: '有人當標靶', gain30: '當觀眾更滿意', cheering: '觀眾在喝采' };
+  var CUE_DESC = { wait: '上一張表演卡演完 5 秒後', cold: '一半以上的魔物冷掉了', angry3: '場上同時有 3 隻生氣', multi3: '有一招打中 3 隻以上', target1: '有一隻正被當成標靶', gain30: '這列輪到後觀眾滿意度又多了 30', cheering: '觀眾正在喝采' };
   var PROG = { parade: '繞場', scatter: '散場', gather: '聚集', rush: '衝撞', shuffle: '魔術箱', rain: '下雨', keg: '炸藥桶', confetti: '大彩炮' };
   var PROG_DESC = { parade: '大家繞著全場走 5 秒', scatter: '大家互相遠離 3 秒', gather: '大家互相靠近 3 秒', rush: '最生氣的那隻橫衝直撞 5 秒', shuffle: '全場洗牌換位置', rain: '讓所有生氣的怪物都冷靜一點', keg: '丟炸藥桶進場 炸到的都生氣', confetti: '把場上的飛彈收成一發大彩炮' };
   // 地下城「這一層的風格」(drawTile 等的 dungeon 欄位)
@@ -859,6 +859,22 @@
     ctx.restore();
   }
   // 小石碑圖示(第 10 輪; 地下城卡「石碑 剩 M」): 地下城石碑同一個圓頂碑身 + 底座 + 頂上金光點; s = 半寬
+  // 金幣寶箱小圖示(第 12 輪; 地下城卡剩餘列): 地下城 drawChest 金幣寶箱的縮小版 —— 棕木箱 + 灰鐵邊 + 箱縫一條金光, 寬 2s
+  function miniChestIcon(ctx, x, y, s) {
+    ctx.save(); ctx.translate(x, y); ctx.lineJoin = 'round';
+    ctx.strokeStyle = P.outline; ctx.lineWidth = Math.max(1, s * 0.16);
+    rr(ctx, -s, -s * 0.2, s * 2, s * 1.0, s * 0.15); ctx.fillStyle = '#9a5e2e'; ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-s, -s * 0.2); ctx.lineTo(-s, -s * 0.55); ctx.quadraticCurveTo(0, -s * 1.0, s, -s * 0.55); ctx.lineTo(s, -s * 0.2); ctx.closePath();
+    ctx.fillStyle = '#b8743a'; ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#8e96a4'; ctx.fillRect(-s * 0.62, -s * 0.8, s * 0.2, s * 1.6); ctx.fillRect(s * 0.42, -s * 0.8, s * 0.2, s * 1.6);
+    ctx.fillStyle = '#ffe27a'; ctx.fillRect(-s * 0.9, -s * 0.28, s * 1.8, Math.max(1.2, s * 0.14));
+    ctx.restore();
+  }
+  // 金幣堆小圖示(第 12 輪; 地下城結算「拿到」列的金幣寶箱): 3 枚 coinIcon 疊成小堆, 和「金幣 +N」那行的金幣同一個長相
+  function coinPileIcon(ctx, x, y, r) {
+    var c = r * 0.62;
+    coinIcon(ctx, x - c * 0.85, y + c * 0.45, c); coinIcon(ctx, x + c * 0.85, y + c * 0.45, c); coinIcon(ctx, x, y - c * 0.55, c);
+  }
   function shrineIcon(ctx, x, y, s) {
     ctx.save(); ctx.translate(x, y); ctx.lineJoin = 'round';
     ctx.strokeStyle = P.outline; ctx.lineWidth = Math.max(1, s * 0.16);
@@ -1084,12 +1100,48 @@
 
   // ───────────── 樓梯(第 8 輪新增): 地板上往下的方形洞口 + 一階階往下變暗的台階 + 框內朝下的圓頭箭頭 ─────────────
   // 和出口(拱門 + 亮的門洞 + 朝上箭頭)相反: 樓梯是「暗的洞 + 朝下箭頭」; 材質 lake 石階 / tower 鐵梯 / snow 冰階
+  // 往上的樓梯(第 12 輪新增, dir up): 和往下是一對 —— 同材質、同白色圓頭箭頭, 但「洞口往下、越深越暗」反過來變成
+  // 「從地板凸起的 4 級台階、越上越亮、看得到每級的立面(暗)與踏面(亮)」+ 右下落地影子 + 朝上箭頭(往上浮)。沒有門框、沒有亮門洞(那是出口)
+  var STAIR_UP = {
+    lake: ['#c4ceda', '#5e6a78', '#3c4552'], tower: ['#a8b0be', '#3e434e', '#2a2e36'],
+    snow: ['#eef8ff', '#7fa8cc', '#4f7799'], meadow: ['#d2bf94', '#6a5a3e', '#4a3e2a']
+  };
+  function paintStairsUp(ctx, d, rim) {
+    var c = STAIR_UP[d] || STAIR_UP.lake;
+    // 落地影子(往右下偏 = 台階比地板高)
+    ctx.beginPath(); ctx.moveTo(-20, 27); ctx.lineTo(28, 27); ctx.lineTo(22, -14); ctx.lineTo(-8, -14); ctx.closePath();
+    ctx.fillStyle = 'rgba(0,0,0,0.32)'; ctx.fill();
+    // 台階側身(梯形量體, 下寬上窄)
+    ctx.beginPath(); ctx.moveTo(-25, 25); ctx.lineTo(25, 25); ctx.lineTo(17, -24); ctx.lineTo(-17, -24); ctx.closePath();
+    ctx.fillStyle = c[2]; ctx.fill(); ctx.strokeStyle = P.outline; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.stroke();
+    // 4 級: 第 k 級立面 [b−4, b]、踏面 [b−10, b−4], b = 24 − 10k; 最上一級的踏面延長成平台(到 y −23)
+    for (var k = 0; k < 4; k++) {
+      var b = 24 - 10 * k, w = 48 - 7 * k, top = k === 3 ? -23 : b - 10;
+      var lit = 0.82 + 0.06 * k;
+      ctx.globalAlpha = lit; ctx.fillStyle = c[0]; ctx.fillRect(-w / 2, top, w, b - 4 - top); ctx.globalAlpha = 1;
+      ctx.fillStyle = c[1]; ctx.fillRect(-w / 2, b - 4, w, 4);
+      ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.fillRect(-w / 2, top, w, 1.5);
+      if (d === 'tower') { ctx.fillStyle = '#2a2e36'; circle(ctx, -w / 2 + 4, b - 2, 1.2); ctx.fill(); circle(ctx, w / 2 - 4, b - 2, 1.2); ctx.fill(); }
+      if (d === 'snow') { ctx.fillStyle = 'rgba(255,255,255,0.8)'; ell(ctx, -w / 4, top + 2, w / 6, 1.6, 0); ctx.fill(); }
+    }
+    ctx.strokeStyle = P.outline; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(-25, 25); ctx.lineTo(-17, -24); ctx.lineTo(17, -24); ctx.lineTo(25, 25); ctx.stroke();
+    // 朝上的圓頭箭頭(白, 深色描邊), 輕輕往上浮 = 「往上走」
+    var bob = Math.sin(now() / 260) * 2;
+    ctx.save(); ctx.translate(0, -1 - Math.abs(bob)); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.strokeStyle = P.outline; ctx.lineWidth = 7;
+    ctx.beginPath(); ctx.moveTo(0, 12); ctx.lineTo(0, -9); ctx.moveTo(-8, -1); ctx.lineTo(0, -9); ctx.lineTo(8, -1); ctx.stroke();
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3.5;
+    ctx.beginPath(); ctx.moveTo(0, 12); ctx.lineTo(0, -9); ctx.moveTo(-8, -1); ctx.lineTo(0, -9); ctx.lineTo(8, -1); ctx.stroke();
+    ctx.restore();
+  }
   function drawStairs(ctx, s) {
     var d = dunKey(s.dungeon), h = 30;
     if (s.floor != null) FLOOR_MEM.f = clamp(Math.floor(N(s.floor, 1)), 1, 3) || 1;
     ctx.translate(N(s.x, 0), N(s.y, 0));
     paintFloor(ctx, d, h);
     var rim = d === 'tower' ? '#5a5f6a' : (d === 'snow' ? '#cfe8ff' : (d === 'meadow' ? '#8c7a5c' : '#8a96a4'));
+    if (S(s.dir, 'down') === 'up') { paintStairsUp(ctx, d, rim); return; }
     // 洞口外框(石 / 鐵 / 冰)
     rr(ctx, -26, -26, 52, 52, 6); ctx.fillStyle = rim; ctx.fill(); ctx.strokeStyle = P.outline; ctx.lineWidth = 2; ctx.stroke();
     // 洞內: 往下(往畫面上方縮進去)的台階, 越深越暗越窄
@@ -1150,14 +1202,19 @@
 
   // ───────────── 寶箱(第 8 輪新增): 判定圓半徑 22 → 箱身寬 44 ─────────────
   // 關著: 金邊、鎖片 + 微微的金光點(看得出還沒開); 開蓋 0.3 秒: 蓋子往上翻開(最多超出格上緣 12px)、箱口噴光; 開過: 翻開的蓋子 + 空的暗箱口, 不發光
+  // 第 12 輪: key false = 金幣寶箱: 木頭箱 + 灰鐵邊, 關著時只有箱縫一條金光(無外圈光暈、無星點); openDur 0.6 = 0~0.3 開蓋、0.3~0.6 金幣噴出(goldBurst 80×100)
   function drawChest(ctx, s) {
     var d = dunKey(s.dungeon), open = B(s.open);
-    var od = N(s.openDur, 0.3) > 0 ? N(s.openDur, 0.3) : 0.3, ot = clamp(N(s.openT, od), 0, od);
-    var anim = open && ot < od, q = anim ? ot / od : (open ? 1 : 0);
-    var isKey = B(s.key);
-    var wood = isKey ? '#d9a62e' : (d === 'tower' ? '#5a4a3e' : (d === 'snow' ? '#7a98b8' : '#9a5e2e'));
-    var lidC = isKey ? '#f2c444' : (d === 'tower' ? '#6e5a4a' : (d === 'snow' ? '#9cbad6' : '#b8743a'));
-    var band = isKey ? '#fff2b8' : (d === 'tower' ? '#9aa2b0' : '#ffd24a');
+    var isKey = B(s.key), odDef = isKey ? 0.3 : 0.6;
+    var od = N(s.openDur, odDef) > 0 ? N(s.openDur, odDef) : odDef, ot = clamp(N(s.openT, od), 0, od);
+    var anim = open && ot < od;
+    // 開蓋只佔前 0.3 秒(金幣寶箱 0.3~0.6 是金幣噴出, 蓋子已全開)
+    var lidDur = Math.min(od, 0.3), q = anim ? clamp(ot / lidDur, 0, 1) : (open ? 1 : 0);
+    var lidAnim = anim && ot < lidDur;
+    // 金幣寶箱(第 12 輪啟用): 木頭箱體 + 鐵邊(依地下城換木料), 不用任何金色鑲邊 —— 金色只屬於鑰匙寶箱與金幣本身
+    var wood = isKey ? '#d9a62e' : (d === 'tower' ? '#5a4a3e' : (d === 'snow' ? '#6e7f96' : '#9a5e2e'));
+    var lidC = isKey ? '#f2c444' : (d === 'tower' ? '#6e5a4a' : (d === 'snow' ? '#86a0bc' : '#b8743a'));
+    var band = isKey ? '#fff2b8' : '#8e96a4';
     var tt = now() / 1000;
     ctx.translate(N(s.x, 0), N(s.y, 0));
     // 鑰匙寶箱(第 9 輪): 關著時外圍一圈靜態金色光暈(keyGlow 76×76, 半徑 38; 沒有時間欄位, 不脈動)
@@ -1177,7 +1234,7 @@
     if (q > 0) {
       // 箱口(暗)+ 開蓋當下的光
       ell(ctx, 0, -4, 20, 4, 0); ctx.fillStyle = '#140c08'; ctx.fill();
-      if (anim) {
+      if (lidAnim) {
         ctx.save(); ctx.globalAlpha *= 1 - q * 0.6;
         ctx.beginPath(); ctx.moveTo(-16, -4); ctx.lineTo(-24, -30); ctx.lineTo(24, -30); ctx.lineTo(16, -4); ctx.closePath();
         var lg = ctx.createLinearGradient(0, -4, 0, -30); lg.addColorStop(0, 'rgba(255,240,180,0.9)'); lg.addColorStop(1, 'rgba(255,240,180,0)');
@@ -1200,11 +1257,42 @@
       rr(ctx, -4, -6, 8, 10, 2); ctx.fillStyle = band; ctx.fill(); ctx.strokeStyle = P.outline; ctx.lineWidth = 1.2; ctx.stroke();
     }
     ctx.restore();
-    if (!open) {
-      // 還沒開: 兩顆輪流閃的小金光點(在 60×60 內)
+    if (!open && isKey) {
+      // 鑰匙寶箱還沒開: 兩顆輪流閃的小金光點(在 60×60 內)
       for (var k = 0; k < 2; k++) {
         var a = 0.5 + 0.5 * Math.sin(tt * 3 + k * 2.2);
         starPath(ctx, k === 0 ? -17 : 19, k === 0 ? -20 : -14, 2 + 2.5 * a); ctx.fillStyle = 'rgba(255,226,122,' + (0.3 + 0.7 * a).toFixed(2) + ')'; ctx.fill();
+      }
+    }
+    if (!open && !isKey) {
+      // 金幣寶箱還沒開: 蓋子與箱身的接縫透出一條金光(只在箱縫, 不畫外圈光暈 → 和鑰匙寶箱分開), 微微呼吸
+      var sa = 0.65 + 0.35 * Math.sin(tt * 2.4);
+      ctx.save(); ctx.shadowColor = 'rgba(255,214,90,0.9)'; ctx.shadowBlur = 6;
+      ctx.fillStyle = 'rgba(255,226,122,' + sa.toFixed(2) + ')';
+      ctx.fillRect(-20, -5.5, 15, 2.5); ctx.fillRect(5, -5.5, 15, 2.5);
+      ctx.restore();
+      // 接縫上冒出的兩粒光點(很小, 只在箱口高度)
+      ctx.fillStyle = 'rgba(255,240,180,' + (0.5 * sa).toFixed(2) + ')';
+      circle(ctx, -12, -9 - 2 * sa, 1.6); ctx.fill(); circle(ctx, 13, -8 - 2 * (1 - sa), 1.3); ctx.fill();
+    }
+    if (open && !isKey && anim && ot >= lidDur) {
+      // 金幣噴出(0.3~0.6 秒, 畫在 goldBurst 80×100 = x ±40、y −70~+30 內): 7 枚金幣從箱口拋物線往上噴, 最高到 y −70, 落回並淡掉
+      var u = clamp((ot - lidDur) / Math.max(0.01, od - lidDur), 0, 1);
+      var mg = ctx.createRadialGradient(0, -6, 2, 0, -6, 30);
+      mg.addColorStop(0, 'rgba(255,230,140,' + (0.7 * (1 - u)).toFixed(3) + ')'); mg.addColorStop(1, 'rgba(255,230,140,0)');
+      ctx.fillStyle = mg; ctx.fillRect(-30, -36, 60, 60);
+      // 第 2 欄 = 拋物線頂點高出箱口的量; 中心最高 y = −8 − 57 = −65, 加半徑 4.5 → −69.5(≥ −70)
+      var CB = [[-30, 44], [-18, 52], [-6, 57], [6, 50], [18, 55], [30, 42], [0, 38]];
+      for (var ci = 0; ci < CB.length; ci++) {
+        var cu = clamp(u * 1.08 - ci * 0.012, 0, 1);
+        var cxp = CB[ci][0] * cu, cyp = -6 - CB[ci][1] * 4 * cu * (1 - cu) - 2;
+        var ca = cu < 0.55 ? 1 : 1 - (cu - 0.55) / 0.45;
+        var flip = Math.abs(Math.cos(cu * 9 + ci));
+        ctx.save(); ctx.globalAlpha *= clamp(ca, 0, 1);
+        ell(ctx, cxp, cyp, 4.5 * (0.3 + 0.7 * flip), 4.5, 0); ctx.fillStyle = P.gold; ctx.fill();
+        ctx.strokeStyle = '#8a5a10'; ctx.lineWidth = 1.1; ctx.stroke();
+        ctx.fillStyle = '#fff2a0'; ctx.fillRect(cxp - 0.6, cyp - 2.2, 1.2, 4.4);
+        ctx.restore();
       }
     }
   }
@@ -1402,7 +1490,7 @@
   // ───────────── 出口(鏡湖 / 鐘塔 / 雪境各一) ─────────────
   // 60×60 格內: 地板 + 石砌拱門框 + 門洞裡往上的台階與外頭的天光 + 白色圓頭往上箭頭(= 往外走)
   // 和牆(整塊實心)、傳送陣(地上的環 + 點數)、草叢(圓葉)分開: 只有出口是「拱門 + 亮的門洞 + 箭頭」
-  // armed false(剛選留下、還沒走開 150): 門洞變暗、箭頭變灰、門框不發光 → 看得出暫時不會再問
+  // armed false(剛選留下、還沒走開 50): 門洞變暗、箭頭變灰、門框不發光 → 看得出暫時不會再問
   var EXIT_SKY = '#ffeebb';
   function drawExit(ctx, s) {
     var d = dunKey(s.dungeon), armed = B(s.armed);
@@ -1983,21 +2071,30 @@
       ctx.restore();
     }
     // 第 10 輪: 「石碑 剩 M」(小石碑圖示)+ chestsLeft 1 時「· 金鑰匙圖示 鑰匙寶箱」(金色); 整排置中; 都 0 →「全部拿到了」
-    var cl = Math.max(0, Math.floor(N(s.chestsLeft, 0))) > 0 ? 1 : 0, bl = Math.max(0, Math.floor(N(s.boostsLeft, 0)));
+    // 第 12 輪: chestsLeft = 還沒開的金幣寶箱數(0~3), keyLeft = 鑰匙寶箱在不在(0 / 1)
+    //   第 1 行「[石碑] 石碑 剩 M · [木箱] 寶箱 剩 N」(N 為 0 時只寫石碑); keyLeft 1 時第 2 行「[金鑰匙] 鑰匙寶箱」(一行放不下 3 段)
+    var cl = Math.max(0, Math.floor(N(s.chestsLeft, 0))), kl = Math.max(0, Math.floor(N(s.keyLeft, 0))) > 0 ? 1 : 0;
+    var bl = Math.max(0, Math.floor(N(s.boostsLeft, 0)));
     ctx.save(); if (!open) ctx.globalAlpha *= 0.5;
-    if (cl === 0 && bl === 0) {
+    if (cl === 0 && bl === 0 && kl === 0) {
       T(ctx, '全部拿到了', 0, 132, { size: 20, color: P.textDim });
     } else {
+      var ly1 = kl ? 122 : 132;
       ctx.font = 'bold 20px ' + FONT;
-      var t1 = '石碑 剩 ' + bl, w1 = ctx.measureText(t1).width, t2 = '鑰匙寶箱', w2 = cl ? ctx.measureText(t2).width : 0;
-      var tot = 22 + w1 + (cl ? 20 + 26 + w2 : 0), lx0 = -tot / 2;
-      shrineIcon(ctx, lx0 + 8, 132, 9);
-      T(ctx, t1, lx0 + 22, 132, { size: 20, align: 'left', color: P.text });
+      var t1 = '石碑 剩 ' + bl, w1 = ctx.measureText(t1).width, t3 = '寶箱 剩 ' + cl, w3 = cl ? ctx.measureText(t3).width : 0;
+      var tot = 22 + w1 + (cl ? 20 + 26 + w3 : 0), lx0 = -tot / 2;
+      shrineIcon(ctx, lx0 + 8, ly1, 9);
+      T(ctx, t1, lx0 + 22, ly1, { size: 20, align: 'left', color: P.text });
       if (cl) {
-        var kx = lx0 + 22 + w1 + 20;
-        circle(ctx, kx - 10, 132, 2.5); ctx.fillStyle = P.textDim; ctx.fill();
-        keyGlyph(ctx, kx + 10, 133, 10, P.boost);
-        T(ctx, t2, kx + 26, 132, { size: 20, align: 'left', color: P.boost });
+        var cx3 = lx0 + 22 + w1 + 20;
+        circle(ctx, cx3 - 10, ly1, 2.5); ctx.fillStyle = P.textDim; ctx.fill();
+        miniChestIcon(ctx, cx3 + 10, ly1 + 1, 10);
+        T(ctx, t3, cx3 + 26, ly1, { size: 20, align: 'left', color: P.text });
+      }
+      if (kl) {
+        var t2 = '鑰匙寶箱', w2 = ctx.measureText(t2).width, kx = -(26 + w2) / 2;
+        keyGlyph(ctx, kx + 10, 151, 10, P.boost);
+        T(ctx, t2, kx + 26, 150, { size: 20, align: 'left', color: P.boost });
       }
     }
     ctx.restore();
@@ -2812,11 +2909,17 @@
     ctx.moveTo(-300, -40); ctx.lineTo(-288, -40); ctx.moveTo(-293, -45); ctx.lineTo(-288, -40); ctx.lineTo(-293, -35);
     ctx.moveTo(-300, 26); ctx.lineTo(-288, 26); ctx.moveTo(-293, 21); ctx.lineTo(-288, 26); ctx.lineTo(-293, 31); ctx.stroke();
     var bump = done ? 1 : 1 + 0.06 * Math.abs(Math.sin(tT * 30));
-    coinIcon(ctx, -270, -40, 14);
-    T(ctx, '金幣', -248, -40, { size: 22, align: 'left', color: P.textDim });
-    ctx.save(); ctx.translate(310, -40); ctx.scale(bump, bump);
-    T(ctx, '+' + shown, 0, 0, { size: 40, align: 'right', color: P.gold });
-    ctx.restore();
+    if (tut) {
+      // 第 12 輪: 見習表演沒有金幣 —— 金幣圖示變灰淡、一行小灰字, 不跳數字(名聲照跳)
+      ctx.save(); ctx.globalAlpha *= 0.4; coinIcon(ctx, -270, -40, 14); ctx.restore();
+      T(ctx, '見習表演沒有金幣收入', -248, -40, { size: 19, align: 'left', color: P.textDim, maxW: 540 });
+    } else {
+      coinIcon(ctx, -270, -40, 14);
+      T(ctx, '金幣', -248, -40, { size: 22, align: 'left', color: P.textDim });
+      ctx.save(); ctx.translate(310, -40); ctx.scale(bump, bump);
+      T(ctx, '+' + shown, 0, 0, { size: 40, align: 'right', color: P.gold });
+      ctx.restore();
+    }
     repIcon(ctx, -270, 26, 14);
     T(ctx, '名聲', -248, 26, { size: 22, align: 'left', color: P.textDim });
     ctx.save(); ctx.translate(310, 26); ctx.scale(bump, bump);
@@ -2883,34 +2986,49 @@
     }
     // 這趟拿到的東西(第 8 輪; 空陣列不畫這一列): 每項 = 小圖示 + 名稱(石碑 = 刻的圖案; 鑰匙 = 金鑰匙)
     // 第 10 輪: 卡改在商店買, loot 只剩 heart / rope / atk / key; 表外的 kind 直接略過(不畫成任何合法圖示)
-    var loot = (Array.isArray(s.loot) ? s.loot : []).filter(function (lo) { return lo && (BOOST[lo.kind] || lo.kind === 'key'); }).slice(0, 8);
+    // 第 12 輪: 多 kind gold(金幣寶箱, 小金幣堆 + 金幣色字); 長度 0~8, 一列寬 600 放不下就換第 2 列(最多 2 列);
+    //   2 列時兩列在 y −2 / 28, 分隔線與「打倒 / 金幣」那行一起往下移 12(54 / 108), 「按 [Z] 繼續」(y 180)不動
+    var loot = (Array.isArray(s.loot) ? s.loot : []).filter(function (lo) { return lo && (BOOST[lo.kind] || lo.kind === 'key' || lo.kind === 'gold'); }).slice(0, 8);
+    var lootRows = 0;
     if (loot.length) {
-      T(ctx, '拿到', -340, 2, { size: 20, align: 'left', color: P.textDim });
       ctx.save(); ctx.font = 'bold 18px ' + FONT;
-      var items = [], totW = 0;
+      var items = [];
       for (var li = 0; li < loot.length; li++) {
         var lo = loot[li] || {}, kd = S(lo.kind, '');
-        var nm = S(lo.name, '') || (BOOST[kd] ? BOOST[kd].name : '雪境冰窟的鑰匙');
+        var nm = S(lo.name, '') || (BOOST[kd] ? BOOST[kd].name : (kd === 'gold' ? '金幣寶箱' : '雪境冰窟的鑰匙'));
         var w = Math.min(150, ctx.measureText(nm).width) + 34;
-        items.push({ kd: kd, key: S(lo.key, ''), nm: nm, w: w }); totW += w + 16;
+        items.push({ kd: kd, key: S(lo.key, ''), nm: nm, w: w });
       }
       ctx.restore();
-      var sc2 = totW > 600 ? 600 / totW : 1;
-      ctx.save(); ctx.translate(20, 2); ctx.scale(sc2, sc2);
-      var lx = -totW / 2 + 8;
-      for (var lj = 0; lj < items.length; lj++) {
-        var itm = items[lj];
-        if (BOOST[itm.kd]) boostGlyph(ctx, itm.kd, lx + 12, 0, 10, BOOST[itm.kd].color);
-        else keyGlyph(ctx, lx + 12, 0, 11, P.boost);
-        T(ctx, itm.nm, lx + 32, 0, { size: 18, align: 'left', color: P.boost, maxW: 150 });
-        lx += itm.w + 16;
+      var rowsL = [[]], rowW = [0];
+      for (var lk = 0; lk < items.length; lk++) {
+        var r0 = rowsL.length - 1, add = items[lk].w + 16;
+        if (rowW[r0] + add > 600 && rowsL[r0].length && rowsL.length < 2) { rowsL.push([]); rowW.push(0); r0++; }
+        rowsL[r0].push(items[lk]); rowW[r0] += add;
       }
-      ctx.restore();
+      lootRows = rowsL.length;
+      var rowY = lootRows === 1 ? [2] : [-2, 28];
+      T(ctx, '拿到', -340, rowY[0], { size: 20, align: 'left', color: P.textDim });
+      for (var rI = 0; rI < lootRows; rI++) {
+        var sc2 = rowW[rI] > 600 ? 600 / rowW[rI] : 1;
+        ctx.save(); ctx.translate(20, rowY[rI]); ctx.scale(sc2, sc2);
+        var lx = -rowW[rI] / 2 + 8;
+        for (var lj = 0; lj < rowsL[rI].length; lj++) {
+          var itm = rowsL[rI][lj];
+          if (BOOST[itm.kd]) boostGlyph(ctx, itm.kd, lx + 12, 0, 10, BOOST[itm.kd].color);
+          else if (itm.kd === 'gold') coinPileIcon(ctx, lx + 12, 0, 12);
+          else keyGlyph(ctx, lx + 12, 0, 11, P.boost);
+          T(ctx, itm.nm, lx + 32, 0, { size: 18, align: 'left', color: itm.kd === 'gold' ? P.gold : P.boost, maxW: 150 });
+          lx += itm.w + 16;
+        }
+        ctx.restore();
+      }
     }
-    ctx.fillStyle = P.line; ctx.fillRect(-340, 42, 680, 2);
-    T(ctx, '打倒 ' + Math.max(0, Math.floor(N(s.kills, 0))) + ' 隻', -170, 96, { size: 28 });
-    coinIcon(ctx, 104, 96, 14);
-    T(ctx, '金幣 +' + Math.max(0, Math.floor(N(s.gold, 0))), 126, 96, { size: 28, align: 'left', color: P.gold });
+    var dvY = lootRows === 2 ? 54 : 42, kY = lootRows === 2 ? 108 : 96;
+    ctx.fillStyle = P.line; ctx.fillRect(-340, dvY, 680, 2);
+    T(ctx, '打倒 ' + Math.max(0, Math.floor(N(s.kills, 0))) + ' 隻', -170, kY, { size: 28 });
+    coinIcon(ctx, 104, kY, 14);
+    T(ctx, '金幣 +' + Math.max(0, Math.floor(N(s.gold, 0))), 126, kY, { size: 28, align: 'left', color: P.gold });
     pressZ(ctx, '按 [Z] 繼續', 0, 180);
   }
 
@@ -3053,10 +3171,18 @@
       ctx.strokeStyle = '#b8c0d0'; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.arc(0, -6, 8, Math.PI, 0); ctx.stroke();
       rr(ctx, -11, -6, 22, 17, 4); ctx.fillStyle = '#b8c0d0'; ctx.fill();
       ctx.restore();
-      var lt = '名聲 ' + Math.max(0, Math.floor(N(s.fameReq, 0))) + ' 解鎖';
-      ctx.font = 'bold 17px ' + FONT; var lw = Math.min(150, ctx.measureText(lt).width);
-      repIcon(ctx, 128 - lw - 12, 34, 8);
-      T(ctx, lt, 128, 34, { size: 17, align: 'right', color: P.rep, maxW: 150 });
+      if (S(s.lockKind, 'fame') === 'd2') {
+        // 第 12 輪: 等第 2 座開放(只有冷場): 雪境冰窟小圖示 + 冰藍字兩行「雪境冰窟開放後」/「解鎖」(和名聲星 + 名聲色分開: 條件不同, 長相不同)
+        ctx.font = 'bold 16px ' + FONT; var dw = Math.min(150, ctx.measureText('雪境冰窟開放後').width);
+        dunIcon(ctx, 'd2', 128 - dw - 14, 24, 9, 1);
+        T(ctx, '雪境冰窟開放後', 128, 24, { size: 16, align: 'right', color: '#bfe6ff', maxW: 150 });
+        T(ctx, '解鎖', 128, 44, { size: 16, align: 'right', color: '#bfe6ff', maxW: 150 });
+      } else {
+        var lt = '名聲 ' + Math.max(0, Math.floor(N(s.fameReq, 0))) + ' 解鎖';
+        ctx.font = 'bold 17px ' + FONT; var lw = Math.min(150, ctx.measureText(lt).width);
+        repIcon(ctx, 128 - lw - 12, 34, 8);
+        T(ctx, lt, 128, 34, { size: 17, align: 'right', color: P.rep, maxW: 150 });
+      }
     } else if (B(s.owned) || item === 'club') {
       T(ctx, '已擁有', 128, 34, { size: 18, align: 'right', color: P.textDim });
     } else {
@@ -3171,6 +3297,13 @@
       circle(ctx, cx, cy, 11); ctx.fillStyle = P.capture; ctx.fill(); ctx.strokeStyle = P.outline; ctx.lineWidth = 2; ctx.stroke();
       ctx.strokeStyle = '#10131b'; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(cx - 5, cy); ctx.lineTo(cx - 1, cy + 4); ctx.lineTo(cx + 6, cy - 4); ctx.stroke();
       T(ctx, txt, x + 6, cy, { size: size, color: P.capture });
+      return;
+    }
+    if (kind === 'gold' && txt.indexOf('金幣') === 0) {
+      // 第 12 輪: 金幣寶箱的「金幣 +N」(打倒金幣是「+N」, 不以「金幣」開頭): 大一號(22 > 18)+ 字前一枚金幣圖示
+      ctx.font = 'bold 22px ' + FONT; var gw = ctx.measureText(txt).width;
+      coinIcon(ctx, x - gw / 2 - 12, y + dy, 9);
+      T(ctx, txt, x + 6, y + dy, { size: 22, color: P.gold });
       return;
     }
     T(ctx, txt, x, y + dy, { size: size, color: FT_COL[kind] });
@@ -4003,6 +4136,19 @@
     var sc = 0.9 + 0.1 * easeOut((p - 0.4) / 0.2);
     ctx.translate(640, 360); ctx.scale(sc, sc);
     T(ctx, '第 ' + fl + ' 層', 0, 0, { size: 72, color: '#ffffff', strokeW: 10, maxW: 600 });
+    // 第 12 輪: 大字右側的方向箭頭(往下 ↓ / 往上 ↑), 和樓梯格上的白色圓頭箭頭同一個長相, 放大 2.4 倍; 朝箭頭方向輕推一下
+    ctx.font = 'bold 72px ' + FONT;
+    var upF = B(s.up), aw = Math.min(600, ctx.measureText('第 ' + fl + ' 層').width);
+    var push = (upF ? -1 : 1) * 8 * easeOut(clamp((p - 0.4) / 0.25, 0, 1));
+    ctx.save(); ctx.translate(aw / 2 + 52, push); ctx.scale(2.4, 2.4); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    for (var pass = 0; pass < 2; pass++) {
+      ctx.strokeStyle = pass === 0 ? P.outline : '#ffffff'; ctx.lineWidth = pass === 0 ? 6.5 : 3.2;
+      ctx.beginPath();
+      if (upF) { ctx.moveTo(0, 10); ctx.lineTo(0, -10); ctx.moveTo(-8, -2); ctx.lineTo(0, -10); ctx.lineTo(8, -2); }
+      else { ctx.moveTo(0, -10); ctx.lineTo(0, 10); ctx.moveTo(-8, 2); ctx.lineTo(0, 10); ctx.lineTo(8, 2); }
+      ctx.stroke();
+    }
+    ctx.restore();
     var dn = S(s.dungeonName, '');
     if (dn) T(ctx, dn, 0, -62, { size: 24, color: '#c8d0e0', maxW: 500 });
     if (fm > 1 && fm <= 6) {

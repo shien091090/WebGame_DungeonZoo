@@ -18,7 +18,7 @@
 | 介面 | 用途 | 何時呼叫 |
 |---|---|---|
 | `Sound.setCrowd(tier)` | 表演場的循環觀眾聲。`tier`: `'quiet'` / `'clap'` / `'cheer'` / `'frenzy'`(直接傳 spec 的熱度段名; `''` 或 `'quiet'` = 沒有觀眾聲) | 開演時依開演熱度段呼叫一次, 之後熱度**換段**時呼叫(每幀呼叫同一段也無害, 不會重頭)。換段自動 0.4 秒交叉淡入淡出; 傳 `''` / `'quiet'` 時 0.3 秒淡出 |
-| `Sound.setMusicDuck(bool)` | 出口詢問框、拿到卡過場、暫停式引導開著時背景音樂壓到一半 | 詢問框 / 過場跳出時 `true`、關掉時 `false`。**大多數情況不接也可以**: `play('exit_prompt')`、`play('card_get')`、`play('guide_pause')` 會自動壓低; `ui_confirm` / `ui_cancel` / `dungeon_end` 會自動恢復, 保險起見地下城裡的 `attack` / `skill` / `rope_throw` / `stairs_down` / `player_hurt` 與表演場的 `perform` / `cue_fire` / `chain` / `clock_tick` 等也會恢復; 換曲也會恢復。打磨第 9 輪起鐘塔 2 層出口是普通出口(照常播 exit_prompt), **這個介面已沒有必須接的情況**, 保留給 RD 自行使用。打磨第 10 輪: 商店買卡過場「收下」不播音效(spec), 由 card_get 壓低的音樂會在收下後的**下一個選單音**(`ui_move` / `ui_denied` / `buy` / `ui_confirm` / `ui_cancel`)自動恢復; 想讓收下那一刻就恢復, 可在收下時呼叫 `setMusicDuck(false)`(可選) |
+| `Sound.setMusicDuck(bool)` | 出口詢問框、拿到卡過場、暫停式引導開著時背景音樂壓到一半 | 詢問框 / 過場跳出時 `true`、關掉時 `false`。**大多數情況不接也可以**: `play('exit_prompt')`、`play('card_get')`、`play('guide_pause')` 會自動壓低; `ui_confirm` / `ui_cancel` / `dungeon_end` 會自動恢復, 保險起見地下城裡的 `attack` / `skill` / `rope_throw` / `stairs_down` / `stairs_up` / `player_hurt` 與表演場的 `perform` / `cue_fire` / `chain` / `clock_tick` 等也會恢復; 換曲也會恢復。打磨第 9 輪起鐘塔 2 層出口是普通出口(照常播 exit_prompt), **這個介面已沒有必須接的情況**, 保留給 RD 自行使用。打磨第 10 輪: 商店買卡過場「收下」不播音效(spec), 由 card_get 壓低的音樂會在收下後的**下一個選單音**(`ui_move` / `ui_denied` / `buy` / `ui_confirm` / `ui_cancel`)自動恢復; 想讓收下那一刻就恢復, 可在收下時呼叫 `setMusicDuck(false)`(可選) |
 
 - **倒下自動停音樂**(打磨第 5 輪): `play('player_down')` 會順手做一次 `stopMusic()`(0.15 秒淡出), 讓倒下聲單獨響完。RD 照 spec 自己再呼叫 `stopMusic()` 也無害; 結算畫面照常 `playMusic('result')`
 
@@ -71,9 +71,11 @@
 | teleport | teleport | 傳送陣把馴獸師傳走的那一刻 | — | sfx_teleport.ogg | 0.55 | 0.1 |
 | heal | heal | 回復泉補滿心 | — | sfx_heal.ogg | 0.6 | 0.2 |
 | exit_prompt | exit_prompt | 碰到出口、詢問框跳出的那一刻(只呼叫一次; 選項移動播 ui_move, 選完播 ui_confirm / ui_cancel)。會自動把背景音樂壓到一半。打磨第 9 輪起所有出口(含鐘塔 2 層)都照常呼叫 | — | 內嵌 PCM(門鈴「叮咚」C5 → A4, 0.93 秒) | 0.5 | 0.5 |
-| stairs_down | stairs_down(打磨第 8 輪新增) | 走到樓梯、下樓轉場開始的那一刻(一次)。背景音樂不中斷 | — | sfx_stairs_step_1 / 2.ogg 交替四步, 一步比一步低(速度 1.0 → 0.82), 每步 0.09 秒後跟一聲小回音; 約 0.8 秒, 在 1.0 秒轉場內收尾 | 0.6 → 0.45(回音 0.18 → 0.12) | 0.8 |
+| stairs_down | stairs_down(打磨第 8 輪新增) | 走到**往下**的樓梯、下樓轉場開始的那一刻(一次)。背景音樂不中斷 | — | sfx_stairs_step_1 / 2.ogg 交替四步, 一步比一步低(速度 1.0 → 0.82), 每步 0.09 秒後跟一聲小回音; 約 0.8 秒, 在 1.0 秒轉場內收尾 | 0.6 → 0.45(回音 0.18 → 0.12) | 0.8 |
+| stairs_up | stairs_up(打磨第 12 輪新增) | 走到**往上**的樓梯、回上一層的轉場開始的那一刻(一次; 只播這個, 不要同時呼叫 stairs_down)。背景音樂不中斷 | — | 跟 stairs_down **同一組**木頭腳步(sfx_stairs_step_1 / 2.ogg)交替四步, 音階反過來: 一步比一步高(速度 0.88 → 1.06)、一步比一步大一點, 每步 0.09 秒後跟一聲小回音; 約 0.8 秒, 在 1.0 秒轉場內收尾 | 0.48 → 0.6(回音 0.14 → 0.17) | 0.8 |
 | boost_get | boost_get(打磨第 8 輪新增) | 碰到強化石碑、永久強化生效的那一刻。**只播這個**: 心 +1 的回血特效不另播 heal | — | sfx_boost_get.ogg(鋼鼓上揚短句, 升 4 個半音, 約 0.72 秒)+ 0.5 秒後 sfx_boost_ding.ogg(玻璃「叮」, 升高) | 0.6 + 0.3 | 0.3 |
-| chest_open | chest_open(打磨第 8 輪新增) | 碰到寶箱、開蓋動畫開始的那一刻 | — | sfx_chest_latch.ogg(金屬扣「喀」)+ 0.05 秒後 sfx_chest_creak.ogg(木頭吱呀)+ 0.22 秒後 sfx_sparkle.ogg(閃光); 約 0.4 秒, 0.3 秒後接 card_get 時已收尾 | 0.7 + 0.5 + 0.3 | 0.3 |
+| chest_open | chest_open(打磨第 8 輪新增) | 碰到寶箱、開蓋動畫開始的那一刻(**鑰匙寶箱與金幣寶箱都播**) | — | sfx_chest_latch.ogg(金屬扣「喀」)+ 0.05 秒後 sfx_chest_creak.ogg(木頭吱呀)+ 0.22 秒後 sfx_sparkle.ogg(閃光); 約 0.4 秒, 0.3 秒後接 card_get 時已收尾 | 0.7 + 0.5 + 0.3 | 0.3 |
+| gold_get | gold_get(打磨第 12 輪新增) | **金幣寶箱**開蓋、金幣噴出的那一刻: 碰到寶箱播 chest_open, **0.3 秒後**呼叫這個(一次)。飄字「金幣 +N」不另配音, HUD 金幣跳動**不要**呼叫 coin_tally; 背景音樂不壓低(本事件不會壓) | — | sfx_gold_splash.ogg(一把金幣撒在地上的「嘩啦」)三層: 原速 + 0.12 秒後高一點、輕一點 + 0.27 秒後慢一點的一小撮; 再加 0.1 / 0.3 秒兩聲很輕的高音小「叮」(sfx_sparkle.ogg, 與 chest_open 同一個閃光); 約 0.6 秒, 21 毫秒內出聲 | 0.6 + 0.4 + 0.24(叮 0.15 / 0.12)。量得比 coin_tally 響約 10 dB、比 card_get 小約 11 dB、比 chest_open 小約 3 dB | 0.3 |
 | card_get | card_get(打磨第 8 輪新增) | 「拿到卡」過場開始的那一刻(一次): 地下城開鑰匙寶箱 0.3 秒後, 或**商店買暗號 / 表演卡**按 Z 播 `buy` 0.3 秒後(打磨第 10 輪)。會自動把背景音樂壓到一半; 收下按 Z 不播音效(spec), 之後下一個選單音或地下城動作自動恢復(見 setMusicDuck) | — | sfx_card_get.ogg(鋼鼓上行跑句, 加速 1.15 倍, 約 1.2 秒)+ 0.62 / 0.76 / 0.90 秒各一聲 sfx_sparkle.ogg(越來越高, 對齊 0.6~1.2 秒的卡片發光) | 1.1 + 0.25 / 0.22 / 0.2 | 0.5 |
 | firecracker | firecracker(打磨第 8 輪新增) | 爆竹刺蝟的爆竹爆炸(地下城與表演場都用)。同一幀多顆只呼叫一次(多呼叫也會被間隔擋掉) | — | sfx_firecracker_a / b.ogg 交替五聲, 每聲加速 1.7~2.3 倍、間隔 0.05~0.09 秒, 約 0.45 秒的「劈哩啪啦」 | 0.25~0.35(量得比 keg_blast 小約 15 dB) | 0.1 |
 | dungeon_end | dungeon_end | 地下城結束(時間到 / 倒下 / 提早收工 / 見習完成), 進地下城結算的那一刻。**倒下時改在結算畫面出現時才呼叫**(倒下那一刻已播 player_down, spec) | `reason`: `'time'`/`'down'`/`'exit'`/`'tutorial'`; `down` 換成下降的遺憾音, `exit` 同 time | sfx_dungeon_end.ogg; reason down 用 sfx_dungeon_end_down.ogg | 0.7 / 0.5 | 0.3 |
@@ -101,7 +103,7 @@
 | crowd_flee | crowd_flee | 觀眾開始逃走(失控後, 可與 loose 同一刻) | — | sfx_crowd_step_1~3.ogg 錯開排成約 1.2 秒的一陣腳步 | 0.25~0.4 | 0.5 |
 | clock_tick | clock_tick(本輪新增) | 表演時鐘最後 5 秒, 每跨過一個整數秒呼叫一次(剩 5、4、3、2、1 秒各一聲; 跟時鐘「彈一下」同一幀)。失控後時鐘停住, 不要再呼叫 | — | 內嵌 PCM(真實時鐘的「喀」, 0.135 秒, 2 毫秒內出聲) | 0.4 | 0.3 |
 | show_end | show_end | 表演時間到、正常收場(失控收場不要呼叫; 觀眾聲自動 0.3 秒淡出) | — | 內嵌 PCM(掌聲 3 秒) | 0.6 | 0.5 |
-| coin_tally | coin_tally | 結算畫面數字每跳一次(可每幀呼叫, 間隔會自動擋) | — | sfx_coin_tally.ogg | 0.4 | 0.06 |
+| coin_tally | coin_tally | 結算畫面數字每跳一次(可每幀呼叫, 間隔會自動擋)。見習表演結算金幣那行不跳數字, 只在名聲跳動時呼叫(打磨第 12 輪 spec); 地下城開金幣寶箱的 HUD 跳動**不呼叫** | — | sfx_coin_tally.ogg | 0.4 | 0.06 |
 | buy | buy | 商店購買 / 裝備成功(武器、暗號、表演卡都播; 買暗號 / 表演卡時 0.3 秒後另接 card_get, 買武器只播 buy) | — | sfx_buy.ogg | 0.7 | 0.1 |
 | unlock | unlock | 出發準備畫面冒出「第 2 座地下城開放」「商店上架新東西」提示的那一刻(打磨第 9 輪: 開鑰匙寶箱那一刻**不播** unlock, 只播 chest_open → card_get; 下一次出發準備冒提示時才播) | — | sfx_unlock.ogg | 0.65 | 0.3 |
 | tutorial_done | tutorial_done | 教學階段完成(播完成特效的那一刻)。**收服第 3 隻火柴猴時教學第 7 階段的完成不要呼叫**(那一刻只播 quest_done) | — | sfx_tutorial_done.ogg | 0.5 | 0.2 |
@@ -157,7 +159,10 @@
 | 商店買暗號 / 表演卡: buy → 0.3 秒後 card_get(打磨第 10 輪) | spec: 前後接著、不重疊, 同開寶箱的節奏。buy 是短促的交易音, card_get 是鋼鼓跑句加閃光, 音色不同, 先後聽得出「付錢 → 拿到」; 第一次買卡的提示行不另配音 |
 | card_get 與 quest_done 的辨識 | 不同樂器、不同旋律: quest_done 是銅管 + 鋼鼓 + 撥弦的勝利句(見習草地限定); card_get 是鋼鼓上行跑句 + 三聲越來越高的閃光, 長 1.2 秒、比 quest_done 長, 層數更多 |
 | boost_get + 心 +1 回血特效 | spec: 只播 boost_get, 不另播 heal。兩者都是鋼鼓, 但 boost_get 是上揚句、升了 4 個半音、尾端多一聲玻璃叮, heal 是原調短句 |
-| stairs_down + 背景音樂 | 音樂不中斷(spec)。腳步四步 0.8 秒, 轉場 1.0 秒內收尾 |
+| stairs_down / stairs_up + 背景音樂 | 音樂不中斷(spec)。腳步四步 0.8 秒, 轉場 1.0 秒內收尾 |
+| stairs_down 與 stairs_up 的辨識(打磨第 12 輪) | spec: 往下只播 stairs_down、往上只播 stairs_up。同一組木頭腳步, 靠走向分: 下樓一步比一步低、一步比一步輕(走遠); 上樓一步比一步高、一步比一步大一點(走回來)。兩者不會同時出現(換層有 1.0 秒轉場, 間隔各 0.8 秒) |
+| 開金幣寶箱: chest_open → 0.3 秒後 gold_get(打磨第 12 輪) | spec: 前後接著。chest_open 約 0.33 秒有聲, gold_get 在 0.3 秒進來, 最多疊到閃光尾巴幾十毫秒。飄字不配音; HUD 金幣跳動不呼叫 coin_tally; 背景音樂不壓低(gold_get 不在壓低清單裡), 戰鬥照常, 普攻、打擊等聲音照常疊在上面 |
+| gold_get 與 coin_tally / kill / buy / card_get 的辨識 | coin_tally 是籌碼的單響「喀」、kill 是手抓錢幣的輕碰、buy 是錢袋聲, 都短而輕; gold_get 是一把金幣撒地的「嘩啦」連三下加兩聲小叮, 比 coin_tally 響約 10 dB、比 kill 響。card_get 是鋼鼓跑句 1.2 秒、比 gold_get 大約 11 dB 且會壓低音樂, 一聽就分得出「拿到卡(大事)」與「撿到錢(小驚喜)」 |
 | monster_windup + monster_cast(不同隻) | 兩個都會響。windup 是乾淨的上揚電子短音、cast 是雷射雜訊, 音色不同; windup 響度刻意低 3~4 dB, 同時聲部上限 2, 很多隻同時前搖也只是一兩聲 |
 | player_hurt(最後一顆心)+ player_down 同一幀 | 兩個都照呼叫。player_down 偵測到 0.2 秒內剛響過 player_hurt, 自動省掉自己的重擊層, 只接倒地悶響與下降撥弦, 不會疊兩記拳擊聲 |
 | player_down + 背景音樂 + keg_blast / kill | 背景音樂 0.15 秒淡出(自動); 同一刻的爆炸或擊倒照常響, 倒地悶響在 0.15 秒後、撥弦在 0.35 秒後, 錯開不擠在同一點 |
@@ -186,6 +191,12 @@
 | row_swap + ui_confirm | spec: 互換 / 上下移只播 row_swap。RD 照 spec 不呼叫 ui_confirm 即可(同時呼叫兩個都會響) |
 
 ## 理念或經驗落實
+
+- 打磨第 12 輪: 既有事件的素材、音量、opts 全部沿用, 沒有刪任何素材檔。只新增 stairs_up、gold_get, **都用現成素材, 沒有程式產生**:
+  - 照「成對事件取同一個素材、前後呼應」: stairs_up 不另找素材, 直接用 stairs_down 那組 Kenney 木頭腳步, 把音高走向與音量走向都反過來(spec「同材質、音階反過來」)。量得兩者最響 50 毫秒響度幾乎一樣(−17.4 / −17.2 dB), 有聲長度 0.83 / 0.78 秒, 都在 1.0 秒轉場內
+  - gold_get 是新素材: OpenGameArt 上 LordTomorrow 的 CC0「Coin Splash」(一把金幣打在地上, 0.33 秒、21 毫秒到峰值一成)。另比過 BigSoundBank 的 CC0 錢幣錄音(12 筆, 多是單枚錢幣掉進杯子或在桌上旋轉 12~20 秒, 或 45 枚慢慢倒進陶罐 43 秒), 都不是「一把噴出來」。spec 要約 0.6 秒, 單檔只有 0.33 秒, 所以同一個檔錯開疊三層(變速 1.0 / 1.18 / 0.9, 聽起來是三把不同的錢)拉到約 0.6 秒, 再加兩聲很輕的閃光小叮, 跟 chest_open 的閃光同一個素材, 讓「開箱 → 噴錢」聽起來是同一件事
+  - 照「量最響 50 毫秒響度來設相對音量」: spec 要「比 coin_tally 更響、比 card_get 小很多」, 用 Node 照 sound.js 的層疊與變速模擬混音後量: gold_get −21.4 dB、coin_tally −31.4、card_get −10.1、chest_open −18.0。實際輕重與辨識度待試玩確認
+  - 授權: 新素材 1 個 CC0(LordTomorrow Coin Splash), 新增 assets/ 檔 1 個(sfx_gold_splash.ogg, 11 KB 原檔直接下載改名, 同一份 base64 內嵌於 sound.js)
 
 - 打磨第 11 輪: 既有事件的素材、音量、opts 全部沿用(intermission 只是改成每天呼叫, 聲音不變)。只新增 enter_pop、intermission_cheer, **都用現成素材, 沒有程式產生**:
   - enter_pop 是新素材: OpenGameArt 上 EZduzziteh 的 CC0「pop sounds」(跟 rope_escape / gather / rush_hit 用的卡通「啵嚶」同一位作者, 同一種卡通質感)。另比過 cogitollc 的 CC0「pop sounds」10 個 ogg, 解出來峰值超過 0 dB(削波、偏硬), 不用。挑 pop9: 有清楚音高(約 760 Hz)、0.085 秒、1 毫秒內出聲。spec 寫「約 0.15 秒」, 選短一點是因為每 0.25 秒一聲, 短的才不會黏在一起
