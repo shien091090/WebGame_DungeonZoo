@@ -1,6 +1,8 @@
 # 音效 / 音樂素材來源
 
-授權統計: CC0 85 項(Kenney 59 檔 + OpenGameArt 9 檔 + OpenGameArt 17 段內嵌)、CC BY 4.0 8 項(背景音樂 5 檔 + 觀眾歡呼 2 檔 + 卡通馬蹄 1 檔; 馬蹄原錄音是 CC0, 但轉製者的整包頁面標 CC BY 4.0, 保守起見照 CC BY 署名)。另有 1 個程式產生的音效(heat_warn, 無外部素材, 不列)。
+授權統計: CC0 90 項(Kenney 62 檔 + OpenGameArt 9 檔 + 內嵌 19 段, 內嵌段的來源為 OpenGameArt、BigSoundBank 與本表已登記的 CC0 檔)、CC BY 4.0 8 項(背景音樂 5 檔 + 觀眾歡呼 2 檔 + 卡通馬蹄 1 檔; 馬蹄原錄音是 CC0, 但轉製者的整包頁面標 CC BY 4.0, 保守起見照 CC BY 署名)。另有 1 個程式產生的音效(heat_warn, 無外部素材, 不列)。
+
+打磨第 9 輪異動: 新增 3 個檔(Kenney 賭場音效包的卡片滑動聲, 給 row_swap、guide_card)與 2 段內嵌(guide_pause: BigSoundBank 音樂盒; guide_finale: OpenGameArt 號角 + 已登記的小鼓、煙火、歡呼混音); 其他檔案不動。
 
 打磨第 8 輪異動: 刪除 sfx_weapon_menu.ogg、sfx_freeze_glass.ogg、sfx_mark_add.ogg 與內嵌段 freeze_all(對應事件 spec 不再用); sfx_cheer.ogg 保留, 改給 confetti_burst 用。新增 15 個檔(Kenney 10 檔、OpenGameArt 5 檔)與 6 段內嵌, 給本輪新增的 13 個事件用; 其他檔案不動。
 
@@ -122,6 +124,9 @@ Licensed under CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
 | sfx_card_get.ogg | card_get(鋼鼓上行跑句) | https://kenney.nl/assets/music-jingles (jingles_STEEL02.ogg) | Kenney | CC0 | 無(播放時速度 1.15) |
 | sfx_parade_horn.ogg | parade(小號層) | https://kenney.nl/assets/music-jingles (jingles_SAX15.ogg) | Kenney | CC0 | 無(播放時速度 1.12) |
 | sfx_rush_hit.ogg | rush_hit(「碰」) | https://kenney.nl/assets/impact-sounds (impactPunch_medium_001.ogg) | Kenney | CC0 | 無 |
+| sfx_row_swap_a.ogg | row_swap(第一聲「刷」) | https://kenney.nl/assets/casino-audio (card-slide-2.ogg) | Kenney | CC0 | 無(播放時跳過開頭 0.045 秒的滑動前奏) |
+| sfx_row_swap_b.ogg | row_swap(第二聲「刷」) | https://kenney.nl/assets/casino-audio (card-slide-3.ogg) | Kenney | CC0 | 無(播放時跳過開頭 0.055 秒、速度 1.08) |
+| sfx_guide_card.ogg | guide_card | https://kenney.nl/assets/casino-audio (card-slide-4.ogg) | Kenney | CC0 | 無(播放時速度 0.9) |
 | sfx_rope_escape_boing.mp3 | rope_escape(彈簧層)、gather(收尾「啵」)、rush_hit(彈開) | https://opengameart.org/node/183321 「Silly Sound Effects」(blung_0.mp3) | EZduzziteh | CC0 | 無(播放時速度 rope_escape 1.1、gather 1.5、rush_hit 0.8) |
 | sfx_firecracker_a.ogg | firecracker(劈啪) | https://opengameart.org/content/25-cc0-bang-firework-sfx (25-CC0-bang-sfx.zip 內的 shot_03.ogg) | rubberduck | CC0 | 無(播放時速度 1.7~2.3) |
 | sfx_firecracker_b.ogg | firecracker(劈啪) | https://opengameart.org/content/25-cc0-bang-firework-sfx (25-CC0-bang-sfx.zip 內的 shot_01.ogg) | rubberduck | CC0 | 同上 |
@@ -156,7 +161,9 @@ Licensed under CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
 | rush_growl | rush(低吼層) | https://opengameart.org/content/rpg-sound-pack (rpg_sound_pack.zip 內的 NPC/giant/giant2.wav) | artisticdude | CC0 | 取開頭 0.75 秒、重新取樣放慢 0.8 倍(音高降低)、去開頭靜音、淡出 0.12 秒, 單聲道 22.05 kHz, 峰值正規化 −1 dBFS(0.92 秒) |
 | rain | rain | https://opengameart.org/content/rain-loopable (Rain OGG.zip 內的 2.ogg) | Ylmir | CC0 | 取 5.0~6.6 秒, 淡入 0.06 秒、淡出 0.45 秒, 混成單聲道、44.1 kHz 降為 22.05 kHz, 峰值正規化 −1 dBFS(1.6 秒) |
 | confetti_charge | confetti_charge | https://opengameart.org/content/air-whoosh (whoosh2.wav)+ https://opengameart.org/content/overloading-sound (overloading.wav) | pyranostudios + jwiese | 兩者 CC0(overloading 頁面同時列 CC BY 3.0 與 CC0, 選 CC0) | 吸入: whoosh2 的上升段 0.80~1.40 秒; 蓄力: overloading 的 0.4~2.0 秒重新取樣加速 1.6 倍(1.0 秒, 音高一路上升), 音量 0.45 → 1 漸強; 兩段 60 毫秒等功率交叉淡化接起, 單聲道 22.05 kHz, 峰值正規化 −1 dBFS(1.54 秒) |
+| guide_pause | guide_pause | https://bigsoundbank.com/plush-music-box-2-s0416.html (「Plush music box #2」, 0416.wav) | Joseph Sardin(BigSoundBank) | CC0(頁面標「CC0 (public domain): Free and royalty-free」, 免登入下載) | 取 10.966 秒起的一個音與其後兩三個音, 以視窗化 sinc 變速重新取樣: 前 0.1 秒原速, 之後速度從 1.0 降到 0.2(音高跟著下沉, 像磁帶減速), 輸出 0.62 秒; 0.42~0.62 秒淡出, 單聲道 22.05 kHz, 峰值正規化 −1 dBFS |
+| guide_finale | guide_finale | 號角: https://opengameart.org/content/just-a-random-fanfare (fanfare.ogg); 小鼓: https://opengameart.org/content/an-interesting-snare-drum-sound (best_snare.wav); 煙火: https://opengameart.org/content/25-cc0-bang-firework-sfx (25-CC0-bang-sfx.zip 內的 fw_06.ogg、bang_09.ogg、bang_07.ogg); 歡呼: 本表的 sfx_cheer.ogg(https://opengameart.org/content/cheers-0) | 號角 Spring Spring(Julie Damsgaard, 註明「Produced by Julie Damsgaard/Spring Spring/Spring Enterprises」); 小鼓 Spring Spring; 煙火 rubberduck; 歡呼 Nocturnal_Vanguard | 全部 CC0 | 號角取第一句 0~2.4 秒(2.1~2.38 秒淡出); 小鼓單擊取 0.14 秒、每秒 28 擊輕重交替排成 0~1.95 秒由小漸大的滾奏; 三發煙火的起音對準 0.2 / 0.9 / 1.6 秒; 歡呼從 0.3 秒起; 四層混成單聲道 32 kHz、2.2~2.5 秒淡出、峰值正規化 −1 dBFS(2.5 秒) |
 
 ## 核對
 
-assets/ 共 76 個檔 = 背景音樂 5 列 + 觀眾歡呼 2 列 + 卡通馬蹄 1 列 + 短音效 68 列; 另 17 段內嵌於 sound.js(heat_warn 為程式產生, 不在此表)。沒有未登記的檔。
+assets/ 共 79 個檔 = 背景音樂 5 列 + 觀眾歡呼 2 列 + 卡通馬蹄 1 列 + 短音效 71 列; 另 19 段內嵌於 sound.js(heat_warn 為程式產生, 不在此表)。沒有未登記的檔。

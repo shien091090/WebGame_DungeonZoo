@@ -1,12 +1,12 @@
 'use strict';
-/* 來馬戲團看一點大場面(打磨版第 8 輪)— 玩法驗證 Demo。只用方向鍵 + Z、X, 地下城另有空白鍵(拋捕捉繩)。
+/* 來馬戲團看一點大場面(打磨版第 9 輪)— 玩法驗證 Demo。只用方向鍵 + Z、X, 地下城另有空白鍵(拋捕捉繩)。
    邏輯與繪製分離: update(dt) 改狀態, render() 呼叫 Art.drawXxx。 */
 
 // ───────────────────────── 基本工具 ─────────────────────────
 const CW = (Art.canvas && Art.canvas.width) || 1280;
 const CH = (Art.canvas && Art.canvas.height) || 720;
 const DAY_MAX = 4;
-const BUILD = 'polish-8';
+const BUILD = 'polish-9';
 const PENDING_KEY = 'gamelog-WebGame_DungeonZoo-pending';
 const SHELF_FAME = [200, 500];             // 商店上架名聲門檻(0 一開始就上架)
 const ROWS = 4;                            // 暗號節目單列數
@@ -202,14 +202,14 @@ const DUNGEONS = {
           '#.....GG.#........E.#..........#',
           '################################'],
         boosts: [[5, 7, 'heart'], [13, 28, 'rope']],
-        chests: [[3, 16, 'cue', 'cheering'], [11, 28, 'program', 'keg']] },
+        chests: [[3, 16, 'cue', 'cheering'], [11, 28, 'program', 'rain']] },
       { style: 'tower',
         map: [
           '################################',
           '#........#..........#..........#',
           '#..g..L..#....K.....#...L..p.E.#',
           '#....K...X....oo....X..........#',
-          '#.L....B.#..........#......L...#',
+          '#.L......#..........#......L.C.#',
           '#....W...#..C......B#..........#',
           '#........#..........#....K.p...#',
           '####..########....########..####',
@@ -221,8 +221,8 @@ const DUNGEONS = {
           '#.g...o..#....S.....#...L..m...#',
           '#..K.....#..........#..........#',
           '################################'],
-        boosts: [[4, 7, 'heart'], [5, 19, 'atk'], [12, 6, 'rope']],
-        chests: [[5, 12, 'cue', 'target1'], [11, 29, 'program', 'rain']] },
+        boosts: [[5, 19, 'atk'], [12, 6, 'rope']],
+        chests: [[5, 12, 'cue', 'target1'], [11, 29, 'program', 'keg'], [4, 29, 'key', 'd2key']] },
     ],
   },
   d2: {
@@ -255,7 +255,7 @@ const DUNGEONS = {
           '#..q.....#.1....2...#..L....q..#',
           '#...L....#..........#..........#',
           '#......W.#....LL....#....o.....#',
-          '#.1....B.#....C.....#.......2..#',
+          '#.1......#....C.....#.......2..#',
           '#...o....#..........#..W..D....#',
           '####..########....########..####',
           '####..########....########..####',
@@ -266,14 +266,14 @@ const DUNGEONS = {
           '#.h......#....S.....#.....W....#',
           '#........#..........#..........#',
           '################################'],
-        boosts: [[5, 7, 'heart'], [12, 28, 'rope']],
+        boosts: [[12, 28, 'rope']],
         chests: [[5, 14, 'program', 'shuffle']] },
       { style: 'snow',
         map: [
           '################################',
           '#........#..........#..........#',
           '#..k.....#..........#..L....k..#',
-          '#...L...............#..........#',
+          '#...L...............#....h.....#',
           '#......W.#....LL....#....o.....#',
           '#.B......#..........#.......E..#',
           '#...o....#....C.F...#..W.......#',
@@ -292,11 +292,14 @@ const DUNGEONS = {
   },
 };
 const DUNGEON_ORDER = ['d1', 'd2'];
-const BOOST_NAME = { heart: '心上限 +1', rope: '捕捉繩 +1', atk: '攻擊力 +1' };
-const BOOST_TEXT = { heart: '心上限 +1!', rope: '捕捉繩 +1!', atk: '攻擊力 +1!' };
-const BOOST_TOTAL = 11, CARD_TOTAL = 7;
+const BOOST_NAME = { heart: '血量上限 +1', rope: '捕捉繩 +1', atk: '攻擊力 +1' };
+const BOOST_TEXT = { heart: '血量上限 +1!', rope: '捕捉繩 +1!', atk: '攻擊力 +1!' };
+const BOOST_TOTAL = 9, CARD_TOTAL = 7;
+const HEART_CAP = 7;                       // 血量上限最多 7(血量石碑只剩 2 個)
 const TIME_LIMIT = 120;
-function cardName(key) { return (CUE_BY[key] || PROG_BY[key]).name; }
+const KEY_INFO = { name: '雪境冰窟的鑰匙', desc: '打開第 2 座地下城' };
+function cardInfo(key) { return key === 'd2key' ? KEY_INFO : (CUE_BY[key] || PROG_BY[key]); }
+function cardName(key) { return cardInfo(key).name; }
 // 這座地下城還剩幾個寶箱 / 石碑
 function leftCount(id, what) {
   let n = 0;
@@ -352,7 +355,7 @@ function newRun(replay) {
     bank: [],
     unlocked: { d1: true, d2: false },
     unlockQueue: [], shelfSeen: {},
-    usedBoosts: {}, openedChests: {}, newCards: {}, cardsGot: 0, boostsGot: 0,
+    usedBoosts: {}, openedChests: {}, newCards: {}, cardsGot: 0, boostsGot: 0, keyDay: 0, editT: 0, stagePopT: 0.3,
     ownedCues: { wait: true }, ownedProgs: { parade: true },
     rows: emptyRows(), stageInit: false,
     log: ['', '', '', ''], todayD: '',
@@ -405,7 +408,7 @@ function checkUnlock() {
 
 function stageLimit() { return G.day === 0 ? STAGE_MAX_TUT : 20; }
 function monsterInfoState(b, x, y) {
-  return { x, y, species: b.sp, num: b.num, desc: SP[b.sp].desc, effect: SP[b.sp].effect, total: stageCount(), totalMax: stageLimit() };
+  return { x, y, species: b.sp, num: b.num, desc: SP[b.sp].desc, effect: SP[b.sp].effect };
 }
 
 // ───────────────────────── 輸入(只掛鍵盤) ─────────────────────────
@@ -444,10 +447,11 @@ window.addEventListener('blur', function () {
 });
 
 
-/// ───────────────────────── 新手教學(24 階段) ─────────────────────────
+/// ───────────────────────── 新手教學(29 階段) ─────────────────────────
 // 已完成階段記在本次開啟網頁的記憶裡(整關重來、失敗重來都不重置)
-// 第 7、20 階段是「附註」: 不佔主階段位置, 另存在 TUT.note, 和主階段同時顯示
-const TUT = { done: {}, trig: {}, cur: null, note: null, logged: {}, angryMon: null, escMon: null };
+// 第 7 階段是「附註」: 不佔主階段位置, 另存在 TUT.note, 和主階段同時顯示
+// 第 13~16、21~25 階段是暫停式引導卡: 由下方 GD(引導狀態)負責, 不走泡泡的 TUT.cur
+const TUT = { done: {}, trig: {}, cur: null, note: null, logged: {}, escMon: null };
 function tut(flag) { if (TUT.cur && TUT.cur.phase === 'show') TUT.cur.flags[flag] = true; }
 function tutTrig(id) { if (!TUT.done[id]) TUT.trig[id] = true; }
 function inMeadow() { return scene === 'dungeon' && D && D.id === 'meadow'; }
@@ -478,7 +482,7 @@ function nearestOf(list) {
   for (const o of list) { const d = dist(o.x, o.y, T.x, T.y); if (d < bd) { bd = d; best = o; } }
   return best ? { o: best, d: bd } : null;
 }
-// 馴獸師頭上(心列之上): 尾巴指向 (馴獸師 x, 馴獸師 y − 60)
+// 馴獸師頭上(血量列之上): 尾巴指向 (馴獸師 x, 馴獸師 y − 60)
 function tamerTgt() { if (!D) return null; const p = scr(D.tamer.x, D.tamer.y); return { x: p.x, y: p.y, hh: 60 }; }
 function objTgt(r, hh) { if (!r) return null; const p = scr(r.o.x, r.o.y); return { x: p.x, y: p.y, hh: hh || 30 }; }
 
@@ -493,10 +497,10 @@ function nearestWeak() {
 function weakOrNest() { const w = nearestWeak(); return w ? monTgt(w) : nestTgt(); }
 function rowsHaveKey(k) { return G.rows.some(r => r.cue === k || r.prog === k); }
 function pendingNewCards() { return Object.keys(G.newCards).filter(k => !rowsHaveKey(k)); }
-function snap24() { return TUT.cur && TUT.cur.id === 24 && TUT.cur.snap ? TUT.cur.snap : pendingNewCards(); }
+function snap29() { return TUT.cur && TUT.cur.id === 29 && TUT.cur.snap ? TUT.cur.snap : pendingNewCards(); }
 const TS = {
   1: { where: () => scene === 'weapon' && G.day === 0, text: () => '[Z] 帶這把出發', keys: () => [],
-    geo: () => ({ x: 640, y: 572, bx: 640, by: 628, side: 'down' }), ok: c => !!c.flags.wz },
+    geo: () => ({ x: 820, y: 562, bx: 820, by: 618, side: 'down' }), ok: c => !!c.flags.wz },
   2: { where: () => inMeadow(), text: () => '方向鍵 移動', keys: () => ARROWS, tgt: tamerTgt, ok: c => ARROWS.every(k => c.pk[k]) },
   3: { where: () => inMeadow(), text: () => '[Z] 打牠', keys: () => [], tgt: () => { const m = nearestMon(); return m ? monTgt(m) : nestTgt(); }, ok: c => !!c.flags.zhit },
   4: { where: () => inMeadow(), text: () => '牠虛弱了 面向牠按 [空白] 拋繩', keys: () => [], tgt: weakOrNest, ok: c => !!c.flags.lasso || (!!D && !!D.lasso) },
@@ -513,47 +517,40 @@ const TS = {
       const c = slotCenter(i); return { x: c.x, y: c.y, hh: 55 };
     }, ok: () => stageCount() === 3 },
   9: { where: () => scene === 'setup1' && G.day === 0, text: () => '[↓] 再 [Z] 下一步', keys: () => [],
-    tgt: () => ({ x: 1070, y: 505, hh: 35 }), ok: () => scene === 'setup2' },
+    tgt: () => ({ x: 1070, y: 505, hh: 35 }), ok: c => !!c.flags.next },
   10: { where: () => scene === 'setup2' && G.day === 0, text: () => '[Z] 選暗號: 什麼時候演', keys: () => [],
     tgt: () => ({ x: 280, y: 100, hh: 26 }), ok: () => !!G.rows[0].cue },
   11: { where: () => scene === 'setup2' && G.day === 0, text: () => '[→] 再 [Z] 選表演卡: 演什麼', keys: () => [],
     tgt: () => ({ x: 580, y: 100, hh: 26 }), ok: () => !!(G.rows[0].cue && G.rows[0].prog) },
   12: { where: () => scene === 'setup2' && G.day === 0, text: () => '[↓] 到開演 按 [Z]', keys: () => [],
-    tgt: () => ({ x: 260, y: 445, hh: 35 }), ok: () => scene === 'show' },
-  13: { where: () => scene === 'show' && G.day === 0, text: () => '表演中只能看 靠節目單控場', keys: () => [],
-    tgt: () => miniTgt(S && S.cur >= 0 ? S.cur : 0), tick: (c, dt) => { c.t += dt; }, ok: c => c.t >= 4 },
-  14: { where: () => scene === 'show' && G.day === 0, text: () => '暗號成立 就演表演卡', keys: () => [],
-    tgt: () => miniTgt(S && S.cur >= 0 ? S.cur : 0), ok: () => !!S && S.fires >= 1 },
-  15: { where: () => scene === 'show' && G.day === 0, text: () => '熱度 = 全場有多氣', keys: () => [],
-    geo: () => ({ x: 686, y: 46, bx: 640, by: 110, side: 'down' }), tick: (c, dt) => { c.t += dt; }, ok: c => c.t >= 4 },
-  16: { where: () => scene === 'show', text: () => '超過紅線 就會失控', keys: () => [],
+    tgt: () => ({ x: 260, y: 445, hh: 35 }), ok: c => !!c.flags.go },
+  // 13~16: 表演引導卡(見 GD)
+  17: { where: () => scene === 'show', text: () => '暗號成立 就演表演卡', keys: () => [],
+    tgt: () => miniTgt(S && S.cur >= 0 ? S.cur : 0), ok: c => !!c.flags.fired && c.age >= 3 },
+  18: { where: () => scene === 'show', text: () => '超過紅線 就會失控', keys: () => [],
     geo: () => ({ x: 812, y: 46, bx: 700, by: 110, side: 'down' }), tick: (c, dt) => { c.t += dt; },
     ok: c => c.t >= 4 || (!!S && S.heat < 75 && c.t > 0.3) },
-  17: { where: () => scene === 'show', text: () => '生氣時表演 觀眾滿意度×2', keys: () => [],
-    tgt: () => { const m = TUT.angryMon; return m && S && S.mons.indexOf(m) >= 0 ? { x: m.x, y: m.y, hh: 64 } : null; },
-    tick: (c, dt) => { c.t += dt; }, ok: c => c.t >= 4 },
-  18: { where: () => scene === 'prep', text: () => '[←][→] 選 [Z] 決定', keys: () => [],
+  19: { where: () => scene === 'prep', text: () => '[←][→] 選 [Z] 決定', keys: () => [],
     geo: () => (PL.cur === 0 ? { x: 440, y: 165, bx: 440, by: 105, side: 'up' } : { x: 850, y: 235, bx: 850, by: 175, side: 'up' }),
     ok: c => !!c.flags.placeChosen },
-  19: { where: () => scene === 'shop', text: () => '[←][→] 換分頁', keys: () => [], tgt: () => ({ x: 640, y: 85, hh: 25 }), ok: c => !!c.flags.tab },
-  20: { note: true, where: () => inDungeon() && D.id !== 'meadow', text: () => '每次進地下城 繩子都會補滿 ' + ropeMaxNow() + ' 條', keys: () => [],
-    ok: () => !!D && D.id !== 'meadow' && D.caps.length >= 1 },
-  21: { where: () => inD1F1() && !!D.stairs, text: () => '走進樓梯 往下一層', keys: () => [],
+  20: { where: () => scene === 'shop', text: () => '[←][→] 換分頁', keys: () => [], tgt: () => ({ x: 640, y: 85, hh: 25 }), ok: c => !!c.flags.tab },
+  // 21~25: 地下城引導卡(見 GD)
+  26: { where: () => inD1F1() && !!D.stairs, text: () => '走進樓梯 往下一層', keys: () => [],
     tgt: () => { const p = scr(D.stairs.x, D.stairs.y); return { x: p.x, y: p.y, hh: 30 }; }, ok: c => !!c.flags.stairs },
-  22: { where: () => inD1F1(), text: () => '躲進草叢 魔物看不到你', keys: () => [],
+  27: { where: () => inD1F1(), text: () => '躲進草叢 魔物看不到你', keys: () => [],
     tgt: () => (D.bushes.length ? objTgt(nearestOf(D.bushes)) : null), ok: c => !!c.flags.hide },
-  23: { where: () => inD1F1(), keys: () => [],
-    text: () => (D && D.fruits.length ? '吃果子 回 1 心' : '[Z] 打樹 掉下果子'),
+  28: { where: () => inD1F1(), keys: () => [],
+    text: () => (D && D.fruits.length ? '吃果子 血量 +1' : '[Z] 打樹 掉下果子'),
     tgt: () => {
       if (!D) return null;
       if (D.fruits.length) return objTgt(nearestOf(D.fruits), 24);
       const t = nearestOf(D.trees.filter(t => t.hasFruit));
       return t ? objTgt(t, 32) : null;
     }, ok: c => !!c.flags.fruitEat },
-  24: { where: () => scene === 'setup2', keys: () => [],
-    text: () => (snap24().some(k => CUE_BY[k]) ? '寶箱拿到的暗號 排進新的一列' : '寶箱拿到的表演卡 換上去試試'),
+  29: { where: () => scene === 'setup2', keys: () => [],
+    text: () => (snap29().some(k => CUE_BY[k]) ? '寶箱拿到的暗號 排進新的一列' : '寶箱拿到的表演卡 換上去試試'),
     tgt: () => {
-      if (snap24().some(k => CUE_BY[k])) {
+      if (snap29().some(k => CUE_BY[k])) {
         let row = G.rows.findIndex(r => !r.cue);
         if (row < 0 || rowState(row) !== 'open') row = 0;
         return { x: 280, y: 100 + 78 * row, hh: 26 };
@@ -563,8 +560,8 @@ const TS = {
     ok: c => !!c.snap && c.snap.some(k => rowsHaveKey(k)) },
 };
 const TUT_IDS = Object.keys(TS).map(Number).sort((a, b) => a - b);
-const TUT_CHAIN = { 2: 3, 8: 9, 10: 11, 11: 12, 13: 14, 14: 15 };   // 「階段 N 完成後」才出現的下一階段
-const TUT_ABOVE_HUD = { 15: true, 16: true };                         // 指向 HUD 的主階段: 畫在 HUD 之上
+const TUT_CHAIN = { 2: 3, 8: 9, 10: 11, 11: 12 };   // 「階段 N 完成後」才出現的下一階段
+const TUT_ABOVE_HUD = { 18: true };                  // 指向 HUD 的主階段: 畫在 HUD 之上
 
 // 每幀檢查「第一次成立」的出現時機(成立後鎖存)
 function tutWatch() {
@@ -576,39 +573,39 @@ function tutWatch() {
     }
     if (D.lasso) tutTrig(5);
     if (D.id === 'd1' && D.fi === 0 && !D.down && !D.floorFx) {
-      if (!TUT.done[21] && D.stairs && dist(D.tamer.x, D.tamer.y, D.stairs.x, D.stairs.y) <= 240) tutTrig(21);
-      if (!TUT.done[22] && D.bushes.length) { const b = nearestOf(D.bushes); if (b && b.d <= 150) tutTrig(22); }
-      if (!TUT.done[23] && D.tamer.hearts < D.tamer.maxHearts) {
+      if (!TUT.done[26] && D.stairs && dist(D.tamer.x, D.tamer.y, D.stairs.x, D.stairs.y) <= 240) tutTrig(26);
+      if (!TUT.done[27] && D.bushes.length) { const b = nearestOf(D.bushes); if (b && b.d <= 150) tutTrig(27); }
+      if (!TUT.done[28] && D.tamer.hearts < D.tamer.maxHearts) {
         const f = nearestOf(D.fruits), t = nearestOf(D.trees.filter(t => t.hasFruit));
-        if ((f && f.d <= 200) || (t && t.d <= 200)) tutTrig(23);
+        if ((f && f.d <= 200) || (t && t.d <= 200)) tutTrig(28);
       }
     }
   }
   if (scene === 'setup1' && G.day === 0) tutTrig(8);
   if (scene === 'setup2' && G.day === 0) tutTrig(10);
-  if (scene === 'setup2' && pendingNewCards().length > 0) tutTrig(24);
-  if (scene === 'show' && G.day === 0) tutTrig(13);
-  if (scene === 'show' && S && S.heat >= 85) tutTrig(16);
-  if (scene === 'prep' && G.day === 1) tutTrig(18);
-  if (scene === 'shop') tutTrig(19);
+  if (scene === 'setup2' && pendingNewCards().length > 0) tutTrig(29);
+  if (scene === 'show' && S && S.heat >= 85) tutTrig(18);
+  if (scene === 'prep' && G.day === 1) tutTrig(19);
+  if (scene === 'shop') tutTrig(20);
 }
+function tutSec(id) { return +((Date.now() - (TUT.logged[id] || Date.now())) / 1000).toFixed(1); }
 function tutStart(id) {
-  const c = { id, phase: 'show', pk: {}, flags: {}, t: 0, age: 0, doneT: 0, lastGeo: null, snap: id === 24 ? pendingNewCards() : null };
+  const c = { id, phase: 'show', pk: {}, flags: {}, t: 0, age: 0, doneT: 0, lastGeo: null, snap: id === 29 ? pendingNewCards() : null };
   TUT.cur = c;
-  if (!TUT.logged[id]) { TUT.logged[id] = Date.now(); ev('tutorial_show', { stage: id, day: G.day, scene }); }
+  if (!TUT.logged[id]) { TUT.logged[id] = Date.now(); ev('tutorial_show', { stage: id, kind: 'bubble', day: G.day, scene }); }
   if (id === 4) noteStart(7);   // 第 7 階段(捕捉繩)和第 4 階段同時出現
 }
 function noteStart(id) {
   if (TUT.done[id] || TUT.note) return;
   TUT.note = { id, phase: 'show', age: 0, doneT: 0 };
-  if (!TUT.logged[id]) { TUT.logged[id] = Date.now(); ev('tutorial_show', { stage: id, day: G.day, scene }); }
+  if (!TUT.logged[id]) { TUT.logged[id] = Date.now(); ev('tutorial_show', { stage: id, kind: 'note', day: G.day, scene }); }
 }
 function questDone() { return !!(D && D.quest && D.quest.phase === 'done'); }   // 任務完成定格中只播 quest_done
 function noteDone() {
   const n = TUT.note;
   if (!n || n.phase !== 'show') return;
   n.phase = 'done'; n.doneT = 0;
-  ev('tutorial_done', { stage: n.id, day: G.day, took: +((Date.now() - TUT.logged[n.id]) / 1000).toFixed(1), cut: false });
+  ev('tutorial_done', { stage: n.id, day: G.day, took: tutSec(n.id), cut: false });
   if (!questDone()) Snd.play('tutorial_done');
 }
 function noteUpdate(dt) {
@@ -617,7 +614,7 @@ function noteUpdate(dt) {
   if (n.phase === 'show') {
     n.age += dt;
     if (!TS[n.id].where()) {
-      // 見習草地結束(第 7 階段): 算完成; 正式地下城離開(第 20 階段): 不算, 下次再出現
+      // 見習草地結束(第 7 階段): 算完成
       if (n.id === 7) TUT.done[7] = true;
       TUT.note = null; return;
     }
@@ -627,35 +624,32 @@ function noteUpdate(dt) {
     if (n.doneT >= 0.6) { TUT.done[n.id] = true; TUT.note = null; }
   }
 }
-// 表演收場: 還在顯示的表演階段(13~17)直接算完成
+// 表演收場(時間到或失控開始)的瞬間: 還在顯示的表演泡泡(第 17、18 階段)直接算完成(不播特效, cut: true)
 function tutCutShow() {
   const c = TUT.cur;
-  if (c && c.id >= 13 && c.id <= 17) {
-    if (c.phase === 'show') {
-      ev('tutorial_done', { stage: c.id, day: G.day, took: +((Date.now() - TUT.logged[c.id]) / 1000).toFixed(1), cut: true });
-    }
+  if (c && (c.id === 17 || c.id === 18)) {
+    if (c.phase === 'show') ev('tutorial_done', { stage: c.id, day: G.day, took: tutSec(c.id), cut: true });
     TUT.done[c.id] = true; TUT.cur = null;
   }
-  if (S && S.tutorial) tutForceSkip(15);   // 見習表演: 排隊中還沒出現的 13~15 也收掉
+  if (!TUT.done[18]) TUT.trig[18] = false;   // 排隊中還沒出現的: 解除鎖存, 下一場熱度再到 85 才出現
 }
 function tutForceSkip(maxId) {
   for (const id of TUT_IDS) if (id <= maxId) { if (TUT.trig[id] || (TUT.cur && TUT.cur.id === id)) TUT.done[id] = true; }
   if (TUT.cur && TUT.cur.id <= maxId) TUT.cur = null;
 }
-// 走下樓梯: 第 21 階段本身完成(不播特效); 其他地下城階段收起、不算完成, 下次條件成立再出現
+// 走下樓梯: 第 26 階段本身完成(不播特效); 其他地下城階段收起、不算完成, 下次條件成立再出現
 function tutStairs() {
   const c = TUT.cur;
-  if (c && c.id === 21 && c.phase === 'show') {
-    ev('tutorial_done', { stage: 21, day: G.day, took: +((Date.now() - TUT.logged[21]) / 1000).toFixed(1), cut: false });
-    TUT.done[21] = true; TUT.cur = null;
+  if (c && c.id === 26 && c.phase === 'show') {
+    ev('tutorial_done', { stage: 26, day: G.day, took: tutSec(26), cut: false });
+    TUT.done[26] = true; TUT.cur = null;
   }
   tutDungeonLeave();
 }
 function tutDungeonLeave() {
   if (TUT.cur && TUT.cur.phase === 'done') TUT.done[TUT.cur.id] = true;
-  for (const k of [5, 6, 21, 22, 23]) if (!TUT.done[k]) TUT.trig[k] = false;
-  if (TUT.cur && TUT.cur.id >= 2 && TUT.cur.id <= 6 || TUT.cur && TUT.cur.id >= 21 && TUT.cur.id <= 23) TUT.cur = null;
-  if (TUT.note && TUT.note.id === 20) TUT.note = null;
+  for (const k of [5, 6, 26, 27, 28]) if (!TUT.done[k]) TUT.trig[k] = false;
+  if (TUT.cur && ((TUT.cur.id >= 2 && TUT.cur.id <= 6) || (TUT.cur.id >= 26 && TUT.cur.id <= 28))) TUT.cur = null;
 }
 // 地下城結束: 見習草地的階段(2~5、附註 7)在流程出口強制標成完成; 其餘地下城階段只解除鎖存, 下次條件成立再出現
 function tutDungeonEnd(id) {
@@ -676,7 +670,7 @@ function tutUpdate(dt) {
       if (here) { c.age += dt; if (def.tick) def.tick(c, dt); }
       if (def.ok(c)) {
         c.phase = 'done'; c.doneT = 0;
-        ev('tutorial_done', { stage: c.id, day: G.day, took: +((Date.now() - TUT.logged[c.id]) / 1000).toFixed(1), cut: false });
+        ev('tutorial_done', { stage: c.id, day: G.day, took: tutSec(c.id), cut: false });
         if (!questDone()) Snd.play('tutorial_done');
         if (TUT_CHAIN[c.id]) tutTrig(TUT_CHAIN[c.id]);
       } else if (!here) {
@@ -690,12 +684,12 @@ function tutUpdate(dt) {
   if (!TUT.cur) {
     for (const id of TUT_IDS) {
       if (TS[id].note || TUT.done[id] || !TUT.trig[id]) continue;
-      if (id >= 13 && id <= 17 && S && S.loose) continue;   // 收場期間不再冒出表演階段
+      if (id === 17 && S && S.loose) continue;   // 收場期間不再冒出表演階段
       if (TS[id].where()) { tutStart(id); break; }
     }
   }
 }
-// 泡泡位置(RD 算): 目標在畫面上半(y < 300)放下方, 否則上方; 左右夾在畫面內; 第 1、15、16、18 階段版位固定
+// 泡泡位置(RD 算): 目標在畫面上半(y < 300)放下方, 否則上方; 左右夾在畫面內; 第 1、18、19 階段版位固定
 function tutGeo(c, def) {
   if (def.geo) return def.geo();
   const tg = def.tgt(); if (!tg) return null;
@@ -706,8 +700,9 @@ function tutGeo(c, def) {
   const bx = clamp(tg.x, 170, CW - 170);
   return { x: tg.x, y: ty, bx, by, side };
 }
-// mode: 'below' = 只畫 HUD 之下的(地下城); 'above' = 只畫 HUD 之上的(第 15、16 階段); 'all' = 全部(非地下城畫面, HUD 之後呼叫)
+// mode: 'below' = 只畫 HUD 之下的(地下城); 'above' = 只畫 HUD 之上的(第 18 階段); 'all' = 全部(非地下城畫面, HUD 之後呼叫)
 function renderTutorial(mode) {
+  if (GD) return;   // 暫停式引導期間泡泡不畫
   const c = TUT.cur;
   if (!c) return;
   const above = !!TUT_ABOVE_HUD[c.id];
@@ -731,8 +726,9 @@ function renderTutorial(mode) {
     doneT: c.phase === 'done' ? c.doneT : 0.6, doneDur: 0.6,
   });
 }
-// 附註(第 7、20 階段): 畫在 HUD 之上, 整個泡泡在 HUD 帶內(中心 (186, 26)), 尾巴朝下指向捕捉繩列正中央
+// 附註(第 7 階段): 畫在 HUD 之上, 整個泡泡在 HUD 帶內(中心 (186, 26)), 尾巴朝下指向捕捉繩列正中央
 function renderTutNote() {
+  if (GD) return;
   const n = TUT.note;
   if (!n || !inDungeon()) return;
   if (n.phase === 'show' && !TS[n.id].where()) return;
@@ -743,6 +739,126 @@ function renderTutNote() {
     doneT: n.phase === 'done' ? n.doneT : 0.6, doneDur: 0.6,
   });
 }
+
+
+// ───────────────────────── 暫停式引導(第 13~16、21~25 階段) ─────────────────────────
+// GD 開著: 整個表演場 / 地下城停住(update 不呼叫 updateShow / updateDungeon), 只吃 Z; 泡泡不畫、計時停住
+let GD = null;
+const GUIDE_IDS = { show: [13, 14, 15, 16], dungeon: [21, 22, 23, 24, 25] };
+const GUIDE_READ = 3.0, GUIDE_APPEAR = 0.3, GUIDE_PAUSE = 0.8, GUIDE_OUTRO = 0.4, GUIDE_FX = 2.5;
+// 每張卡的文字、聚光燈、卡片位置、箭頭尖端(數值照 spec「引導卡版位」; 暫停當下算一次, 引導期間遊戲停住所以位置不會動)
+function guideGeo(id) {
+  const base = { text: '', sub: '', grand: false, spot: { shape: 'none', x: 0, y: 0, w: 0, h: 0, r: 0 }, cardX: 640, cardY: 340, tipX: null, tipY: null, edgeAngle: null };
+  const rect = (x, y, w, h) => ({ shape: 'rect', x, y, w, h, r: 0 });
+  const circ = (x, y, r) => ({ shape: 'circle', x, y, w: 0, h: 0, r });
+  switch (id) {
+    case 13: return Object.assign(base, { text: '怪物在表演了 會照你排的節目演出', sub: '表演中只能看', spot: rect(322, 691, 212, 56), cardX: 430, cardY: 560, tipX: 322, tipY: 661 });
+    case 14: {
+      let best = null;
+      for (const m of S.mons) {
+        if (!best || m.rage > best.rage || (m.rage === best.rage && dist(m.x, m.y, 640, 356) < dist(best.x, best.y, 640, 356))) best = m;
+      }
+      const mx = best ? best.x : 640, my = best ? best.y : 356, below = my < 380;
+      return Object.assign(base, { text: '頭上是怒氣條 越生氣表演得越賣力', spot: circ(mx, my - 20, 64),
+        cardX: clamp(mx, 240, 1040), cardY: below ? my + 138 : my - 178, tipX: mx, tipY: below ? my + 46 : my - 86 });
+    }
+    case 15: return Object.assign(base, { text: '大家表演得越賣力 觀眾熱度就越高', spot: rect(640, 25, 428, 46), cardX: 640, cardY: 190, tipX: 686, tipY: 50 });
+    case 16: return Object.assign(base, { text: '透過你的表演安排 讓場子熱起來吧!', grand: true });
+    case 21: {
+      const p = scr(D.tamer.x, D.tamer.y), below = p.y < 426;
+      return Object.assign(base, { text: '在地下城自由探索 抓怪、拿道具、變強', spot: circ(p.x, p.y - 16, 90),
+        cardX: clamp(p.x, 240, 1040), cardY: clamp(below ? p.y + 168 : p.y - 200, 190, 650), tipX: p.x, tipY: below ? p.y + 76 : p.y - 108 });
+    }
+    case 22: return Object.assign(base, { text: '每次進地下城 捕捉繩都會補回 ' + ropeMaxNow() + ' 條', spot: rect(140, 74, 248, 40), cardX: 300, cardY: 200, tipX: 140, tipY: 96 });
+    case 23: return Object.assign(base, { text: '要注意時間限制 時間到就收工', spot: rect(631, 25, 340, 36), cardX: 631, cardY: 175, tipX: 600, tipY: 45 });
+    case 24: {
+      const p = D.exit ? scr(D.exit.x, D.exit.y) : { x: 640, y: 400 };
+      let sx = p.x, sy = p.y, edge = null;
+      if (p.x < 0 || p.x > 1280 || p.y < 100 || p.y > 720) { sx = clamp(p.x, 60, 1220); sy = clamp(p.y, 160, 660); edge = Math.atan2(p.y - sy, p.x - sx); }
+      const below = sy < 410;
+      return Object.assign(base, { text: '這是出口 可以中途離開', spot: circ(sx, sy, 50), edgeAngle: edge,
+        cardX: clamp(sx, 240, 1040), cardY: below ? sy + 144 : sy - 144, tipX: sx, tipY: below ? sy + 52 : sy - 52 });
+    }
+    case 25: return Object.assign(base, { text: '多多在地下城抓怪 讓牠們去表演吧!', grand: true });
+  }
+  return base;
+}
+function guideElapsed() { return GD.which === 'show' ? S.clock : D.elapsed; }
+function startGuide(which) {
+  GD = { which, ids: GUIDE_IDS[which], i: -1, phase: 'pause', t: 0, pauseT: 0, cardT: 0, outroT: 0, cur: null, prev: null, elapsed0: 0 };
+  GD.elapsed0 = guideElapsed();
+  Snd.play('guide_pause');
+  Snd.crowd('');   // 表演的觀眾聲循環停住, 結束時恢復
+  ev('guide', { which, action: 'start', day: G.day, elapsed: +GD.elapsed0.toFixed(1) });
+}
+function guideShowCard(i) {
+  const id = GD.ids[i];
+  GD.i = i; GD.cardT = 0; GD.prev = GD.cur; GD.cur = guideGeo(id);
+  TUT.logged[id] = Date.now();
+  ev('tutorial_show', { stage: id, kind: 'guide', day: G.day, scene });
+  Snd.play(GD.cur.grand ? 'guide_finale' : 'guide_card');
+}
+function endGuide() {
+  const g = GD;
+  ev('guide', { which: g.which, action: 'end', day: G.day, elapsed: +g.elapsed0.toFixed(1), took: +g.t.toFixed(1) });
+  GD = null;
+  if (g.which === 'show') {
+    if (S) Snd.crowd(S.tierIdx > 0 ? TIERS[S.tierIdx] : '');
+    tutTrig(17);   // 表演繼續的那一刻: 第 17 階段出現
+  } else if (D) { D.zWait = true; D.xWait = true; }
+}
+function updateGuide(dt) {
+  const g = GD;
+  g.t += dt;
+  if (g.phase === 'pause') {
+    g.pauseT += dt;
+    if (g.pauseT >= GUIDE_PAUSE) { g.pauseT = GUIDE_PAUSE; g.phase = 'card'; guideShowCard(0); }
+    return;
+  }
+  if (g.phase === 'card') {
+    g.cardT += dt;
+    if (g.cardT >= GUIDE_READ && pressed.z) {   // 出現滿 3 秒才接受 Z; 未滿不反應(不播音效)
+      const id = g.ids[g.i];
+      TUT.done[id] = true;
+      ev('tutorial_done', { stage: id, day: G.day, took: +g.cardT.toFixed(1), cut: false });
+      if (g.i < g.ids.length - 1) guideShowCard(g.i + 1);
+      else { Snd.play('ui_confirm'); g.phase = 'outro'; g.outroT = 0; }
+    }
+    return;
+  }
+  g.outroT += dt;
+  if (g.outroT >= GUIDE_OUTRO) endGuide();
+}
+function lerp(a, b, k) { return a + (b - a) * k; }
+function guideSpot(prev, cur, k) {
+  if (!prev || prev.spot.shape === 'none' || cur.spot.shape === 'none' || k >= 1) return cur.spot;
+  const wh = s => (s.shape === 'circle' ? [s.r * 2, s.r * 2] : [s.w, s.h]);
+  const a = wh(prev.spot), b = wh(cur.spot);
+  const w = lerp(a[0], b[0], k), h = lerp(a[1], b[1], k);
+  const sp = { shape: cur.spot.shape, x: lerp(prev.spot.x, cur.spot.x, k), y: lerp(prev.spot.y, cur.spot.y, k), w, h, r: 0 };
+  if (sp.shape === 'circle') { sp.r = w / 2; sp.w = 0; sp.h = 0; }
+  return sp;
+}
+function renderGuide() {
+  const g = GD;
+  const st = { which: g.which, phase: g.phase, pauseT: g.pauseT, pauseDur: GUIDE_PAUSE, outroT: GUIDE_OUTRO, outroDur: GUIDE_OUTRO,
+    index: Math.max(0, g.i), total: g.ids.length, grand: false, text: '', sub: '', spot: { shape: 'none', x: 0, y: 0, w: 0, h: 0, r: 0 },
+    cardX: 640, cardY: 340, tipX: null, tipY: null, edgeAngle: null, appearT: GUIDE_APPEAR, appearDur: GUIDE_APPEAR,
+    readT: 0, readDur: GUIDE_READ, ready: false, fxT: GUIDE_FX, fxDur: GUIDE_FX, t: g.t };
+  if (g.phase !== 'pause' && g.cur) {
+    const c = g.cur, k = Math.min(1, g.cardT / GUIDE_APPEAR), p = g.prev;
+    st.grand = c.grand; st.text = c.text; st.sub = c.sub; st.cardX = c.cardX; st.cardY = c.cardY; st.edgeAngle = c.edgeAngle;
+    st.spot = guideSpot(p, c, k);
+    st.tipX = c.tipX; st.tipY = c.tipY;
+    if (p && p.tipX !== null && c.tipX !== null && k < 1) { st.tipX = lerp(p.tipX, c.tipX, k); st.tipY = lerp(p.tipY, c.tipY, k); }
+    st.appearT = Math.min(GUIDE_APPEAR, g.cardT);
+    st.readT = Math.min(GUIDE_READ, g.cardT); st.ready = g.cardT >= GUIDE_READ;
+    if (c.grand) st.fxT = Math.min(GUIDE_FX, g.cardT);
+    if (g.phase === 'outro') { st.outroT = Math.min(GUIDE_OUTRO, g.outroT); st.appearT = GUIDE_APPEAR; st.readT = GUIDE_READ; st.ready = true; }
+  }
+  Art.drawGuide(ctx, st);
+}
+
 
 
 // ───────────────────────── 開始畫面 / 日曆 / 出發準備 / 地下城選擇 / 選武器 ─────────────────────────
@@ -804,7 +920,7 @@ function prepInput(dt) {
       ev('prep_choose', { day: G.day, stage: PL.stage, choice: PL.cur === 0 ? 'main' : 'shop' });
       tut('placeChosen');
       Snd.play('ui_confirm');
-      if (TUT.cur && TUT.cur.id === 18 && TUT.cur.phase === 'show') PL.hold = 0;
+      if (TUT.cur && TUT.cur.id === 19 && TUT.cur.phase === 'show') PL.hold = 0;
       else prepGo();
     }
   } else {
@@ -930,7 +1046,6 @@ function startDungeon(id) {
   if (!meadow) G.todayD = id;
   ev('dungeon_start', { day: G.day, dungeon: id, weapon: G.weapon, hearts: mh, ropes: D.ropes, atk: G.atk });
   setScene('dungeon');
-  if (!meadow) noteStart(20);   // 第 20 階段附註: 每次進正式地下城, 到收服 1 隻為止
   if (D.quest) { ev('quest', { action: 'show', count: 0, took: 0 }); Snd.play('quest_show'); }
 }
 // 建出第 fi 層(0 起算): 地圖、魔物、物件全部重置; 心 / 繩 / 攻擊力 / 收服列帶過來
@@ -955,7 +1070,7 @@ function buildFloor(fi) {
     }
     else if (ch === 'C') {
       const b = fd.chests.find(o => o[0] === r && o[1] === c);
-      D.chests.push({ x: cx, y: cy, kind: b ? b[2] : 'cue', ckey: b ? b[3] : 'cheering', key, open: !!G.openedChests[key], openT: 0.3 }); grid[r][c] = '.';
+      D.chests.push({ x: cx, y: cy, kind: b ? b[2] : 'cue', ckey: b ? b[3] : 'cheering', key, isKey: !!b && b[2] === 'key', open: !!G.openedChests[key], openT: 0.3 }); grid[r][c] = '.';
     }
     else if (ch === 'K') { D.kegs.push({ x: cx, y: cy, mode: 'ok', fuseT: 0 }); grid[r][c] = '.'; }
     else if (ch === 'F') { D.fountains.push({ x: cx, y: cy, full: true }); grid[r][c] = '.'; }
@@ -1563,7 +1678,7 @@ function updateObjects(dt) {
   for (const f of D.fountains) {
     if (f.full && T.hearts < T.maxHearts && dist(T.x, T.y, f.x, f.y) <= 30) {
       f.full = false; T.hearts = T.maxHearts;
-      addDFloat(T.x, T.y - 50, '心補滿', 'heal');
+      addDFloat(T.x, T.y - 50, '血量補滿', 'heal');
       Snd.play('heal'); tut('heal');
       ev('object_use', { dungeon: D.id, object: 'fountain', action: 'heal', x: Math.round(f.x), y: Math.round(f.y) });
     }
@@ -1578,7 +1693,7 @@ function updateObjects(dt) {
   for (const f of D.fruits) {
     if (f.eaten || T.hearts >= T.maxHearts || dist(T.x, T.y, f.x, f.y) > 30) continue;
     f.eaten = true; T.hearts++;
-    addDFloat(T.x, T.y - 50, '+1 心', 'heal');
+    addDFloat(T.x, T.y - 50, '血量 +1', 'heal');
     Snd.play('fruit_eat'); tut('fruitEat');
     ev('fruit_eat', { dungeon: D.id, heartsAfter: T.hearts, elapsed: +D.elapsed.toFixed(1), x: Math.round(T.x), y: Math.round(T.y) });
   }
@@ -1722,7 +1837,7 @@ function takeBoost(s) {
   s.used = true; G.usedBoosts[s.key] = true; G.boostsGot++;
   let value = 0;
   if (s.kind === 'heart') {
-    G.heartMax = Math.min(9, G.heartMax + 1); T.maxHearts = G.heartMax; T.hearts = Math.min(T.maxHearts, T.hearts + 1); value = G.heartMax;
+    G.heartMax = Math.min(HEART_CAP, G.heartMax + 1); T.maxHearts = G.heartMax; T.hearts = Math.min(T.maxHearts, T.hearts + 1); value = G.heartMax;
   } else if (s.kind === 'rope') {
     G.ropeMax = Math.min(9, G.ropeMax + 1); D.ropes = Math.min(G.ropeMax, D.ropes + 1); value = G.ropeMax;
   } else { G.atk = Math.min(3, G.atk + 1); value = G.atk; }
@@ -1738,11 +1853,23 @@ function openChest(c) {
 }
 // 卡片收進擁有(收下過場時、或過場來不及就地圖結束時)
 function grantCard(c, readT) {
+  if (c.kind === 'key') {   // 鑰匙: 不算卡; 第 2 座在過場開始那一刻就開放(這裡只是保險, 沒開放過才補開)
+    unlockKey();
+    D.loot.push({ kind: 'key', key: c.ckey, name: KEY_INFO.name });
+    ev('chest_open', { day: G.day, dungeon: D.id, floor: D.fi + 1, kind: 'key', key: c.ckey, first: false, elapsed: +D.elapsed.toFixed(1), readT: +(readT || 0).toFixed(1) });
+    return;
+  }
   const first = !cardSeen;
   if (c.kind === 'cue') G.ownedCues[c.ckey] = true; else G.ownedProgs[c.ckey] = true;
   G.newCards[c.ckey] = c.kind; G.cardsGot++;
   D.loot.push({ kind: c.kind, key: c.ckey, name: cardName(c.ckey) });
   ev('chest_open', { day: G.day, dungeon: D.id, floor: D.fi + 1, kind: c.kind, key: c.ckey, first, elapsed: +D.elapsed.toFixed(1), readT: +(readT || 0).toFixed(1) });
+}
+// 拿到鑰匙: 第 2 座開放(過場開始那一刻; 不看名聲、不用離開), 下次出發準備冒「第 2 座地下城開放」
+function unlockKey() {
+  if (G.unlocked.d2) return;
+  G.unlocked.d2 = true; G.unlockQueue.push('d2'); G.keyDay = G.day;
+  ev('dungeon_unlock', { day: G.day, dungeon: 'd2', via: 'key', elapsed: +D.elapsed.toFixed(1) });
 }
 // 開箱動畫還沒播完就結束地下城(時間到、離開): 卡片照樣收進來
 function resolvePendingChest() {
@@ -1758,6 +1885,7 @@ function updateFindings(dt) {
       D.chestOpen = null;
       const c = o.c;
       D.cardGet = { c, kind: c.kind, key: c.ckey, t: 0, dur: 1.2, ready: false, first: !cardSeen, fromX: c.x, fromY: c.y };
+      if (c.kind === 'key') unlockKey();   // 鑰匙: 過場開始那一刻就開放第 2 座(不播 unlock)
       Snd.play('card_get');
     }
   } else {
@@ -1774,7 +1902,7 @@ function updateCardGet(dt) {
   if (g.ready && pressed.z) {
     Snd.play('ui_confirm');
     grantCard(g.c, g.t + (g.extra || 0));
-    cardSeen = true;
+    if (g.kind !== 'key') cardSeen = true;
     D.cardGet = null; D.zWait = true; D.xWait = true;
   } else if (g.ready) g.extra = (g.extra || 0) + dt;   // 1.2 秒之後的等待時間也算進「過場開到按 Z」
 }
@@ -1828,13 +1956,7 @@ function checkExit() {
   if (d <= 30) {
     D.prompt = { choice: 1, t: 0 };
     ev('exit_prompt', { dungeon: D.id, action: 'show', elapsed: +D.elapsed.toFixed(1), captures: D.caps.length, heartsLeft: T.hearts });
-    if (D.id === 'd1' && D.fi === 1 && !G.unlocked.d2) {
-      // 第一次碰到湖畔鐘塔第 2 層的出口: 開放第 2 座(同一刻的詢問框這次不另播 exit_prompt)
-      G.unlocked.d2 = true; G.unlockQueue.push('d2');
-      ev('dungeon_unlock', { day: G.day, dungeon: 'd2', elapsed: +D.elapsed.toFixed(1) });
-      D.floats.push({ x: 640, y: 110, text: '找到出口! 第 2 座地下城開放了', kind: 'unlock', t: 0, dur: 1.5, abs: true });
-      Snd.play('unlock');
-    } else Snd.play('exit_prompt');
+    Snd.play('exit_prompt');   // 出口和開放第 2 座無關(改由鑰匙寶箱)
   }
 }
 
@@ -1845,6 +1967,8 @@ function updateDungeon(dt) {
   if (D.floorFx) { updateFloorFx(dt); return; }
   if (D.cardGet) { updateCardGet(dt); return; }
   if (D.prompt) { updateExitPrompt(dt); return; }
+  // 暫停式引導(第 21~25 階段): 第一次進正式地下城, 自由活動滿 3 秒(上面幾種暫停都不在)就暫停
+  if (D.id !== 'meadow' && !TUT.done[21] && D.elapsed >= 3.0) { startGuide('dungeon'); return; }
   D.elapsed += dt;
   if (D.timed) D.timeLeft -= dt;
   updateTamer(dt);
@@ -1873,7 +1997,7 @@ function updateDungeon(dt) {
       if (hb.t >= 2) { hb.fx = 'none'; hb.t = 2; hb.delta = 0; }
     } }
   if (T.hearts <= 0) {
-    if (D.id === 'meadow') T.hearts = T.maxHearts;   // 教學不會失敗: 補滿心、原地繼續
+    if (D.id === 'meadow') T.hearts = T.maxHearts;   // 教學不會失敗: 補滿血量、原地繼續
     else { startDown(); return; }
   }
   if (D.timed && D.timeLeft <= 0) { endDungeon('time'); return; }
@@ -1928,6 +2052,7 @@ function setupHint(text, x, y) {
 function enterSetup1() {
   if (G.day >= 1 && !G.stageInit) { G.bank.forEach((b, i) => { b.on = i < 20; }); G.stageInit = true; }
   G.s1 = { cur: 0, top: 0, zone: 'grid', back: 0 };
+  G.editT = 0; G.stagePopT = 0.3;
   UI.floats = [];
   setScene('setup1');
 }
@@ -1947,17 +2072,24 @@ function fixScroll(s, key, n) {
   if (row > s.top + 2) s.top = row - 2;
   s.top = clamp(s.top, 0, Math.max(0, rows - 3));
 }
-function setup1Input() {
+function goSetup2() { delete G.s1.hold; G.s2 = { row: 0, col: 0, panel: null }; setScene('setup2'); }
+function setup1Input(dt) {
   const s = G.s1, n = G.bank.length;
   fixScroll(s, 'cur', n);
+  if (G.stagePopT < 0.3) G.stagePopT = Math.min(0.3, G.stagePopT + dt);
+  if (s.hold !== undefined) {   // 第 9 階段: 讓完成特效(0.6 秒)在這個畫面播完再進第 2 步, 期間不接輸入
+    s.hold += dt;
+    if (TUT.done[9] || s.hold >= 1.0) goSetup2();
+    return;
+  }
   if (s.zone === 'grid') {
     const r = gridMove(s, 'cur', n);
     if (r === 'moved') Snd.play('ui_move');
     else if (r === 'down') { s.back = s.cur; s.zone = 'next'; Snd.play('ui_move'); }
     else if (pressed.z && n > 0) {
       const b = G.bank[s.cur];
-      if (b.on) { b.on = false; Snd.play('ui_cancel'); }
-      else if (stageCount() < stageLimit()) { b.on = true; Snd.play('ui_confirm'); }
+      if (b.on) { b.on = false; G.stagePopT = 0; Snd.play('ui_cancel'); }
+      else if (stageCount() < stageLimit()) { b.on = true; G.stagePopT = 0; Snd.play('ui_confirm'); }
       else Snd.play('ui_denied');   // 見習日 3 隻就是全部(上限 = 怪物庫數), 實際碰不到; 提示與埋點已拿掉
     }
     fixScroll(s, 'cur', n);
@@ -1966,7 +2098,11 @@ function setup1Input() {
     else if (pressed.down) { if (G.day !== 0) { s.zone = 'back'; Snd.play('ui_move'); } }   // 見習日沒有「回選地點」
     else if (pressed.z) {
       const need = G.day === 0 ? stageCount() === STAGE_MAX_TUT : stageCount() >= 1;
-      if (need) { Snd.play('ui_confirm'); G.s2 = { row: 0, col: 0, panel: null }; setScene('setup2'); }
+      if (need) {
+        Snd.play('ui_confirm');
+        if (TUT.cur && TUT.cur.id === 9 && TUT.cur.phase === 'show') { tut('next'); s.hold = 0; }   // 先播完成特效再換畫面
+        else goSetup2();
+      }
       else {
         Snd.play('ui_denied');
         if (G.day === 0) {   // 見習日一定要選滿 3 隻
@@ -2002,18 +2138,22 @@ function rowState(i) {
 function lastOpenRow() { let r = 0; for (let i = 0; i < ROWS; i++) if (rowState(i) === 'open') r = i; return r; }
 // 清空暗號 = 整列刪掉, 下面的列往上補
 function clearRow(i) { G.rows.splice(i, 1); G.rows.push({ cue: '', prog: '' }); }
+// 選單: 擁有的暗號(依表順序)→ 上移 → 下移 → 清空; act: pick 填入 | swap 和別列交換 | denied(空列選已排在別列的)| up | down | clear
 function panelOptions(layer, row) {
   const out = [];
   if (layer === 'cue') {
+    const hasCue = !!G.rows[row].cue;
     CUES.forEach(c => {
       if (!G.ownedCues[c.key]) return;
       let used = 0;
       for (let j = 0; j < ROWS; j++) if (j !== row && G.rows[j].cue === c.key) used = j + 1;
-      out.push({ key: c.key, name: c.name, desc: c.desc, used });
+      out.push({ key: c.key, name: c.name, desc: c.desc, used, act: used === 0 ? 'pick' : (hasCue ? 'swap' : 'denied') });
     });
-    out.push({ key: 'clear', name: '清空', desc: '', used: 0 });
+    if (hasCue && row > 0) out.push({ key: 'up', name: '上移', desc: '', used: 0, act: 'up' });
+    if (hasCue && row < ROWS - 1 && G.rows[row + 1].cue) out.push({ key: 'down', name: '下移', desc: '', used: 0, act: 'down' });
+    out.push({ key: 'clear', name: '清空', desc: '', used: 0, act: 'clear' });
   } else {
-    PROGS.forEach(c => { if (G.ownedProgs[c.key]) out.push({ key: c.key, name: c.name, desc: c.desc, used: 0 }); });
+    PROGS.forEach(c => { if (G.ownedProgs[c.key]) out.push({ key: c.key, name: c.name, desc: c.desc, used: 0, act: 'pick' }); });
   }
   return out;
 }
@@ -2024,8 +2164,14 @@ function backToSetup1() {
   G.s1.zone = 'grid';
   setScene('setup1');
 }
-function setup2Input() {
+function setup2Input(dt) {
   const s = G.s2;
+  G.editT += dt;
+  if (s.hold !== undefined) {   // 第 12 階段: 讓完成特效(0.6 秒)在這個畫面播完再進表演場, 期間不接輸入
+    s.hold += dt;
+    if (TUT.done[12] || s.hold >= 1.0) { delete s.hold; startShow(); }
+    return;
+  }
   if (s.panel) {
     const p = s.panel;
     if (pressed.up) { p.index = Math.max(0, p.index - 1); Snd.play('ui_move'); }
@@ -2034,9 +2180,23 @@ function setup2Input() {
     else if (pressed.z) {
       const o = p.options[p.index];
       if (p.layer === 'cue') {
-        if (o.key === 'clear') { clearRow(s.row); s.panel = null; s.row = Math.min(s.row, lastOpenRow()); Snd.play('ui_cancel'); return; }
-        if (o.used > 0) { Snd.play('ui_denied'); return; }   // 已排在別列
-        G.rows[s.row].cue = o.key;
+        const row = s.row;
+        if (o.act === 'clear') { ev('row_edit', { day: G.day, action: 'clear', row, other: -1, cue: '' }); clearRow(row); s.panel = null; s.row = Math.min(row, lastOpenRow()); Snd.play('ui_cancel'); return; }
+        if (o.act === 'denied') { Snd.play('ui_denied'); return; }   // 空列選已排在別列的暗號: 沒有暗號可以換過去
+        if (o.act === 'swap') {   // 兩列暗號互換, 各自的表演卡留在原列
+          const other = o.used - 1, tmp = G.rows[row].cue;
+          G.rows[row].cue = G.rows[other].cue; G.rows[other].cue = tmp;
+          ev('row_edit', { day: G.day, action: 'swap', row, other, cue: G.rows[row].cue });
+          s.panel = null; Snd.play('row_swap'); return;
+        }
+        if (o.act === 'up' || o.act === 'down') {   // 整列(暗號 + 表演卡)和上 / 下一列對調, 游標跟著這列
+          const other = o.act === 'up' ? row - 1 : row + 1, tmp = G.rows[row];
+          G.rows[row] = G.rows[other]; G.rows[other] = tmp;
+          s.row = other; s.col = 0;
+          ev('row_edit', { day: G.day, action: o.act, row, other, cue: G.rows[other].cue });
+          s.panel = null; Snd.play('row_swap'); return;
+        }
+        G.rows[row].cue = o.key;
       } else G.rows[s.row].prog = o.key;
       s.panel = null; Snd.play('ui_confirm');
     }
@@ -2046,7 +2206,11 @@ function setup2Input() {
   if (s.row === BTN_GO) {   // 「開演」
     if (pressed.up) { s.row = last; Snd.play('ui_move'); }
     else if (pressed.right) { s.row = BTN_BACK; Snd.play('ui_move'); }
-    else if (pressed.z) { Snd.play('ui_confirm'); startShow(); }
+    else if (pressed.z) {
+      Snd.play('ui_confirm');
+      if (TUT.cur && TUT.cur.id === 12 && TUT.cur.phase === 'show') { tut('go'); s.hold = 0; }   // 先播完成特效再開演
+      else startShow();
+    }
     else if (pressed.x) { backToSetup1(); }
     return;
   }
@@ -2062,7 +2226,7 @@ function setup2Input() {
   else if (pressed.left) { s.col = 0; Snd.play('ui_move'); }
   else if (pressed.right) { s.col = 1; Snd.play('ui_move'); }
   else if (pressed.x) {
-    if (s.col === 0) { if (G.rows[s.row].cue) { clearRow(s.row); s.row = Math.min(s.row, lastOpenRow()); Snd.play('ui_cancel'); } }
+    if (s.col === 0) { if (G.rows[s.row].cue) { ev('row_edit', { day: G.day, action: 'clear', row: s.row, other: -1, cue: '' }); clearRow(s.row); s.row = Math.min(s.row, lastOpenRow()); Snd.play('ui_cancel'); } }
     else Snd.play('ui_denied');   // 表演卡格沒有清空
   }
   else if (pressed.z) {
@@ -2085,7 +2249,7 @@ function startShow() {
   S = {
     tutorial, left: tutorial ? 30 : 45, total: tutorial ? 30 : 45, clock: 0, mons: [], hz: [], floats: [], banner: null,
     rows: G.rows.map(r => ({ cue: r.cue, prog: r.prog, complete: !!(r.cue && r.prog) })),
-    cur: -1, waitT: 0, sinceFire: 0, fires: 0, ev: { multi3: false }, satSince: 0,
+    cur: -1, waitT: 0, sinceFire: 0, fires: 0, ev: { multi3: false }, satSince: 0, curWait: 0, waitMax: 0, waitCue: '',
     move: null, rush: null, kegs: [], confs: [], rain: null,
     sat: 0, best: 0, performs: 0, angryPerforms: 0, loose: null,
     fences: { top: [], bottom: [] }, vis: { top: [], bottom: [] },
@@ -2101,7 +2265,7 @@ function startShow() {
   for (const b of roster) {
     const p = SHOW_POS[idx++];
     const m = {
-      sp: b.sp, num: b.num, x: p[0], y: p[1], rage: tutorial ? 75 : 65, marks: 0, markT: 0, markAdd: 0, slow: false,
+      sp: b.sp, num: b.num, x: p[0], y: p[1], rage: tutorial ? 75 : 60, marks: 0, markT: 0, markAdd: 0, slow: false,
       perfT: rnd(0.5, 2), perfAct: -1, relayT: -1, relayChain: 0, lastRelay: -99, frozen: 0, target: 0,
       fx: 'none', fxT: 0, progMove: false, knock: null, lastRam: -99, pd: null,
       ang: rnd(0, Math.PI * 2), dirT: rnd(0.5, 2), cyc: rnd(0, 1), tp: 0, tpT: 0, teleT: rnd(0, 2.5), swooping: false,
@@ -2113,9 +2277,9 @@ function startShow() {
   if (roster.length > G.maxOnStage) G.maxOnStage = roster.length;
   S.cur = S.rows.findIndex(r => r.complete);
   ev('setup_done', { day: G.day, roster: roster.map(b => ({ species: b.sp, num: b.num })), rows: G.rows.map(r => ({ cue: r.cue, program: r.prog })),
-    cuesOwned: Object.keys(G.ownedCues), programsOwned: Object.keys(G.ownedProgs) });
+    cuesOwned: Object.keys(G.ownedCues), programsOwned: Object.keys(G.ownedProgs), editT: +G.editT.toFixed(1) });
   Snd.play('show_start');
-  if (tutorial) tutForceSkip(11);   // 沒走完的布置階段收掉; 第 12 階段(開演)讓它在表演場播完成特效
+  if (tutorial) tutForceSkip(12);   // 沒走完的布置階段收掉(第 12 階段的完成特效已在布置畫面播完)
   setScene('show');
   // 熱度: 開演時直接依開演熱度定段
   S.heat = avgHeat(); S.heatMax = S.heat; S.tierIdx = tierOf(S.heat);
@@ -2170,7 +2334,7 @@ function perform(m, chain) {
   if (chain > G.bestChain) G.bestChain = chain;
   const cast = newCast(m, chain, false);
   cast.angry = isAngry(m);
-  if (cast.angry) { S.angryPerforms++; Snd.once('angry_perform'); if (!TUT.done[17]) { TUT.angryMon = m; tutTrig(17); } }
+  if (cast.angry) { S.angryPerforms++; Snd.once('angry_perform'); }
   Snd.once('perform');
   if (chain >= 2) Snd.once('chain', chain);
   const t = pickAim(m);
@@ -2491,15 +2655,17 @@ function nextComplete(from) {
 function updateProgram(dt) {
   if (S.cur < 0) return;
   S.sinceFire += dt;
-  if (S.waitT > 0) { S.waitT -= dt; if (S.waitT > 0) return; S.waitT = 0; }
+  if (S.waitT > 0) { S.waitT -= dt; S.curWait = 0; if (S.waitT > 0) return; S.waitT = 0; }   // 換列冷卻中: 等待秒數不計
   const row = S.rows[S.cur];
+  S.curWait += dt;   // 這列從輪到(冷卻結束)起已等的秒數
+  if (S.curWait > S.waitMax) { S.waitMax = S.curWait; S.waitCue = row.cue; }
   if (cueTrue(row.cue)) {
-    const idx = S.cur;
+    const idx = S.cur, waited = S.curWait;
     S.cur = nextComplete(S.cur);
-    S.waitT = 3.0; S.sinceFire = 0;   // 發動後 3 秒內不檢查暗號
+    S.waitT = 3.0; S.sinceFire = 0; S.curWait = 0;   // 發動後 3 秒內不檢查暗號
     S.ev = { multi3: false }; S.satSince = 0; S.fires++;
     const n = fireProgram(row);
-    ev('program_fire', { day: G.day, row: idx, cue: row.cue, program: row.prog, elapsed: +S.clock.toFixed(1), targets: n });
+    ev('program_fire', { day: G.day, row: idx, cue: row.cue, program: row.prog, elapsed: +S.clock.toFixed(1), targets: n, waited: +waited.toFixed(1) });
     Snd.play('cue_fire'); tut('fired');
   }
 }
@@ -2592,6 +2758,8 @@ function fireProgram(row) {
 
 function updateShow(dt) {
   if (S.loose) { updateLooseShow(dt); return; }
+  // 暫停式引導(第 13~16 階段): 見習表演開演 5.0 秒(表演時間)後暫停
+  if (S.tutorial && !TUT.done[13] && S.clock >= 5.0) { startGuide('show'); return; }
   S.clock += dt; S.left -= dt;
   { // 表演時鐘: 最後 5 秒每跨過整數秒滴答一聲(5、4、3、2、1)
     const c = Math.ceil(Math.max(0, S.left));
@@ -2624,11 +2792,12 @@ function finishShow(reason) {
     onStage: S.mons.length,
     heatAvg: S.heatDt > 0 ? Math.round(S.heatSum / S.heatDt) : Math.round(S.heat), heatMax: Math.round(S.heatMax),
     tierSec: { quiet: +S.tierSec[0].toFixed(1), clap: +S.tierSec[1].toFixed(1), cheer: +S.tierSec[2].toFixed(1), frenzy: +S.tierSec[3].toFixed(1) },
-    marksPeak: S.marksPeak, looseHeat: loose ? (S.looseHeat != null ? S.looseHeat : Math.round(S.heat)) : null };
+    marksPeak: S.marksPeak, looseHeat: loose ? (S.looseHeat != null ? S.looseHeat : Math.round(S.heat)) : null,
+    waitMax: +S.waitMax.toFixed(1), waitCue: S.waitCue };
   if (loose) { o.looseSpecies = L.m.sp; o.looseNum = L.m.num; o.looseX = Math.round(L.m.x); o.looseY = Math.round(L.m.y); }
   ev('show_end', o);
   if (!loose) Snd.play('show_end');
-  tutCutShow();   // 表演收場: 還在顯示的表演階段(13~17)直接算完成
+  tutCutShow();   // 表演收場: 還在顯示的表演泡泡(17、18)直接算完成
   S = null;
   checkUnlock();
   setScene('sresult');
@@ -2708,10 +2877,10 @@ function shopInput() {
 
 // ───────────────────────── 總結算 ─────────────────────────
 function toResult() {
-  const stars = G.rep >= 2600 ? 3 : G.rep >= 1600 ? 2 : G.rep >= 800 ? 1 : 0;
+  const stars = G.rep >= 4500 ? 3 : G.rep >= 3000 ? 2 : G.rep >= 1500 ? 1 : 0;
   RS = { t: 0, stars, shown: 0 };
   ev('game_end', { fame: G.rep, stars, goldEarned: G.goldEarned, bestChain: G.bestChain, days: G.log.slice(), bankSize: G.bank.length,
-    maxOnStage: G.maxOnStage, cards: G.cardsGot, boosts: G.boostsGot });
+    maxOnStage: G.maxOnStage, cards: G.cardsGot, boosts: G.boostsGot, keyDay: G.keyDay });
   downloadLog();
   setScene('result');
 }
@@ -2736,11 +2905,11 @@ function update(dt) {
     case 'prep': prepInput(dt); break;
     case 'select': selectInput(); break;
     case 'weapon': weaponInput(dt); break;
-    case 'dungeon': updateDungeon(dt); break;
+    case 'dungeon': if (GD) updateGuide(dt); else updateDungeon(dt); break;
     case 'dresult': dresultInput(); break;
-    case 'setup1': setup1Input(); break;
-    case 'setup2': setup2Input(); break;
-    case 'show': updateShow(dt); break;
+    case 'setup1': setup1Input(dt); break;
+    case 'setup2': setup2Input(dt); break;
+    case 'show': if (GD) updateGuide(dt); else updateShow(dt); break;
     case 'sresult': sresultInput(dt); break;
     case 'shop': shopInput(); break;
     case 'result': resultInput(dt); break;
@@ -2751,8 +2920,8 @@ function update(dt) {
   // 出口詢問框、拿到卡過場、下樓轉場、倒下動畫中泡泡也停在當下
   let tdt = dt;
   if (scene === 'dungeon' && D && (D.prompt || D.down || D.cardGet || D.floorFx)) tdt = 0;
-  tutUpdate(tdt);
-  Snd.duck(scene === 'dungeon' && !!D && !!(D.prompt || D.cardGet));
+  if (!GD) tutUpdate(tdt);   // 暫停式引導期間泡泡計時停住
+  Snd.duck(!!GD || (scene === 'dungeon' && !!D && !!(D.prompt || D.cardGet)));
 }
 
 // ───────────────────────── 繪製 ─────────────────────────
@@ -2762,7 +2931,7 @@ function hudMessage() {
     case 'select': return '[←][→] 選擇 [Z] 決定 [X] 返回';
     case 'weapon': return G.day === 0 ? '[Z] 出發' : '[←][→] 選擇 [Z] 決定 [X] 返回';
     case 'dungeon': {
-      if (D.down || D.cardGet || D.floorFx) return '';
+      if (D.down || D.cardGet || D.floorFx || GD) return '';
       if (D.quest && D.quest.phase !== 'bar') return '';   // 任務卡、縮小、任務完成期間沒有訊息
       if (D.prompt) return '[←][→] 選擇 [Z] 決定 [X] 留下';
       if (D.kegs.some(k => k.mode === 'fuse' && dist(k.x, k.y, D.tamer.x, D.tamer.y) <= 130 + 18)) return '爆炸桶要爆了 快跑!';
@@ -2845,7 +3014,7 @@ function renderDungeon() {
   }
   for (const c of D.chests) {
     const x = c.x - ox, y = c.y - oy; if (!onScr(x, y, 60)) continue;
-    Art.drawChest(ctx, { x, y, dungeon: st, open: c.open, openT: c.open ? Math.min(0.3, c.openT) : 0.3, openDur: 0.3 });
+    Art.drawChest(ctx, { x, y, dungeon: st, open: c.open, openT: c.open ? Math.min(0.3, c.openT) : 0.3, openDur: 0.3, key: !!c.isKey });
   }
   for (const t of D.trees) {
     const x = t.x - ox, y = t.y - oy; if (!onScr(x, y, 60)) continue;
@@ -2928,10 +3097,12 @@ function renderDungeon() {
   }
   if (D.cardGet) {
     const g = D.cardGet;
-    Art.drawCardGet(ctx, { kind: g.kind, key: g.key, name: cardName(g.key), desc: (CUE_BY[g.key] || PROG_BY[g.key]).desc, first: g.first,
+    const tip = g.kind === 'key' ? '下次出發時 可以去雪境冰窟了!' : (g.first ? '這是表演用的卡! 表演前排進節目單' : '');
+    Art.drawCardGet(ctx, { kind: g.kind, key: g.key, name: cardName(g.key), desc: cardInfo(g.key).desc, tip,
       t: Math.min(g.dur, g.t), dur: g.dur, ready: g.ready, fromX: g.fromX - ox, fromY: g.fromY - oy });
   }
   if (D.floorFx) Art.drawFloorFx(ctx, { floor: D.floorFx.n, floorMax: D.floorN, dungeonName: D.def.name, t: Math.min(1, D.floorFx.t), dur: 1.0 });
+  if (GD) renderGuide();   // 暫停式引導畫在最上層
 }
 
 function renderShow() {
@@ -2988,13 +3159,15 @@ function renderShow() {
     const r = S.rows[i], cur = i === S.cur;
     const waiting = cur && r.cue === 'wait' && S.waitT <= 0;
     Art.drawCueRow(ctx, { x: 322 + 212 * i, y: 691, style: 'mini', index: i, cue: r.cue, program: r.prog, complete: r.complete, selCell: -1,
-      current: cur, t: waiting ? Math.min(6, S.sinceFire) : 0, dur: waiting ? 6 : 0, switching: cur && S.waitT > 0, locked: false, blocked: false, programOpen: true });
+      current: cur, t: waiting ? Math.min(6, S.sinceFire) : 0, dur: waiting ? 6 : 0, switching: cur && S.waitT > 0, locked: false, blocked: false, programOpen: true,
+      waitT: cur && S.waitT <= 0 ? S.curWait : 0, waitWarn: 10 });
   }
   for (const f of S.floats) Art.drawFloatText(ctx, { x: f.x, y: f.y - (STATIC_FLOAT[f.kind] ? 0 : f.t * 30), text: f.text, kind: f.kind, t: f.t, dur: f.dur });
   Art.drawHud(ctx, hudState());
   Art.drawHeatMeter(ctx, { x: 640, y: 25, heat: S.heat, tier: TIERS[S.tierIdx], t: S.clock, tierT: Math.min(0.4, S.tierT), tierDur: 0.4, looseLine: LOOSE_LINE });
-  Art.drawShowClock(ctx, { x: 900, y: 25, timeLeft: Math.max(0, S.left), timeMax: S.total, running: !L });
+  Art.drawShowClock(ctx, { x: 900, y: 25, timeLeft: Math.max(0, S.left), timeMax: S.total, running: !L && !GD });
   renderTutorial('all');
+  if (GD) renderGuide();   // 暫停式引導畫在最上層
 }
 
 function bankSlotState(b, x, y, selected) {
@@ -3020,6 +3193,7 @@ function renderSetup1() {
   if (G.day !== 0) Art.drawButton(ctx, { x: 960, y: 570, w: 220, h: 70, label: '回上一頁', selected: s.zone === 'back' });
   for (const f of UI.floats) Art.drawFloatText(ctx, { x: f.x, y: f.y - (f.kind === 'hint' ? 0 : f.t * 30), text: f.text, kind: f.kind, t: f.t, dur: f.dur });
   Art.drawHud(ctx, hudState());
+  Art.drawStageCount(ctx, { x: 640, y: 25, count: stageCount(), max: stageLimit(), popT: Math.min(0.3, G.stagePopT), popDur: 0.3 });
   renderTutorial('all');
 }
 function renderSetup2() {
@@ -3028,7 +3202,7 @@ function renderSetup2() {
   for (let i = 0; i < ROWS; i++) {
     const r = G.rows[i], stt = rowState(i), locked = stt === 'locked';
     Art.drawCueRow(ctx, { x: 380, y: 100 + 78 * i, style: 'row', index: i, cue: locked ? '' : r.cue, program: locked ? '' : r.prog, complete: !locked && !!(r.cue && r.prog),
-      selCell: s.row === i ? s.col : -1, current: false, t: 0, dur: 0, switching: false, locked, blocked: stt === 'blocked', programOpen: !!r.cue });
+      selCell: s.row === i ? s.col : -1, current: false, t: 0, dur: 0, switching: false, locked, blocked: stt === 'blocked', programOpen: !!r.cue, waitT: 0, waitWarn: 10 });
   }
   Art.drawButton(ctx, { x: 160, y: 410, w: 200, h: 70, label: '開演', selected: s.row === BTN_GO });
   Art.drawButton(ctx, { x: 400, y: 410, w: 200, h: 70, label: '返回上一步', selected: s.row === BTN_BACK });
@@ -3075,13 +3249,13 @@ function render() {
       Art.drawBackground(ctx, bgState('select'));
       DUNGEON_ORDER.forEach((id, i) => Art.drawDungeonCard(ctx, { x: 400 + 480 * i, y: 390, dungeon: id, name: DUNGEONS[id].name, floors: DUNGEONS[id].floors.length,
         species: DUNGEONS[id].species.slice(), chestsLeft: leftCount(id, 'chests'), boostsLeft: leftCount(id, 'boosts'),
-        open: !!G.unlocked[id], condition: G.unlocked[id] ? '' : '在湖畔鐘塔第 2 層找到出口', selected: i === SEL.cur }));
+        open: !!G.unlocked[id], condition: G.unlocked[id] ? '' : '在湖畔鐘塔第 2 層的寶箱找到鑰匙', selected: i === SEL.cur }));
       Art.drawHud(ctx, hudState());
       break;
     case 'weapon': {
       Art.drawBackground(ctx, bgState('weapon'));
       Art.drawWeaponSelect(ctx, { options: WS.opts.map(o => ({ key: o.key, name: o.name, line: o.line, last: o.last })), index: WS.idx,
-        stats: { hearts: G.heartMax, ropes: WS.id === 'meadow' ? 3 : G.ropeMax, atk: G.atk }, t: WS.t, tutorial: G.day === 0 });
+        stats: { hearts: G.heartMax, ropes: WS.id === 'meadow' ? 3 : G.ropeMax, power: 2 + G.atk }, t: WS.t, tutorial: G.day === 0 });
       Art.drawHud(ctx, hudState());
       renderTutorial('all');
       break;

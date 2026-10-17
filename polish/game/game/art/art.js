@@ -1,4 +1,4 @@
-// 來馬戲團看一點大場面(打磨版第 8 輪)— 美術(Canvas 2D 幾何繪製, 無外部資源)
+// 來馬戲團看一點大場面(打磨版第 9 輪)— 美術(Canvas 2D 幾何繪製, 無外部資源)
 // 契約見 style.md / interface.json。全域物件 window.Art, 不用 ES module。
 (function () {
   'use strict';
@@ -147,7 +147,16 @@
     ctx.save(); ctx.font = (o.weight || 'bold') + ' ' + size + 'px ' + FONT;
     for (var i = 0; i < toks.length; i++) {
       var t = toks[i];
-      if (t.k === 'key') { var kw = keyW(t.s, kh); keyCap(ctx, t.s, cx + 2 + kw / 2, y, kh); cx += kw + 4; }
+      if (t.k === 'key') {
+        var kw = keyW(t.s, kh), kx = cx + 2 + kw / 2;
+        // 第 9 輪: o.xCd(0~1, X 技冷卻剩餘比例)> 0 時 [X] 鍵帽畫暗 + 深色冷卻扇形(地下城 HUD 按鍵提示; 取代舊武器框裡的 X)
+        if (t.s === 'X' && o.xCd > 0) {
+          ctx.save(); ctx.globalAlpha *= 0.5; keyCap(ctx, t.s, kx, y, kh); ctx.restore();
+          ctx.beginPath(); ctx.moveTo(kx, y); ctx.arc(kx, y, kh * 0.46, -Math.PI / 2, -Math.PI / 2 + TAU * clamp(o.xCd, 0, 1)); ctx.closePath();
+          ctx.fillStyle = 'rgba(10,13,20,0.72)'; ctx.fill();
+        } else keyCap(ctx, t.s, kx, y, kh);
+        cx += kw + 4;
+      }
       else if (t.k === 'tag') {
         var tw = ctx.measureText(t.s).width + 18;
         rr(ctx, cx + 2, y - size * 0.68, tw - 4, size * 1.36, size * 0.5); ctx.fillStyle = o.tagCol; ctx.fill();
@@ -258,7 +267,7 @@
     spear: { name: '長槍', desc: '[Z] 長刺 [X] 突進', kind: 'weapon' }
   };
   // 強化石碑 / 戰利品的種類
-  var BOOST = { heart: { name: '心上限 +1', color: '#ff5d7a' }, rope: { name: '捕捉繩 +1', color: '#f0e2b8' }, atk: { name: '攻擊力 +1', color: '#ffd24a' } };
+  var BOOST = { heart: { name: '血量上限 +1', color: '#ff5d7a' }, rope: { name: '捕捉繩 +1', color: '#f0e2b8' }, atk: { name: '攻擊力 +1', color: '#ffd24a' } };
 
   // ───────────── 魔物剪影(種類辨識主通道 = 剪影) ─────────────
   // 在 (0,0) 畫, 身體圓半徑 R; 配件最遠 1.15R(戲法狸尾巴 1.6R)
@@ -812,6 +821,33 @@
     }
     ctx.restore();
   }
+  // 雪花紋(第 9 輪; 鑰匙寶箱、鑰匙卡面): 6 支圓頭短線 + 每支兩根小分岔; r = 半徑
+  function snowflake(ctx, x, y, r, col, lw) {
+    ctx.save(); ctx.translate(x, y); ctx.lineCap = 'round'; ctx.strokeStyle = col || '#ffffff'; ctx.lineWidth = lw || Math.max(1, r * 0.18);
+    ctx.beginPath();
+    for (var i = 0; i < 6; i++) {
+      var a = i * Math.PI / 3, ca = Math.cos(a), sa = Math.sin(a);
+      ctx.moveTo(0, 0); ctx.lineTo(ca * r, sa * r);
+      var bx = ca * r * 0.55, by = sa * r * 0.55, b1 = a + 0.7, b2 = a - 0.7;
+      ctx.moveTo(bx, by); ctx.lineTo(bx + Math.cos(b1) * r * 0.35, by + Math.sin(b1) * r * 0.35);
+      ctx.moveTo(bx, by); ctx.lineTo(bx + Math.cos(b2) * r * 0.35, by + Math.sin(b2) * r * 0.35);
+    }
+    ctx.stroke(); ctx.restore();
+  }
+  // 金色鑰匙(第 9 輪; 地下城結算戰利品、拿到鑰匙卡面): 圓環頭 + 鑰匙桿 + 兩齒; 以 (x,y) 為中心, s = 半長, 斜放 −35°
+  function keyGlyph(ctx, x, y, s, col) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(-0.6); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    function shape() {
+      ctx.beginPath(); ctx.arc(-s * 0.55, 0, s * 0.42, 0, TAU);
+      ctx.moveTo(-s * 0.13, 0); ctx.lineTo(s, 0);
+      ctx.moveTo(s * 0.78, 0); ctx.lineTo(s * 0.78, s * 0.32);
+      ctx.moveTo(s * 0.52, 0); ctx.lineTo(s * 0.52, s * 0.24);
+    }
+    shape(); ctx.strokeStyle = P.outline; ctx.lineWidth = Math.max(3, s * 0.36); ctx.stroke();
+    shape(); ctx.strokeStyle = col || P.boost; ctx.lineWidth = Math.max(1.6, s * 0.2); ctx.stroke();
+    circle(ctx, -s * 0.55, 0, s * 0.16); ctx.fillStyle = P.outline; ctx.fill();
+    ctx.restore();
+  }
   // 寶箱小圖示(地下城卡「寶箱 剩 N」、地下城結算戰利品): 金邊木箱
   function chestIcon(ctx, x, y, s, open) {
     ctx.save(); ctx.translate(x, y); ctx.lineJoin = 'round';
@@ -1108,16 +1144,26 @@
     var d = dunKey(s.dungeon), open = B(s.open);
     var od = N(s.openDur, 0.3) > 0 ? N(s.openDur, 0.3) : 0.3, ot = clamp(N(s.openT, od), 0, od);
     var anim = open && ot < od, q = anim ? ot / od : (open ? 1 : 0);
-    var wood = d === 'tower' ? '#5a4a3e' : (d === 'snow' ? '#7a98b8' : '#9a5e2e');
-    var lidC = d === 'tower' ? '#6e5a4a' : (d === 'snow' ? '#9cbad6' : '#b8743a');
-    var band = d === 'tower' ? '#9aa2b0' : '#ffd24a';
+    var isKey = B(s.key);
+    var wood = isKey ? '#d9a62e' : (d === 'tower' ? '#5a4a3e' : (d === 'snow' ? '#7a98b8' : '#9a5e2e'));
+    var lidC = isKey ? '#f2c444' : (d === 'tower' ? '#6e5a4a' : (d === 'snow' ? '#9cbad6' : '#b8743a'));
+    var band = isKey ? '#fff2b8' : (d === 'tower' ? '#9aa2b0' : '#ffd24a');
     var tt = now() / 1000;
     ctx.translate(N(s.x, 0), N(s.y, 0));
+    // 鑰匙寶箱(第 9 輪): 關著時外圍一圈靜態金色光暈(keyGlow 76×76, 半徑 38; 沒有時間欄位, 不脈動)
+    if (isKey && !open) {
+      var kg = ctx.createRadialGradient(0, 6, 12, 0, 6, 32);
+      kg.addColorStop(0, 'rgba(255,226,122,0.55)'); kg.addColorStop(1, 'rgba(255,226,122,0)');
+      circle(ctx, 0, 6, 32); ctx.fillStyle = kg; ctx.fill();
+      circle(ctx, 0, 0, 36.5); ctx.strokeStyle = 'rgba(255,226,122,0.8)'; ctx.lineWidth = 2.5; ctx.stroke();
+      circle(ctx, 0, 0, 36.5); ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 1; ctx.stroke();
+    }
     ell(ctx, 0, 21, 22, 5, 0); ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fill();
     // 箱身 44×26(x −22~22、y −4~22)
-    rr(ctx, -22, -4, 44, 26, 4); ctx.fillStyle = wood; ctx.fill(); ctx.strokeStyle = P.outline; ctx.lineWidth = 2; ctx.stroke();
+    rr(ctx, -22, -4, 44, 26, 4); ctx.fillStyle = wood; ctx.fill(); ctx.strokeStyle = isKey ? '#5a3a00' : P.outline; ctx.lineWidth = 2; ctx.stroke();
     ctx.fillStyle = band; ctx.fillRect(-22, 4, 44, 3); ctx.fillRect(-14, -4, 4, 26); ctx.fillRect(10, -4, 4, 26);
-    if (d === 'snow') { ctx.fillStyle = 'rgba(255,255,255,0.75)'; ell(ctx, -8, -3, 9, 2.5, 0); ctx.fill(); }
+    if (isKey) snowflake(ctx, 0, 14, 6.5, '#ffffff', 1.6);
+    if (d === 'snow' && !isKey) { ctx.fillStyle = 'rgba(255,255,255,0.75)'; ell(ctx, -8, -3, 9, 2.5, 0); ctx.fill(); }
     if (q > 0) {
       // 箱口(暗)+ 開蓋當下的光
       ell(ctx, 0, -4, 20, 4, 0); ctx.fillStyle = '#140c08'; ctx.fill();
@@ -2013,11 +2059,34 @@
     panel(ctx, -420, -85, 840, 170, 12);
     circle(ctx, -340, 0, 48); ctx.fillStyle = '#141925'; ctx.fill(); ctx.strokeStyle = P.line; ctx.lineWidth = 2; ctx.stroke();
     ctx.save(); ctx.translate(-340 + (sp === 'tanuki' ? 9 : 0), 0); paintSpecies(ctx, sp, sp === 'tanuki' ? 30 : 36, {}); ctx.restore();
-    T(ctx, SP[sp].name + ' ' + Math.max(0, Math.floor(N(s.num, 1))) + ' 號', -270, -52, { size: 26, align: 'left', maxW: 660 });
+    // 第 9 輪: 「上台 total / totalMax」拿掉(改由 drawStageCount 畫在畫面正上方), 標題與說明整組往中間靠
+    T(ctx, SP[sp].name + ' ' + Math.max(0, Math.floor(N(s.num, 1))) + ' 號', -270, -38, { size: 26, align: 'left', maxW: 660 });
     var eff = effKey(S(s.effect, '')) || SP[sp].effect;
-    richDesc(ctx, S(s.desc, ''), -270, -8, 660, 19, 30, 2, EFF_TAG[eff] || P.special);
-    var tot = Math.max(0, Math.floor(N(s.total, 0))), mx = Math.max(1, Math.floor(N(s.totalMax, 20)));
-    T(ctx, '上台 ' + tot + ' / ' + mx, -270, 58, { size: 20, align: 'left', color: tot >= mx ? P.select : P.text });
+    richDesc(ctx, S(s.desc, ''), -270, 8, 660, 19, 30, 2, EFF_TAG[eff] || P.special);
+  }
+  // 選上台頁的上台數區塊(第 9 輪新增): 300×44 以 (x,y) 為中心(RD 固定傳 (640,25), x 490~790、y 3~47, 在 HUD 帶內)
+  // 有框的獨立一塊: 左邊小字「上台」+ 小魔物頭像; 右邊大字「{count} / {max}」(count 30px 比 max 大); count = max 時整塊轉金色; 數字變動時 count 彈一下 1.0 → 1.3 → 1.0
+  function drawStageCount(ctx, s) {
+    var cnt = Math.max(0, Math.floor(N(s.count, 0))), mx = Math.max(1, Math.floor(N(s.max, 20)));
+    var full = cnt >= mx;
+    var pd = N(s.popDur, 0.3) > 0 ? N(s.popDur, 0.3) : 0.3, pt = clamp(N(s.popT, pd), 0, pd);
+    var pq = pt / pd, pop = pq < 1 ? 1 + 0.3 * Math.sin(Math.PI * pq) : 1;
+    ctx.translate(N(s.x, 640), N(s.y, 25));
+    // 底板佔滿 300×44(框線收在內), 不縮放; 只有數字彈
+    rr(ctx, -149, -21, 298, 42, 12); ctx.fillStyle = full ? '#3a2e10' : '#1e2536'; ctx.fill();
+    ctx.strokeStyle = full ? P.select : ONSTAGE; ctx.lineWidth = 2; ctx.stroke();
+    if (full) { ctx.save(); ctx.shadowColor = 'rgba(255,210,74,0.6)'; ctx.shadowBlur = 8; rr(ctx, -147, -19, 294, 38, 11); ctx.strokeStyle = 'rgba(255,210,74,0.5)'; ctx.lineWidth = 1.5; ctx.stroke(); ctx.restore(); }
+    // 左: 小頭像(怪物庫格同一個上台勾的淺青框)+「上台」
+    circle(ctx, -122, 0, 15); ctx.fillStyle = '#141925'; ctx.fill(); ctx.strokeStyle = full ? P.select : ONSTAGE; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.save(); ctx.translate(-122, 1); paintSpecies(ctx, 'monkey', 10, { dir: 1 }); ctx.restore();
+    T(ctx, '上台', -96, 0, { size: 17, align: 'left', color: full ? '#ffe9a0' : '#c8d0e0' });
+    // 右: 大字 count + 「/ max」
+    ctx.save(); ctx.font = 'bold 30px ' + FONT; var cw = ctx.measureText(String(cnt)).width; ctx.font = 'bold 20px ' + FONT; var mw = ctx.measureText(' / ' + mx).width; ctx.restore();
+    var right = 128, mx0 = right - mw, ccx = mx0 - cw / 2 - 2;
+    T(ctx, ' / ' + mx, mx0, 3, { size: 20, align: 'left', color: full ? '#ffe9a0' : P.textDim });
+    ctx.save(); ctx.translate(ccx, 1); ctx.scale(pop, pop);
+    T(ctx, String(cnt), 0, 0, { size: 30, color: full ? P.select : '#ffffff', strokeW: 5 });
+    ctx.restore();
   }
   // 怪物庫捲動記號 40×14: 圓角小三角
   function drawScrollMark(ctx, s) {
@@ -2046,26 +2115,42 @@
       rr(ctx, -100, -23, 200, 46, 8); ctx.fillStyle = cur ? '#2c3550' : '#1c2130'; ctx.fill();
       ctx.strokeStyle = '#3a4256'; ctx.lineWidth = 1.5; ctx.stroke();
       var a = complete ? 1 : 0.35;
-      if (cue) iconCue(ctx, cue, -55, -2, 14, a); else iconCue(ctx, '', -55, -2, 12, 1);
-      if (prog) iconProg(ctx, prog, 55, -2, 14, a); else iconProg(ctx, '', 55, -2, 12, 1);
+      // 第 9 輪: 目前這列(current)在暗號圖示旁寫暗號名(13px, 最多 6 字): 左半 = 圖示 + 名, 右半 = 表演卡圖示; 其他格照舊只畫圖示
+      var named = cur && !!cue;
+      var ax0 = named ? 18 : -14, ax1 = named ? 40 : 12;
+      if (named) {
+        iconCue(ctx, cue, -84, -2, 11, a);
+        T(ctx, CUE[cue], -72, -2, { size: 13, align: 'left', color: '#d8f4fa', maxW: 86 });
+        if (prog) iconProg(ctx, prog, 68, -2, 13, a); else iconProg(ctx, '', 68, -2, 11, 1);
+      } else {
+        if (cue) iconCue(ctx, cue, -55, -2, 14, a); else iconCue(ctx, '', -55, -2, 12, 1);
+        if (prog) iconProg(ctx, prog, 55, -2, 14, a); else iconProg(ctx, '', 55, -2, 12, 1);
+      }
       if (sw && cur) {
-        T(ctx, '…', 0, -6, { size: 26, color: '#ffffff' });
+        T(ctx, '…', named ? 29 : 0, -6, { size: 26, color: '#ffffff' });
       } else {
         ctx.save(); ctx.globalAlpha *= a; ctx.strokeStyle = '#d0d8e8'; ctx.lineWidth = 2; ctx.lineCap = 'round';
-        ctx.beginPath(); ctx.moveTo(-14, -2); ctx.lineTo(12, -2); ctx.moveTo(6, -7); ctx.lineTo(12, -2); ctx.lineTo(6, 3); ctx.stroke(); ctx.restore();
+        ctx.beginPath(); ctx.moveTo(ax0, -2); ctx.lineTo(ax1, -2); ctx.moveTo(ax1 - 6, -7); ctx.lineTo(ax1, -2); ctx.lineTo(ax1 - 6, 3); ctx.stroke(); ctx.restore();
       }
       if (cur && !sw && cue === 'wait' && N(s.dur, 0) > 0) {
         var f = p01(s.t, s.dur);
         ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(-92, 15, 184, 5);
         ctx.fillStyle = P.cue; ctx.fillRect(-92, 15, 184 * f, 5);
       }
-      if (cur) selectFrame(ctx, -100, -23, 200, 46, 8);
+      // 等太久(waitT ≥ waitWarn, 預設 10 秒): 目前列的框轉橘色並脈動(週期 0.8 秒, 相位用 waitT), 取代金色目前列框
+      var wt = N(s.waitT, 0), ww = N(s.waitWarn, 10) > 0 ? N(s.waitWarn, 10) : 10;
+      if (cur && !sw && wt >= ww) {
+        var wp2 = 0.5 + 0.5 * Math.cos(TAU * (wt - ww) / 0.8);
+        rr(ctx, -98, -21, 196, 42, 7); ctx.fillStyle = 'rgba(255,154,58,' + (0.08 + 0.14 * wp2).toFixed(3) + ')'; ctx.fill();
+        ctx.save(); ctx.shadowColor = 'rgba(255,154,58,' + (0.5 + 0.4 * wp2).toFixed(2) + ')'; ctx.shadowBlur = 6 + 8 * wp2;
+        rr(ctx, -98, -21, 196, 42, 7); ctx.strokeStyle = '#ff9a3a'; ctx.lineWidth = 2.5 + 1.5 * wp2; ctx.stroke(); ctx.restore();
+      } else if (cur) selectFrame(ctx, -100, -23, 200, 46, 8);
       return;
     }
     // row
     var idx = clamp(Math.floor(N(s.index, 0)), 0, 3);
     if (B(s.locked)) {
-      // 暗號不夠(第 8 輪): 整列暗 + 實線框 + 鎖頭 +「再拿到暗號就能多排一列」, 不畫格子內容
+      // 暗號不夠: 整列暗 + 實線框 + 鎖頭 +「待解鎖」(第 9 輪改短), 不畫格子內容
       rr(ctx, -340, -32, 680, 64, 10); ctx.fillStyle = '#12151d'; ctx.fill();
       ctx.strokeStyle = '#2c3344'; ctx.lineWidth = 2; ctx.stroke();
       T(ctx, '第 ' + (idx + 1) + ' 個', -295, 0, { size: 18, color: '#4e5668' });
@@ -2073,7 +2158,7 @@
       ctx.strokeStyle = '#7a8296'; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.arc(0, -7, 8, Math.PI, 0); ctx.stroke();
       rr(ctx, -11, -7, 22, 17, 4); ctx.fillStyle = '#7a8296'; ctx.fill();
       ctx.restore();
-      T(ctx, '再拿到暗號就能多排一列', -172, 0, { size: 19, align: 'left', color: '#7a8296', maxW: 480 });
+      T(ctx, '待解鎖', -172, 0, { size: 19, align: 'left', color: '#7a8296', maxW: 480 });
       return;
     }
     if (B(s.blocked)) {
@@ -2118,7 +2203,7 @@
   function drawPickerPanel(ctx, s) {
     var layer = S(s.layer, 'cue') === 'program' ? 'program' : 'cue';
     var opts = Array.isArray(s.options) ? s.options : [];
-    var n = Math.min(8, opts.length), idx = Math.floor(N(s.index, 0)), RH = 44;
+    var n = Math.min(10, opts.length), idx = Math.floor(N(s.index, 0)), RH = 44;
     var accent = layer === 'cue' ? P.cue : P.program;
     var X = 760, W = 460, Y = 60;
     ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 16;
@@ -2126,28 +2211,65 @@
     rr(ctx, X, Y, W, 50 + RH * n, 12); ctx.strokeStyle = accent; ctx.lineWidth = 2; ctx.stroke();
     ctx.save(); rr(ctx, X, Y, W, 50, 12); ctx.clip(); ctx.fillStyle = accent; ctx.globalAlpha = 0.28; ctx.fillRect(X, Y, W, 50); ctx.restore();
     T(ctx, layer === 'cue' ? '什麼時候?' : '演什麼?', X + 24, Y + 25, { size: 22, align: 'left', color: '#ffffff' });
+    var sepDone = false;
     for (var i = 0; i < n; i++) {
       var o = opts[i] || {}, ry = 110 + RH * i, cy = ry + RH / 2;
       var key = S(o.key, '');
-      if (i > 0) { ctx.fillStyle = '#2c3446'; ctx.fillRect(X + 12, ry, W - 24, 1); }
-      // 已排在別列的暗號(第 8 輪): 整行畫灰 + 右側「第 N 列」小膠囊, 選它不反應
-      var used = layer === 'cue' && key !== 'clear' ? Math.max(0, Math.floor(N(o.used, 0))) : 0;
-      ctx.save(); if (used > 0) ctx.globalAlpha *= 0.4;
-      if (key === 'clear') iconProg(ctx, 'clear', X + 32, cy, 12, 1);
+      // 第 9 輪: 每行的動作 act(pick 填入 | swap 互換 | denied 不行 | up 上移 | down 下移 | clear 清空); 沒傳時照舊推(key 本身 / used > 0 = denied)
+      var used = layer === 'cue' ? Math.max(0, Math.floor(N(o.used, 0))) : 0;
+      var act = S(o.act, '');
+      if (!PICK_ACT[act]) act = (key === 'up' || key === 'down' || key === 'clear') ? key : (used > 0 ? 'denied' : 'pick');
+      if (layer !== 'cue' && act !== 'pick') act = 'pick';
+      var tool = act === 'up' || act === 'down' || act === 'clear';
+      if (i > 0) {
+        // 暗號行 → 上移 / 下移 / 清空 之間畫一條較亮的分隔線(工具行和卡片行分開); 其他行之間照舊細線
+        if (tool && !sepDone) { ctx.fillStyle = '#56607a'; ctx.fillRect(X + 12, ry - 1, W - 24, 2); }
+        else { ctx.fillStyle = '#2c3446'; ctx.fillRect(X + 12, ry, W - 24, 1); }
+      }
+      if (tool) sepDone = true;
+      var deny = act === 'denied', swap = act === 'swap' && used > 0;
+      ctx.save(); if (deny) ctx.globalAlpha *= 0.4;
+      if (act === 'up' || act === 'down') pickArrow(ctx, X + 32, cy, act === 'up');
+      else if (act === 'clear') iconProg(ctx, 'clear', X + 32, cy, 12, 1);
       else if (layer === 'cue') iconCue(ctx, CUE[key] ? key : '', X + 32, cy, 13, 1);
       else iconProg(ctx, PROG[key] ? key : '', X + 32, cy, 13, 1);
-      var desc = S(o.desc, ''), tw = used > 0 ? 300 : 384;
+      var nm = S(o.name, '') || PICK_NAME[act] || '';
+      var desc = tool ? '' : S(o.desc, ''), tw = deny ? 300 : (swap ? 236 : 384);
       if (desc) {
-        T(ctx, S(o.name, ''), X + 58, cy - 9, { size: 17, align: 'left', maxW: tw, color: used > 0 ? P.textDim : P.text });
+        T(ctx, nm, X + 58, cy - 9, { size: 17, align: 'left', maxW: tw, color: deny ? P.textDim : P.text });
         T(ctx, desc, X + 58, cy + 11, { size: 13, align: 'left', color: P.textDim, maxW: tw });
-      } else T(ctx, S(o.name, ''), X + 58, cy, { size: 18, align: 'left', color: (key === 'clear' || used > 0) ? P.textDim : P.text, maxW: tw });
+      } else T(ctx, nm, X + 58, cy, { size: 18, align: 'left', color: (act === 'clear' || deny) ? P.textDim : (tool ? '#e0e8f4' : P.text), maxW: tw });
       ctx.restore();
-      if (used > 0) {
+      if (deny && used > 0) {
         rr(ctx, X + W - 88, cy - 12, 74, 24, 12); ctx.fillStyle = '#2c3446'; ctx.fill(); ctx.strokeStyle = '#5a6274'; ctx.lineWidth = 1.5; ctx.stroke();
         T(ctx, '第 ' + used + ' 列', X + W - 51, cy + 0.5, { size: 14, color: '#c8d0e0', maxW: 66 });
+      } else if (swap) {
+        // 互換: 亮的青框膠囊「⇄ 和第 N 列交換」(一般亮度, 選得到)
+        rr(ctx, X + W - 158, cy - 13, 144, 26, 13); ctx.fillStyle = '#16323a'; ctx.fill(); ctx.strokeStyle = P.cue; ctx.lineWidth = 1.5; ctx.stroke();
+        swapArrows(ctx, X + W - 140, cy);
+        T(ctx, '和第 ' + used + ' 列交換', X + W - 126, cy + 0.5, { size: 14, align: 'left', color: '#d8f4fa', maxW: 106 });
       }
       if (i === idx) selectFrame(ctx, X + 4, ry + 1, W - 8, RH - 2, 8);
     }
+  }
+  var PICK_ACT = { pick: 1, swap: 1, denied: 1, up: 1, down: 1, clear: 1 };
+  var PICK_NAME = { up: '上移', down: '下移', clear: '清空' };
+  // 上移 / 下移小圖示: 圓角方塊 + 粗箭頭(和節目單列一樣的淡白線)
+  function pickArrow(ctx, x, y, up) {
+    ctx.save(); ctx.translate(x, y);
+    rr(ctx, -12, -12, 24, 24, 6); ctx.fillStyle = '#2a3246'; ctx.fill(); ctx.strokeStyle = '#7a86a0'; ctx.lineWidth = 1.5; ctx.stroke();
+    if (!up) ctx.scale(1, -1);
+    ctx.strokeStyle = '#e8eef8'; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(0, 7); ctx.lineTo(0, -6); ctx.moveTo(-6, 0); ctx.lineTo(0, -6); ctx.lineTo(6, 0); ctx.stroke();
+    ctx.restore();
+  }
+  // 雙向箭頭(互換): 上箭頭朝右、下箭頭朝左
+  function swapArrows(ctx, x, y) {
+    ctx.save(); ctx.translate(x, y); ctx.strokeStyle = P.cue; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-7, -3.5); ctx.lineTo(7, -3.5); ctx.moveTo(3.5, -7); ctx.lineTo(7, -3.5); ctx.lineTo(3.5, 0);
+    ctx.moveTo(7, 3.5); ctx.lineTo(-7, 3.5); ctx.moveTo(-3.5, 0); ctx.lineTo(-7, 3.5); ctx.lineTo(-3.5, 7);
+    ctx.stroke(); ctx.restore();
   }
 
   // ───────────── 表演場 ─────────────
@@ -2748,7 +2870,7 @@
       var items = [], totW = 0;
       for (var li = 0; li < loot.length; li++) {
         var lo = loot[li] || {}, kd = S(lo.kind, '');
-        var nm = S(lo.name, '') || (BOOST[kd] ? BOOST[kd].name : (kd === 'cue' ? (CUE[lo.key] || '暗號') : (PROG[lo.key] || '表演卡')));
+        var nm = S(lo.name, '') || (BOOST[kd] ? BOOST[kd].name : (kd === 'key' ? '雪境冰窟的鑰匙' : (kd === 'cue' ? (CUE[lo.key] || '暗號') : (PROG[lo.key] || '表演卡'))));
         var w = Math.min(150, ctx.measureText(nm).width) + 34;
         items.push({ kd: kd, key: S(lo.key, ''), nm: nm, w: w }); totW += w + 16;
       }
@@ -2759,9 +2881,10 @@
       for (var lj = 0; lj < items.length; lj++) {
         var itm = items[lj];
         if (BOOST[itm.kd]) boostGlyph(ctx, itm.kd, lx + 12, 0, 10, BOOST[itm.kd].color);
+        else if (itm.kd === 'key') keyGlyph(ctx, lx + 12, 0, 11, P.boost);
         else if (itm.kd === 'cue') { rr(ctx, lx, -13, 24, 26, 5); ctx.fillStyle = '#16323a'; ctx.fill(); ctx.strokeStyle = P.cue; ctx.lineWidth = 1.5; ctx.stroke(); iconCue(ctx, CUE[itm.key] ? itm.key : '', lx + 12, 0, 9, 1); }
         else { rr(ctx, lx, -13, 24, 26, 5); ctx.fillStyle = '#3a1a2c'; ctx.fill(); ctx.strokeStyle = P.program; ctx.lineWidth = 1.5; ctx.stroke(); iconProg(ctx, PROG[itm.key] ? itm.key : '', lx + 12, 0, 9, 1); }
-        T(ctx, itm.nm, lx + 32, 0, { size: 18, align: 'left', color: BOOST[itm.kd] ? P.boost : (itm.kd === 'cue' ? P.cue : P.program), maxW: 150 });
+        T(ctx, itm.nm, lx + 32, 0, { size: 18, align: 'left', color: (BOOST[itm.kd] || itm.kd === 'key') ? P.boost : (itm.kd === 'cue' ? P.cue : P.program), maxW: 150 });
         lx += itm.w + 16;
       }
       ctx.restore();
@@ -2774,52 +2897,53 @@
   }
 
   // ───────────── 選武器畫面(第 8 輪新增, 取代換武器視窗) ─────────────
-  // 標題「帶哪把武器?」(640,95); 能力列「心 N · 捕捉繩 N · 攻擊力 +N」(640,150)(600×30 內, 每項前面一個強化圖案 = 石碑上刻的同一個圖);
-  // 卡片 300×380, 第 i 張中心 x = 640 + 340 ×(i − (n−1)/2)、y 380: 大圓底 + 武器圖示、名稱、用法(含鍵帽)、上次帶的那把卡頂萊姆膠囊「上次用」
-  // 選中 = 亮底 + 金框(游標)+ 放大 1.075 倍(322.5×408.5, 在 324×410 內)+ 金框外光呼吸; 進場 0~0.3 秒卡片依序由 0.9 倍淡入(只縮不放)
+  // 標題「帶哪把武器?」(640,95); 第 9 輪: 左邊能力面板(血量 / 捕捉繩 / 攻擊力 = 文字 + 圖示 × N, 不寫數字; 圖示 = 石碑上刻的同一個圖);
+  // 卡片 260×360, 第 i 張中心 x = 820 + 290 ×(i − (n−1)/2)、y 380: 大圓底 + 武器圖示、名稱、用法(含鍵帽)、上次帶的那把卡頂萊姆膠囊「上次用」
+  // 選中 = 亮底 + 金框(游標)+ 放大到 280×388 + 金框外光呼吸; 進場 0~0.3 秒卡片依序由 0.9 倍淡入(只縮不放)
   function drawWeaponSelect(ctx, s) {
     var opts = (Array.isArray(s.options) ? s.options : []).slice(0, 3);
     var n = opts.length, idx = Math.floor(N(s.index, 0));
     var t = Math.max(0, N(s.t, 1));
     T(ctx, '帶哪把武器?', 640, 95, { size: 40, color: '#ffffff', maxW: 580 });
-    // 能力列
+    // 第 9 輪: 左邊能力面板 330×240 中心 (205,380)(x 40~370、y 260~500): 小標「目前能力」(205,285) + 三列「文字 + 圖示 × N」, 不寫數字
+    // 文字左緣 x 60; 圖示 20×20、第 j 個中心 x 160 + 23j(三列第 1 個圖示對齊同一條直線); 列中心 y 335 / 395 / 455
     var st = (s.stats && typeof s.stats === 'object') ? s.stats : {};
-    var segs = [['heart', '心 ' + Math.max(0, Math.floor(N(st.hearts, 5)))], ['rope', '捕捉繩 ' + Math.max(0, Math.floor(N(st.ropes, 5)))], ['atk', '攻擊力 +' + Math.max(0, Math.floor(N(st.atk, 0)))]];
-    ctx.save(); ctx.font = 'bold 22px ' + FONT;
-    var ws = [], tot = 0;
-    for (var k = 0; k < 3; k++) { ws[k] = ctx.measureText(segs[k][1]).width; tot += 28 + ws[k]; }
-    var dotW = ctx.measureText(' · ').width; tot += dotW * 2;
-    ctx.restore();
-    var ssc = tot > 590 ? 590 / tot : 1;
-    ctx.save(); ctx.translate(640, 150); ctx.scale(ssc, ssc);
-    var sx = -tot / 2;
-    for (k = 0; k < 3; k++) {
-      boostGlyph(ctx, segs[k][0], sx + 11, 0, 10, BOOST[segs[k][0]].color);
-      T(ctx, segs[k][1], sx + 28, 0, { size: 22, align: 'left', color: '#ffffff' });
-      sx += 28 + ws[k];
-      if (k < 2) { T(ctx, ' · ', sx, 0, { size: 22, align: 'left', color: P.textDim }); sx += dotW; }
+    panel(ctx, 41, 261, 328, 238, 14, '#1c2232', P.line);
+    T(ctx, '目前能力', 205, 285, { size: 19, color: P.textDim });
+    ctx.fillStyle = '#2c3446'; ctx.fillRect(60, 304, 290, 2);
+    var rowsA = [['heart', '血量', N(st.hearts, 5), 335], ['rope', '捕捉繩', N(st.ropes, 5), 395], ['atk', '攻擊力', N(st.power, 2), 455]];
+    for (var k = 0; k < 3; k++) {
+      var ra = rowsA[k], cnt = clamp(Math.floor(ra[2]), 0, 9);
+      T(ctx, ra[1], 60, ra[3], { size: 22, align: 'left', color: '#ffffff', maxW: 86 });
+      for (var j = 0; j < cnt; j++) {
+        var ix = 160 + 23 * j;
+        if (ra[0] === 'heart') { heartPath(ctx, ix, ra[3] + 0.5, 9.2); ctx.fillStyle = BOOST.heart.color; ctx.fill(); ctx.strokeStyle = P.outline; ctx.lineWidth = 1.5; ctx.stroke(); }
+        else if (ra[0] === 'rope') ropeIcon(ctx, ix, ra[3], 11, true);
+        else boostGlyph(ctx, 'atk', ix, ra[3], 8.6, BOOST.atk.color);
+      }
     }
-    ctx.restore();
+    // 卡片 260×360, 第 i 張中心 x = 820 + 290 ×(i − (n−1)/2)、y 380; 選中放大 280/260 倍(280×388 內)
+    var SEL_K = 280 / 260;
     for (var i = 0; i < n; i++) {
       var o = opts[i] || {}, key = wpKey(o.key);
-      var cx = 640 + 340 * (i - (n - 1) / 2), cy = 380, sel = i === idx;
+      var cx = 820 + 290 * (i - (n - 1) / 2), cy = 380, sel = i === idx;
       var aq = clamp((t - i * 0.06) / 0.25, 0, 1), ae = 1 - Math.pow(1 - aq, 3);
       ctx.save(); ctx.translate(cx, cy);
-      var sc = (sel ? 1.075 : 1) * (0.9 + 0.1 * ae);
+      var sc = (sel ? SEL_K : 1) * (0.9 + 0.1 * ae);
       ctx.scale(sc, sc); ctx.globalAlpha *= 0.2 + 0.8 * ae;
-      panel(ctx, -149, -189, 298, 378, 16, sel ? P.panelHi : P.panel, P.line);
-      circle(ctx, 0, -78, 74); ctx.fillStyle = '#141925'; ctx.fill(); ctx.strokeStyle = sel ? '#5a6a90' : P.line; ctx.lineWidth = 2; ctx.stroke();
-      ctx.save(); if (!sel) ctx.globalAlpha *= 0.8; iconWeapon(ctx, key, -9, -69, 84); ctx.restore();
-      T(ctx, S(o.name, '') || WEAPON[key], 0, 34, { size: 34, color: '#ffffff', maxW: 270 });
-      richLines(ctx, S(o.line, ''), 0, 100, { size: 19, color: sel ? '#e8eef8' : '#c8d0e0', maxW: 260, maxLines: 2, lineH: 32 });
+      panel(ctx, -129, -179, 258, 358, 16, sel ? P.panelHi : P.panel, P.line);
+      circle(ctx, 0, -72, 64); ctx.fillStyle = '#141925'; ctx.fill(); ctx.strokeStyle = sel ? '#5a6a90' : P.line; ctx.lineWidth = 2; ctx.stroke();
+      ctx.save(); if (!sel) ctx.globalAlpha *= 0.8; iconWeapon(ctx, key, -8, -64, 74); ctx.restore();
+      T(ctx, S(o.name, '') || WEAPON[key], 0, 30, { size: 32, color: '#ffffff', maxW: 236 });
+      richLines(ctx, S(o.line, ''), 0, 98, { size: 18, color: sel ? '#e8eef8' : '#c8d0e0', maxW: 226, maxLines: 2, lineH: 30 });
       if (B(o.last)) {
-        rr(ctx, -42, -180, 84, 26, 13); ctx.fillStyle = P.capture; ctx.fill(); ctx.strokeStyle = P.outline; ctx.lineWidth = 1.5; ctx.stroke();
-        T(ctx, '上次用', 0, -166.5, { size: 15, color: '#10131b', stroke: false });
+        rr(ctx, -42, -172, 84, 26, 13); ctx.fillStyle = P.capture; ctx.fill(); ctx.strokeStyle = P.outline; ctx.lineWidth = 1.5; ctx.stroke();
+        T(ctx, '上次用', 0, -158.5, { size: 15, color: '#10131b', stroke: false });
       }
       if (sel) {
         var br = 0.5 + 0.5 * Math.sin(t * 4);
         ctx.save(); ctx.shadowColor = 'rgba(255,210,74,' + (0.4 + 0.4 * br).toFixed(2) + ')'; ctx.shadowBlur = 8 + 10 * br;
-        rr(ctx, -148, -188, 296, 376, 15); ctx.strokeStyle = P.select; ctx.lineWidth = 4; ctx.stroke(); ctx.restore();
+        rr(ctx, -128, -178, 256, 356, 15); ctx.strokeStyle = P.select; ctx.lineWidth = 4; ctx.stroke(); ctx.restore();
       }
       ctx.restore();
     }
@@ -3031,7 +3155,7 @@
       ctx.fillStyle = i < stars ? P.select : '#2c3446'; ctx.fill(); ctx.strokeStyle = i < stars ? '#fff2b0' : '#465372'; ctx.lineWidth = 3; ctx.stroke();
     }
     var cards = Math.max(0, Math.floor(N(s.cards, 0))), cm = Math.max(0, Math.floor(N(s.cardsMax, 7)));
-    var bo = Math.max(0, Math.floor(N(s.boosts, 0))), bm = Math.max(0, Math.floor(N(s.boostsMax, 11)));
+    var bo = Math.max(0, Math.floor(N(s.boosts, 0))), bm = Math.max(0, Math.floor(N(s.boostsMax, 9)));
     var rows = [['總名聲', String(Math.floor(N(s.rep, 0))), P.rep], ['累計賺得金幣', String(Math.floor(N(s.goldEarned, 0))), P.gold], ['最長連鎖', Math.floor(N(s.bestChain, 0)) + ' 段', '#9ff0ff'],
       ['拿到的卡與強化', '卡 ' + cards + ' / ' + cm + ' · 強化 ' + bo + ' / ' + bm, P.boost]];
     for (var r = 0; r < 4; r++) {
@@ -3149,35 +3273,26 @@
       }
     }
     if (!dg) {
+      // 第 9 輪: 選上台(setup1)時 HUD 中段 x 420~860 留給 drawStageCount, 按鍵提示改畫在畫面下方中心 (480,685)(說明面板下緣 640 之下), 17px、最寬 400
+      if (phase === 'setup1') { if (msg) richLine(ctx, msg, 480, 685, { size: 17, color: '#d8e0ee', maxW: 400 }); return; }
       if (msg) richLine(ctx, msg, tmax > 0 ? 880 : 640, 25, { size: 17, color: '#d8e0ee', maxW: tmax > 0 ? 200 : 600 });
       return;
     }
-    // 第 2 行(心在馴獸師頭上): 捕捉繩列(第 8 輪起一直畫; 第 k 條中心 (40 + 22k, 74), 最多 9 條)、收服列、武器框 x 634~814、按鍵提示 (1040, 74)
+    // 第 2 行(心在馴獸師頭上): 捕捉繩列(第 8 輪起一直畫; 第 k 條中心 (40 + 22k, 74), 最多 9 條)、收服列、武器小圖示 x 726~810、按鍵提示 (1040, 74)
     var wp = wpKey(s.weapon);
     var rm = clamp(Math.floor(N(s.ropeMax, 5)), 0, 9), ro = clamp(Math.floor(N(s.ropes, 0)), 0, rm);
     for (var k = 0; k < rm; k++) ropeIcon(ctx, 40 + k * 22, 74, 10, k < ro);
     caughtRow(ctx, Array.isArray(s.caught) ? s.caught : []);
-    // 武器框(第 8 輪): 武器圖示 (652,74)、攻擊力 > 0 時右上「+N」金色小牌、[Z] (690,74)、[X] (716,74)(有 X 技才畫)、[空白] 寬鍵帽 (760,74) + 繩圖示 (801,74)
-    rr(ctx, 634, 56, 180, 36, 8); ctx.fillStyle = '#1a2030'; ctx.fill(); ctx.strokeStyle = P.line; ctx.lineWidth = 1.5; ctx.stroke();
-    iconWeapon(ctx, wp, 652, 76, 22);
+    // 武器小圖示(第 9 輪, 拿掉武器框與框裡的 Z / X / [空白] 鍵帽和繩圖示): 圖示 26×26 中心 (744,74) + 右邊金色「+atk」(0 也畫「+0」)中心約 (784,74); 整塊 x 726~810、y 61~87, 不畫框
+    iconWeapon(ctx, wp, 744, 75, 22);
     var atk = clamp(Math.floor(N(s.atk, 0)), 0, 9);
-    if (atk > 0) {
-      rr(ctx, 658, 57, 18, 14, 5); ctx.fillStyle = P.boost; ctx.fill(); ctx.strokeStyle = P.outline; ctx.lineWidth = 1.2; ctx.stroke();
-      T(ctx, '+' + atk, 667, 64.5, { size: 11, color: '#2a1a00', stroke: false, maxW: 16 });
-    }
-    keyCap(ctx, 'Z', 690, 74, 22);
+    T(ctx, '+' + atk, 784, 74, { size: 19, color: atk > 0 ? P.boost : '#c8b880', strokeColor: '#3a2600', strokeW: 4, maxW: 40 });
+    // 按鍵提示 (1040,74): 本輪起地下城唯一的操作提示區; 字串裡的 [X] 鍵帽在 X 技冷卻中畫暗 + 深色冷卻扇形(比例 xCdLeft / xCdMax), 可用時亮
     var xm = N(s.xCdMax, 0), xl = N(s.xCdLeft, 0);
-    if (xm > 0) {
-      // 有 X 技才畫 X 鍵帽(棍棒不畫): 冷卻中鍵帽壓暗 + 深色扇形蓋住剩餘, 可用時亮
-      var kx = 716, ky = 74;
-      ctx.save(); if (xl > 0) ctx.globalAlpha *= 0.55; keyCap(ctx, 'X', kx, ky, 22); ctx.restore();
-      if (xl > 0) { var f = p01(xl, xm); ctx.beginPath(); ctx.moveTo(kx, ky); ctx.arc(kx, ky, 10, -Math.PI / 2, -Math.PI / 2 + TAU * f); ctx.closePath(); ctx.fillStyle = 'rgba(10,13,20,0.7)'; ctx.fill(); }
-    }
-    ctx.save(); if (ro <= 0) ctx.globalAlpha *= 0.45; keyCap(ctx, '空白', 760, 74, 22); ctx.restore();
-    ropeCoil(ctx, 800, 72, 8);
+    var xcd = (xm > 0 && xl > 0) ? p01(xl, xm) : 0;
     // 訊息色: 捕捉相關 = 捕捉萊姆; 「爆炸桶要爆了 快跑!」= 危險紅(和預警圈同一個意思); 其他 = 淡白
     var mcol = msg.indexOf('爆炸桶') >= 0 ? '#ff6b78' : ((msg.indexOf('繞') >= 0 || msg.indexOf('丟繩') >= 0) ? P.capture : '#d8e0ee');
-    if (msg) richLine(ctx, msg, 1040, 74, { size: 16, color: mcol, maxW: 440 });
+    if (msg) richLine(ctx, msg, 1040, 74, { size: 16, color: mcol, maxW: 440, xCd: xcd });
   }
 
   // ───────────── 開始畫面 ─────────────
@@ -3307,56 +3422,31 @@
     // 標題 + 一句話
     T(ctx, '見習表演', 640, 66, { size: 56, color: '#ffe08a', strokeColor: '#3a1a10', strokeW: 10 });
     T(ctx, '把剛抓到的火柴猴帶上台表演給觀眾看!', 640, 128, { size: 26, color: '#ffffff', maxW: 1100 });
+    // 第 9 輪: 拿掉下方三步圖解(表演是什麼改由表演引導卡教), 帳篷舞台與隊伍放大往下延伸, 不留空白
+    // 兩道淡淡的舞台聚光(只是氣氛, ≤ 7%)
+    for (var lb = -1; lb <= 1; lb += 2) {
+      ctx.beginPath(); ctx.moveTo(640 + lb * 520, 150); ctx.lineTo(640 + lb * 70, 600); ctx.lineTo(640 + lb * 250, 610); ctx.closePath();
+      ctx.fillStyle = 'rgba(255,236,170,0.07)'; ctx.fill();
+    }
     // 帳篷(和場所卡「表演」同一個圖示)+ 舞台
-    ell(ctx, 640, 438, 360, 40, 0); ctx.fillStyle = '#2b2a35'; ctx.fill(); ctx.strokeStyle = '#4a4458'; ctx.lineWidth = 3; ctx.stroke();
-    ell(ctx, 640, 438, 220, 22, 0); ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 2; ctx.stroke();
-    placeIcon(ctx, 'show', 640, 318, 132, 1);
+    ell(ctx, 640, 566, 500, 56, 0); ctx.fillStyle = '#2b2a35'; ctx.fill(); ctx.strokeStyle = '#4a4458'; ctx.lineWidth = 3; ctx.stroke();
+    ell(ctx, 640, 566, 320, 32, 0); ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 2; ctx.stroke();
+    placeIcon(ctx, 'show', 640, 370, 186, 1);
     // 剛收服的魔物走向舞台(遊戲內畫法; 火柴猴每 1 秒跳一次), 到了之後輪流表演(白環)
     var n = mons.length;
     for (var i = 0; i < n; i++) {
       var sp = spKey(mons[i]);
-      var tx = 640 - (n - 1) * 40 + i * 80, sx = -60 - (n - 1 - i) * 80;
-      var x = Math.min(tx, sx + t * 220), arrived = x >= tx;
-      var y = 430, dy = 0;
+      var tx = 640 - (n - 1) * 60 + i * 120, sx = -80 - (n - 1 - i) * 120;
+      var x = Math.min(tx, sx + t * 300), arrived = x >= tx;
+      var y = 548, dy = 0;
       var hp = ((t + i * 0.4) % 1.0) / 0.3;
-      if (sp === 'monkey' && hp < 1) dy = -Math.sin(Math.PI * hp) * 8;
-      ell(ctx, x, y + 24, 22, 5, 0); ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fill();
-      ctx.save(); ctx.translate(x, y + dy); paintSpecies(ctx, sp, sp === 'tanuki' ? 22 : 24, { dir: 1 }); ctx.restore();
+      if (sp === 'monkey' && hp < 1) dy = -Math.sin(Math.PI * hp) * 11;
+      ell(ctx, x, y + 34, 30, 7, 0); ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fill();
+      ctx.save(); ctx.translate(x, y + dy); paintSpecies(ctx, sp, sp === 'tanuki' ? 30 : 34, { dir: 1 }); ctx.restore();
       if (arrived) {
         var pc = ((t + i * 1.0) % 2.0) / 0.5;
-        if (pc < 1) { circle(ctx, x, y + dy, 24 + 6 * pc); ctx.strokeStyle = 'rgba(255,255,255,' + (0.9 * (1 - pc)).toFixed(2) + ')'; ctx.lineWidth = 3; ctx.stroke(); }
+        if (pc < 1) { circle(ctx, x, y + dy, 34 + 9 * pc); ctx.strokeStyle = 'rgba(255,255,255,' + (0.9 * (1 - pc)).toFixed(2) + ')'; ctx.lineWidth = 3.5; ctx.stroke(); }
       }
-    }
-    // 三步圖解
-    var steps = ['① 選 3 隻上台', '② 排節目單: 什麼時候 → 演什麼', '③ 開演, 看牠們表演賺觀眾滿意度'];
-    for (var k = 0; k < 3; k++) {
-      var px = 222 + k * 418, py = 568;
-      panel(ctx, px - 198, py - 58, 396, 116, 14, '#232a3a', P.line);
-      ctx.save(); ctx.translate(px, py - 22);
-      if (k === 0) {
-        // 怪物庫 3 格(3 隻全上台): 每格頭像 + 上台勾
-        for (var q = -1; q <= 1; q++) {
-          ctx.save(); ctx.translate(q * 74, 0);
-          rr(ctx, -32, -26, 64, 52, 8); ctx.fillStyle = P.panelHi; ctx.fill(); ctx.strokeStyle = ONSTAGE; ctx.lineWidth = 2; ctx.stroke();
-          ctx.save(); ctx.translate(4, 2); paintSpecies(ctx, 'monkey', 15, { dir: 1 }); ctx.restore();
-          circle(ctx, -22, -16, 8); ctx.fillStyle = ONSTAGE; ctx.fill(); ctx.strokeStyle = P.outline; ctx.lineWidth = 1.2; ctx.stroke();
-          ctx.strokeStyle = '#10131b'; ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(-26, -16); ctx.lineTo(-23, -13); ctx.lineTo(-18, -19); ctx.stroke();
-          ctx.restore();
-        }
-      } else if (k === 1) {
-        // 暗號格 → 節目格
-        cellBox(ctx, -62, 0, 96, 40, P.cue, true); iconCue(ctx, 'wait', -56, 0, 13, 1);
-        T(ctx, '→', 0, 0, { size: 22, color: '#ffffff' });
-        cellBox(ctx, 62, 0, 96, 40, P.program, true); iconProg(ctx, 'parade', 68, 0, 13, 1);
-      } else {
-        // 表演白環 + 滿意度笑臉
-        paintSpecies(ctx, 'monkey', 18, { dir: 1 });
-        circle(ctx, 0, 0, 25); ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 2.5; ctx.stroke();
-        satFace(ctx, 50, -6, 13);
-        T(ctx, '+', 34, -14, { size: 16, color: P.sat });
-      }
-      ctx.restore();
-      T(ctx, steps[k], px, py + 34, { size: 19, color: P.text, maxW: 372 });
     }
     // 按 Z 繼續(出現 0.6 秒後; 閃爍週期 1 秒)
     if (ready && (t % 1) < 0.62) richLine(ctx, '按 [Z] 繼續', 640, 674, { size: 28, color: '#ffffff' });
@@ -3622,6 +3712,7 @@
 
   // 卡面 260×360(以原點為中心): 暗號 = 青框、表演卡 = 粉框(和節目單格子同色); 卡頂類別膠囊 + 中央放大的同一套圖示
   function cardFace(ctx, kind, key) {
+    if (kind === 'key') { keyCardFace(ctx); return; }
     var isCue = kind !== 'program', acc = isCue ? P.cue : P.program;
     rr(ctx, -130, -180, 260, 360, 18); ctx.fillStyle = '#1e2536'; ctx.fill();
     rr(ctx, -130, -180, 260, 360, 18); ctx.strokeStyle = acc; ctx.lineWidth = 6; ctx.stroke();
@@ -3636,12 +3727,29 @@
     circle(ctx, 0, 132, 20); ctx.fillStyle = 'rgba(12,15,22,0.7)'; ctx.fill(); ctx.strokeStyle = acc; ctx.lineWidth = 2; ctx.stroke();
     T(ctx, isCue ? '當' : '演', 0, 133, { size: 20, color: acc });
   }
+  // 鑰匙卡面(第 9 輪): 金框(= 鑰匙寶箱的金)+ 冰藍底 + 雪花紋(雪境冰窟)+ 中央一把大金鑰匙; 卡頂膠囊「鑰匙」; 卡底圓章畫雪境冰窟的地下城小圖示(= 打開哪一座)
+  var KEY_ACC = '#f2c444';
+  function keyCardFace(ctx) {
+    rr(ctx, -130, -180, 260, 360, 18); ctx.fillStyle = '#1c2a44'; ctx.fill();
+    rr(ctx, -130, -180, 260, 360, 18); ctx.strokeStyle = KEY_ACC; ctx.lineWidth = 6; ctx.stroke();
+    rr(ctx, -116, -166, 232, 332, 12); ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = 1.5; ctx.stroke();
+    var rg = ctx.createRadialGradient(0, -20, 10, 0, -20, 125);
+    rg.addColorStop(0, 'rgba(255,226,122,0.38)'); rg.addColorStop(1, 'rgba(159,208,240,0)');
+    ctx.fillStyle = rg; ctx.fillRect(-116, -150, 232, 260);
+    var flakes = [[-84, -100, 12], [86, -96, 10], [-90, 70, 10], [88, 66, 13], [-40, 104, 7], [46, -128, 7]];
+    for (var i = 0; i < flakes.length; i++) snowflake(ctx, flakes[i][0], flakes[i][1], flakes[i][2], 'rgba(220,242,255,0.75)', 2);
+    rr(ctx, -50, -158, 100, 32, 16); ctx.fillStyle = KEY_ACC; ctx.fill(); ctx.strokeStyle = P.outline; ctx.lineWidth = 1.5; ctx.stroke();
+    T(ctx, '鑰匙', 0, -141.5, { size: 19, color: '#10131b', stroke: false });
+    keyGlyph(ctx, 0, -14, 72, KEY_ACC);
+    circle(ctx, 0, 132, 22); ctx.fillStyle = 'rgba(12,15,22,0.7)'; ctx.fill(); ctx.strokeStyle = KEY_ACC; ctx.lineWidth = 2; ctx.stroke();
+    dunIcon(ctx, 'd2', 0, 133, 15, 1);
+  }
   // 拿到卡的過場: 壓暗 0.6(連 HUD) + 放射光芒; 0~0.6 秒卡片從寶箱 (fromX,fromY) 轉著飛到 (640,320) 並放大; 0.6~1.2 秒卡片發光、光點噴開;
   // 卡下方 卡名 (640,535)、〔類別〕+ 說明 (640,575)、第一次另加提示 (640,615)、ready 才畫閃爍的「按 [Z] 收下」(640,670)。字在 0.5~0.8 秒淡入(卡先飛到, 字才出來)
   function drawCardGet(ctx, s) {
     var dur = N(s.dur, 1.2) > 0 ? N(s.dur, 1.2) : 1.2, t = clamp(N(s.t, dur), 0, dur);
     var k = 1.2 / dur, tt = t * k; // 換算成 1.2 秒的時間軸
-    var kind = S(s.kind, 'cue') === 'program' ? 'program' : 'cue', key = S(s.key, '');
+    var kind0 = S(s.kind, 'cue'), kind = kind0 === 'program' || kind0 === 'key' ? kind0 : 'cue', key = S(s.key, '');
     var fx = N(s.fromX, 640), fy = N(s.fromY, 420);
     ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(0, 0, 1280, 720);
     var q = easeOut(tt / 0.6), gq = clamp((tt - 0.6) / 0.6, 0, 1);
@@ -3662,7 +3770,7 @@
     // 卡片
     var cx = fx + (640 - fx) * q, cy = fy + (320 - fy) * q, sc = 0.22 + 0.78 * q, rot = (1 - q) * TAU * 1.25;
     ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot); ctx.scale(sc, sc);
-    if (gq > 0) { ctx.shadowColor = kind === 'cue' ? 'rgba(90,209,230,0.9)' : 'rgba(255,143,200,0.9)'; ctx.shadowBlur = 30 * Math.sin(Math.PI * Math.min(1, gq * 1.2)) + 12; }
+    if (gq > 0) { ctx.shadowColor = kind === 'cue' ? 'rgba(90,209,230,0.9)' : (kind === 'key' ? 'rgba(255,214,90,0.95)' : 'rgba(255,143,200,0.9)'); ctx.shadowBlur = 30 * Math.sin(Math.PI * Math.min(1, gq * 1.2)) + 12; }
     rr(ctx, -130, -180, 260, 360, 18); ctx.fillStyle = '#1e2536'; ctx.fill();
     ctx.shadowBlur = 0;
     cardFace(ctx, kind, key);
@@ -3680,10 +3788,13 @@
     var ta = clamp((tt - 0.5) / 0.3, 0, 1);
     if (ta > 0) {
       ctx.save(); ctx.globalAlpha *= ta;
-      T(ctx, S(s.name, '') || (kind === 'cue' ? (CUE[key] || '暗號') : (PROG[key] || '表演卡')), 640, 535, { size: 42, color: '#ffffff', strokeW: 7, maxW: 900 });
-      var desc = S(s.desc, '') || (kind === 'cue' ? (CUE_DESC[key] || '') : (PROG_DESC[key] || ''));
-      richLine(ctx, '〔' + (kind === 'cue' ? '暗號' : '表演卡') + '〕 ' + desc, 640, 575, { size: 22, color: '#d8e0ee', tagCol: kind === 'cue' ? '#2a8a9a' : '#b8508a', maxW: 1000 });
-      if (B(s.first)) T(ctx, '這是表演用的卡! 表演前排進節目單', 640, 615, { size: 27, color: P.boost, strokeColor: '#3a2600', strokeW: 6, maxW: 1000 });
+      var isKey = kind === 'key';
+      T(ctx, S(s.name, '') || (isKey ? '雪境冰窟的鑰匙' : (kind === 'cue' ? (CUE[key] || '暗號') : (PROG[key] || '表演卡'))), 640, 535, { size: 42, color: '#ffffff', strokeW: 7, maxW: 900 });
+      var desc = S(s.desc, '') || (isKey ? '打開第 2 座地下城' : (kind === 'cue' ? (CUE_DESC[key] || '') : (PROG_DESC[key] || '')));
+      richLine(ctx, '〔' + (isKey ? '鑰匙' : (kind === 'cue' ? '暗號' : '表演卡')) + '〕 ' + desc, 640, 575, { size: 22, color: '#d8e0ee', tagCol: isKey ? '#a87a10' : (kind === 'cue' ? '#2a8a9a' : '#b8508a'), maxW: 1000 });
+      // 第 9 輪: 提示行改讀 tip 字串(空字串不畫), 比說明大一點
+      var tip = S(s.tip, '');
+      if (tip) T(ctx, tip, 640, 615, { size: 27, color: P.boost, strokeColor: '#3a2600', strokeW: 6, maxW: 1000 });
       ctx.restore();
     }
     if (B(s.ready)) pressZ(ctx, '按 [Z] 收下', 640, 670);
@@ -3843,6 +3954,235 @@
     }
   }
 
+  // ───────────── 第 9 輪新增: 暫停式引導卡 drawGuide ─────────────
+  // 壓暗(聚光燈挖空 + 暖黃脈動描邊)→ 卡片與箭頭 → 暫停符號。字由 RD 傳(text / sub), 「下一張」「繼續」由美術寫死。
+  // 卡片和教學泡泡同一套紙底深字(= 新手教學的長相), 引導卡專屬的是聚光燈 + 暖黃箭頭 + 進度環
+  var GUIDE_INK = '#1a2030', GUIDE_WARM = '#ffd36a';
+  var GUIDE_DECO = { show: ['#d8443a', '#ffd24a'], dungeon: ['#3aa060', '#c6f046'] };
+  var GUIDE_MEM = { t0: null };      // 盛大特效播完後 fxT 停在 2.5, 彩帶要落完: 記住特效起點(純畫面記憶)
+  function spotSub(ctx, sp, g) {
+    // 在目前路徑上加一個聚光燈形狀的子路徑(不 beginPath); g = 往外長多少(負值 = 往內縮)
+    if (sp.shape === 'circle') { var r = Math.max(0.5, sp.r + g); ctx.moveTo(sp.x + r, sp.y); ctx.arc(sp.x, sp.y, r, 0, TAU); return; }
+    var w = Math.max(1, sp.w + 2 * g), h = Math.max(1, sp.h + 2 * g), x = sp.x - w / 2, y = sp.y - h / 2, rd = Math.max(0, Math.min(10 + g, w / 2, h / 2));
+    ctx.moveTo(x + rd, y); ctx.lineTo(x + w - rd, y); ctx.arcTo(x + w, y, x + w, y + rd, rd); ctx.lineTo(x + w, y + h - rd);
+    ctx.arcTo(x + w, y + h, x + w - rd, y + h, rd); ctx.lineTo(x + rd, y + h); ctx.arcTo(x, y + h, x, y + h - rd, rd); ctx.lineTo(x, y + rd); ctx.arcTo(x, y, x + rd, y, rd); ctx.closePath();
+  }
+  function guideSpot(s) {
+    var sp = (s.spot && typeof s.spot === 'object') ? s.spot : null;
+    if (!sp) return null;
+    var shape = sp.shape === 'circle' ? 'circle' : (sp.shape === 'rect' ? 'rect' : 'none');
+    if (shape === 'none') return null;
+    var o = { shape: shape, x: N(sp.x, 640), y: N(sp.y, 360), w: Math.max(4, N(sp.w, 120)), h: Math.max(4, N(sp.h, 60)), r: Math.max(4, N(sp.r, 60)) };
+    // 柔邊往內 12 像素(挖空的外緣 = 傳入的 r / w,h); 太扁的長方形縮成短邊的 1/4, 不把框住的東西壓暗
+    o.soft = shape === 'circle' ? Math.min(12, o.r * 0.25) : Math.min(12, Math.min(o.w, o.h) * 0.25);
+    return o;
+  }
+  function pauseSym(ctx, x, y, S0, alpha) {
+    ctx.save(); ctx.globalAlpha *= alpha; ctx.translate(x, y);
+    circle(ctx, 0, 0, S0 * 0.5); ctx.fillStyle = 'rgba(8,10,16,0.35)'; ctx.fill();
+    ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowBlur = S0 * 0.12; ctx.shadowOffsetY = S0 * 0.03;
+    var bw = S0 * 0.17, bh = S0 * 0.5, gap = S0 * 0.08;
+    rr(ctx, -gap - bw, -bh / 2, bw, bh, bw * 0.4); ctx.fillStyle = '#ffffff'; ctx.fill();
+    rr(ctx, gap, -bh / 2, bw, bh, bw * 0.4); ctx.fill();
+    ctx.restore();
+  }
+  function guideArrow(ctx, x0, y0, x1, y1, lw, head) {
+    var dx = x1 - x0, dy = y1 - y0, L = Math.sqrt(dx * dx + dy * dy);
+    if (L < head + 2) return;
+    var ux = dx / L, uy = dy / L, bx = x1 - ux * head, by = y1 - uy * head;
+    function path() {
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(bx, by);
+    }
+    function tri() {
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(bx - uy * head * 0.6, by + ux * head * 0.6); ctx.lineTo(bx + uy * head * 0.6, by - ux * head * 0.6); ctx.closePath();
+    }
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    path(); ctx.strokeStyle = P.outline; ctx.lineWidth = lw + 4; ctx.stroke();
+    tri(); ctx.strokeStyle = P.outline; ctx.lineWidth = 4; ctx.stroke();
+    path(); ctx.strokeStyle = GUIDE_WARM; ctx.lineWidth = lw; ctx.stroke();
+    tri(); ctx.fillStyle = GUIDE_WARM; ctx.fill();
+  }
+  // 卡片右下: [Z] 鍵帽 + 外圈進度環(keyRing 40×40); 讀滿 3 秒前鍵帽半透明、環慢慢填滿; ready 後鍵帽亮(金光)+ 左邊「下一張」/「繼續」並輕輕跳
+  function guideKey(ctx, kx, ky, prog, ready, label, t) {
+    var hop = ready ? Math.abs(Math.sin(t * 5)) * 2 : 0;
+    circle(ctx, kx, ky, 17); ctx.strokeStyle = 'rgba(26,32,48,0.22)'; ctx.lineWidth = 4; ctx.stroke();
+    if (prog > 0) { ctx.beginPath(); ctx.arc(kx, ky, 17, -Math.PI / 2, -Math.PI / 2 + TAU * clamp(prog, 0, 1)); ctx.strokeStyle = ready ? '#f0a020' : '#c89a40'; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.stroke(); }
+    ctx.save(); ctx.globalAlpha *= ready ? 1 : 0.45;
+    if (ready) { ctx.shadowColor = 'rgba(255,190,60,0.9)'; ctx.shadowBlur = 8; }
+    keyCap(ctx, 'Z', kx, ky - hop, 24);
+    ctx.restore();
+    if (ready) T(ctx, label, kx - 26, ky - hop, { size: 17, align: 'right', color: GUIDE_INK, stroke: false });
+  }
+  function drawGuide(ctx, s) {
+    var phase = S(s.phase, 'card'); if (phase !== 'pause' && phase !== 'outro') phase = 'card';
+    var grand = B(s.grand), which = S(s.which, 'show') === 'dungeon' ? 'dungeon' : 'show', deco = GUIDE_DECO[which];
+    var t = N(s.t, now() / 1000);
+    var oD = N(s.outroDur, 0.4) > 0 ? N(s.outroDur, 0.4) : 0.4;
+    var oq = phase === 'outro' ? clamp(N(s.outroT, 0) / oD, 0, 1) : 0, fade = 1 - oq;
+    var pD = N(s.pauseDur, 0.8) > 0 ? N(s.pauseDur, 0.8) : 0.8;
+    var pt = phase === 'pause' ? clamp(N(s.pauseT, 0), 0, pD) * (0.8 / pD) : 0.8;   // 換算成 0.8 秒軸
+    var A = grand ? 0.5 : 0.6;
+    var sp = phase === 'pause' || grand ? null : guideSpot(s);
+    ctx.beginPath(); ctx.rect(0, 0, 1280, 720); ctx.clip();
+    // ① 壓暗(pause 前 0.25 秒漸暗; outro 跟著淡出)+ 聚光燈挖空(柔邊往內)
+    var dimA = A * (phase === 'pause' ? clamp(pt / 0.25, 0, 1) : 1) * fade;
+    if (dimA > 0.001) {
+      if (!sp) { ctx.fillStyle = 'rgba(0,0,0,' + dimA.toFixed(3) + ')'; ctx.fillRect(0, 0, 1280, 720); }
+      else {
+        ctx.beginPath(); ctx.rect(0, 0, 1280, 720); spotSub(ctx, sp, 0);
+        ctx.fillStyle = 'rgba(0,0,0,' + dimA.toFixed(3) + ')'; ctx.fill('evenodd');
+        var SN = 6;
+        for (var k = 0; k < SN; k++) {
+          ctx.beginPath(); spotSub(ctx, sp, -sp.soft * k / SN); spotSub(ctx, sp, -sp.soft * (k + 1) / SN);
+          ctx.fillStyle = 'rgba(0,0,0,' + (dimA * (SN - k - 0.5) / SN).toFixed(3) + ')'; ctx.fill('evenodd');
+        }
+        // 挖空外圍一圈暖黃描邊, 緩慢脈動(週期 1.2 秒)
+        var pl = 0.5 + 0.5 * Math.sin(TAU * t / 1.2);
+        ctx.save(); ctx.globalAlpha *= fade; ctx.shadowColor = 'rgba(255,211,106,' + (0.5 + 0.4 * pl).toFixed(2) + ')'; ctx.shadowBlur = 8 + 8 * pl;
+        ctx.beginPath(); spotSub(ctx, sp, 2.5); ctx.strokeStyle = 'rgba(255,211,106,' + (0.65 + 0.35 * pl).toFixed(2) + ')'; ctx.lineWidth = 2.5 + 1.5 * pl; ctx.stroke();
+        ctx.restore();
+      }
+    }
+    // ② 暫停符號: pause 時正中央大符號彈出 → 0.5~0.8 秒縮小飛到 (1236,144); 之後固定小符號(半透明白)
+    var smallA = 0.72;
+    if (phase === 'pause') {
+      if (pt < 0.5) {
+        var bq = easeOut(pt / 0.25), bs = 0.5 + 0.5 * bq;
+        pauseSym(ctx, 640, 360, 120 * bs, clamp(pt / 0.15, 0, 1));
+      } else {
+        var mq = clamp((pt - 0.5) / 0.3, 0, 1), me = mq < 0.5 ? 2 * mq * mq : 1 - Math.pow(-2 * mq + 2, 2) / 2;
+        pauseSym(ctx, 640 + (1236 - 640) * me, 360 + (144 - 360) * me, 120 + (40 - 120) * me, 1 + (smallA - 1) * me);
+      }
+      return;
+    }
+    // ③ / ④ 卡片
+    var text = S(s.text, ''), sub = S(s.sub, '');
+    var idx = Math.floor(N(s.index, 0)), tot = clamp(Math.floor(N(s.total, grand ? 4 : 4)), 0, 8);
+    var rD = N(s.readDur, 3) > 0 ? N(s.readDur, 3) : 3, prog = clamp(N(s.readT, rD) / rD, 0, 1), ready = B(s.ready);
+    var aD = N(s.appearDur, 0.3) > 0 ? N(s.appearDur, 0.3) : 0.3, aq = clamp(N(s.appearT, aD) / aD, 0, 1);
+    var flyY = -240 * oq * oq;
+    if (grand) {
+      var fD = N(s.fxDur, 2.5) > 0 ? N(s.fxDur, 2.5) : 2.5, fx = clamp(N(s.fxT, fD), 0, fD) * (2.5 / fD);
+      if (fx < 2.5) GUIDE_MEM.t0 = t - fx;
+      var el = (fx >= 2.5 && GUIDE_MEM.t0 != null) ? Math.max(fx, t - GUIDE_MEM.t0) : fx;
+      // 放射光芒(持續轉)
+      ctx.save(); ctx.globalAlpha *= fade * clamp(fx / 0.3, 0, 1); ctx.translate(640, 340 + flyY); ctx.rotate(t * 0.35);
+      for (var ry = 0; ry < 16; ry++) {
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, 760, ry * TAU / 16, ry * TAU / 16 + TAU / 40); ctx.closePath();
+        ctx.fillStyle = 'rgba(255,226,122,0.14)'; ctx.fill();
+      }
+      var hg = ctx.createRadialGradient(0, 0, 60, 0, 0, 420); hg.addColorStop(0, 'rgba(255,236,170,0.3)'); hg.addColorStop(1, 'rgba(255,236,170,0)');
+      circle(ctx, 0, 0, 420); ctx.fillStyle = hg; ctx.fill();
+      ctx.restore();
+      // 煙火 0.2 / 0.9 / 1.6 秒: 左上 (420,200)、右上 (860,200)、正上 (640,150), 每發 260×260 內; 畫在卡片之後面, 不蓋字
+      var FW = [[0.2, 420, 200], [0.9, 860, 200], [1.6, 640, 150]];
+      ctx.save(); ctx.globalAlpha *= fade;
+      for (var f = 0; f < 3; f++) {
+        var fe = (fx - FW[f][0]) / 0.85;
+        if (fe <= 0 || fe >= 1) continue;
+        var fxX = FW[f][1], fyY = FW[f][2] + flyY;
+        if (fe < 0.18) { circle(ctx, fxX, fyY, 26 * fe / 0.18); ctx.fillStyle = 'rgba(255,250,220,' + (0.9 * (1 - fe / 0.18)).toFixed(3) + ')'; ctx.fill(); }
+        for (var pk = 0; pk < 18; pk++) {
+          var pa = pk * TAU / 18 + f * 0.4, pdd = 112 * easeOut(fe), droop = 22 * fe * fe;
+          var px = fxX + Math.cos(pa) * pdd, py = fyY + Math.sin(pa) * pdd + droop;
+          var px0 = fxX + Math.cos(pa) * pdd * 0.62, py0 = fyY + Math.sin(pa) * pdd * 0.62 + droop * 0.6;
+          ctx.strokeStyle = CONF_COL[(pk + f) % CONF_COL.length]; ctx.globalAlpha = fade * (1 - fe); ctx.lineWidth = 3; ctx.lineCap = 'round';
+          ctx.beginPath(); ctx.moveTo(px0, py0); ctx.lineTo(px, py); ctx.stroke();
+          starPath(ctx, px, py, 4.5 * (1 - fe) + 1.5); ctx.fillStyle = CONF_COL[(pk + f + 2) % CONF_COL.length]; ctx.fill();
+        }
+      }
+      ctx.restore();
+      // 彩帶與紙花 0.3~2.5 秒從 y 0 灑落到 y 720(最後一片 2.2 秒出發; 播完不再新增, 已在空中的照樣落完)
+      ctx.save(); ctx.globalAlpha *= fade;
+      for (var c = 0; c < 90; c++) {
+        var ts = 0.3 + 1.9 * hash01(c, 3), v = 300 + 180 * hash01(c, 4), ce = el - ts;
+        if (ce <= 0) continue;
+        var cyy = -14 + v * ce; if (cyy > 734) continue;
+        var cxx = 30 + 1220 * hash01(c, 5) + Math.sin(ce * 3 + c) * 22;
+        ctx.save(); ctx.translate(cxx, cyy); ctx.rotate(ce * (3 + 4 * hash01(c, 6)) + c);
+        ctx.fillStyle = CONF_COL[c % CONF_COL.length];
+        if (c % 4 === 0) { ctx.fillRect(-2, -10, 4, 20); } else ctx.fillRect(-6, -3.5, 12, 7 * Math.abs(Math.cos(ce * 5 + c)) + 1);
+        ctx.restore();
+      }
+      ctx.restore();
+      // 大卡 680×240 固定 (640,340): 0~0.4 秒 0.3 → 1.1 → 1.0
+      var gq = clamp(fx / 0.4, 0, 1), gs = gq < 0.7 ? 0.3 + 0.8 * easeOut(gq / 0.7) : 1.1 - 0.1 * ((gq - 0.7) / 0.3);
+      ctx.save(); ctx.globalAlpha *= fade * clamp(fx / 0.12, 0, 1); ctx.translate(640, 340 + flyY); ctx.scale(gs, gs);
+      ctx.save(); ctx.shadowColor = 'rgba(255,200,80,0.6)'; ctx.shadowBlur = 24;
+      rr(ctx, -337, -117, 674, 234, 22); ctx.fillStyle = P.tutorBg; ctx.fill(); ctx.restore();
+      rr(ctx, -337, -117, 674, 234, 22); ctx.strokeStyle = '#d9a62e'; ctx.lineWidth = 6; ctx.stroke();
+      // 金色邊框流光(一段亮光沿著邊框跑)
+      ctx.save(); ctx.setLineDash([140, 1700]); ctx.lineDashOffset = -((t * 520) % 1840);
+      rr(ctx, -337, -117, 674, 234, 22); ctx.strokeStyle = '#fff6c8'; ctx.lineWidth = 4; ctx.stroke(); ctx.restore();
+      rr(ctx, -326, -106, 652, 212, 16); ctx.strokeStyle = 'rgba(217,166,46,0.35)'; ctx.lineWidth = 1.5; ctx.stroke();
+      // 左右上角裝飾章(which 配色)
+      for (var dd = -1; dd <= 1; dd += 2) guideBadge(ctx, dd * 292, -74, 20, which, deco);
+      var jump = 1 + 0.14 * Math.sin(Math.PI * clamp((fx - 0.22) / 0.3, 0, 1));
+      ctx.save(); ctx.translate(0, -22); ctx.scale(jump, jump);
+      richLines(ctx, text, 0, 0, { size: 40, color: GUIDE_INK, stroke: false, maxW: 560, maxLines: 2, lineH: 54 });
+      ctx.restore();
+      guideDots(ctx, 0, 92, idx, tot, deco[0]);
+      guideKey(ctx, 292, 76, prog, ready, '繼續', t);
+      ctx.restore();
+    } else {
+      var cx = N(s.cardX, 640), cy = N(s.cardY, 360) + flyY;
+      var ca = fade * (0.25 + 0.75 * easeOut(aq)), cs = 0.85 + 0.15 * easeOut(aq);
+      // 箭頭: 卡片矩形上離尖端最近的點 → (tipX, tipY); tipX 為 null 不畫
+      if (typeof s.tipX === 'number' && isFinite(s.tipX) && typeof s.tipY === 'number' && isFinite(s.tipY)) {
+        var tx = s.tipX, tyy = s.tipY + flyY;
+        var nx = clamp(tx, cx - 220, cx + 220), ny = clamp(tyy, cy - 70, cy + 70);
+        if (nx !== tx || ny !== tyy) { ctx.save(); ctx.globalAlpha *= ca; guideArrow(ctx, nx, ny, tx, tyy, 6, 18); ctx.restore(); }
+      }
+      // 出口在畫面外(edgeAngle): 聚光燈圓內畫朝出口方向的大箭頭, 沿方向輕輕來回
+      if (typeof s.edgeAngle === 'number' && isFinite(s.edgeAngle) && sp) {
+        var ea = s.edgeAngle, er = sp.shape === 'circle' ? sp.r : Math.min(sp.w, sp.h) / 2, bob = Math.sin(t * 5) * 4;
+        var ecx = sp.x + Math.cos(ea) * bob, ecy = sp.y + Math.sin(ea) * bob;
+        ctx.save(); ctx.globalAlpha *= fade;
+        guideArrow(ctx, ecx - Math.cos(ea) * er * 0.6, ecy - Math.sin(ea) * er * 0.6, ecx + Math.cos(ea) * er * 0.72, ecy + Math.sin(ea) * er * 0.72, 12, 26);
+        ctx.restore();
+      }
+      ctx.save(); ctx.globalAlpha *= ca; ctx.translate(cx, cy); ctx.scale(cs, cs);
+      ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 14;
+      rr(ctx, -218.5, -68.5, 437, 137, 16); ctx.fillStyle = P.tutorBg; ctx.fill(); ctx.restore();
+      rr(ctx, -218.5, -68.5, 437, 137, 16); ctx.strokeStyle = GUIDE_INK; ctx.lineWidth = 3; ctx.stroke();
+      rr(ctx, -214, -64, 8, 128, 4); ctx.fillStyle = deco[0]; ctx.fill();
+      guideBadge(ctx, -186, -38, 16, which, deco);
+      var mainY = sub ? -26 : -14;
+      richLines(ctx, text, 14, mainY, { size: 26, color: GUIDE_INK, stroke: false, maxW: 350, maxLines: 2, lineH: 32 });
+      if (sub) T(ctx, sub, -6, 30, { size: 17, color: '#5a6274', stroke: false, maxW: 220 });
+      guideDots(ctx, -24, 52, idx, tot, deco[0]);
+      guideKey(ctx, 180, 40, prog, ready, '下一張', t);
+      ctx.restore();
+    }
+    // 小暫停符號固定 (1236,144) 40×40(整段引導都在; outro 跟著淡出)
+    pauseSym(ctx, 1236, 144, 40, smallA * fade);
+  }
+  // 卡片左上的小裝飾章: 表演 = 紅底金邊 + 小號角; 地下城 = 綠底萊姆邊 + 星星
+  function guideBadge(ctx, x, y, r, which, deco) {
+    ctx.save(); ctx.translate(x, y);
+    circle(ctx, 0, 0, r); ctx.fillStyle = deco[0]; ctx.fill(); ctx.strokeStyle = deco[1]; ctx.lineWidth = 2.5; ctx.stroke();
+    if (which === 'dungeon') { starPath(ctx, 0, 0.5, r * 0.6); ctx.fillStyle = '#ffffff'; ctx.fill(); }
+    else {
+      var k = r / 16;
+      ctx.beginPath(); ctx.moveTo(-8 * k, -2.5 * k); ctx.lineTo(3 * k, -6.5 * k); ctx.lineTo(3 * k, 6.5 * k); ctx.lineTo(-8 * k, 2.5 * k); ctx.closePath();
+      ctx.fillStyle = deco[1]; ctx.fill();
+      rr(ctx, -11 * k, -2.5 * k, 3.5 * k, 5 * k, 1.2 * k); ctx.fill();
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.6 * k; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(6.5 * k, -5 * k); ctx.lineTo(9 * k, -7 * k); ctx.moveTo(7 * k, 0); ctx.lineTo(10 * k, 0); ctx.moveTo(6.5 * k, 5 * k); ctx.lineTo(9 * k, 7 * k); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  // 第幾張 / 共幾張: total 個小圓點, 第 idx 個亮(which 主色), 已看過的實心淡灰、還沒看的空心
+  function guideDots(ctx, x, y, idx, tot, col) {
+    var gap = 15, x0 = x - (tot - 1) * gap / 2;
+    for (var i = 0; i < tot; i++) {
+      circle(ctx, x0 + i * gap, y, i === idx ? 5 : 4);
+      if (i === idx) { ctx.fillStyle = col; ctx.fill(); ctx.strokeStyle = GUIDE_INK; ctx.lineWidth = 1.5; ctx.stroke(); }
+      else if (i < idx) { ctx.fillStyle = '#a8b0c0'; ctx.fill(); }
+      else { ctx.strokeStyle = '#a8b0c0'; ctx.lineWidth = 1.5; ctx.stroke(); }
+    }
+  }
+
   // ───────────── 匯出 ─────────────
   window.Art = {
     canvas: { width: 1280, height: 720 },
@@ -3880,6 +4220,7 @@
     drawDungeonResult: wrap(drawDungeonResult),
     drawBankSlot: wrap(drawBankSlot),
     drawMonsterInfo: wrap(drawMonsterInfo),
+    drawStageCount: wrap(drawStageCount),
     drawScrollMark: wrap(drawScrollMark),
     drawCueRow: wrap(drawCueRow),
     drawPickerPanel: wrap(drawPickerPanel),
@@ -3904,6 +4245,7 @@
     drawResultPanel: wrap(drawResultPanel),
     drawHud: wrap(drawHud),
     drawQuestBanner: wrap(drawQuestBanner),
-    drawTutorial: wrap(drawTutorial)
+    drawTutorial: wrap(drawTutorial),
+    drawGuide: wrap(drawGuide)
   };
 })();

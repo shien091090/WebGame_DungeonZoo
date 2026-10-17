@@ -1,0 +1,123 @@
+{
+ "game": "WebGame_DungeonZoo",
+ "build": "polish-7",
+ "startedAt": "2026-10-16T16:01:20.895Z",
+ "finished": false,
+ "events": [
+  {
+   "t": 0,
+   "type": "session_start",
+   "replay": true
+  },
+  {
+   "t": 0,
+   "type": "day_start",
+   "day": 1
+  },
+  {
+   "t": 1.81,
+   "type": "place_choose",
+   "day": 1,
+   "place": "shop"
+  },
+  {
+   "t": 190.63,
+   "type": "place_choose",
+   "day": 1,
+   "place": "shop"
+  },
+  {
+   "t": 1300.43,
+   "type": "place_choose",
+   "day": 1,
+   "place": "show"
+  },
+  {
+   "t": 1305.03,
+   "type": "setup_done",
+   "day": 1,
+   "roster": [
+    {
+     "species": "monkey",
+     "num": 1
+    },
+    {
+     "species": "monkey",
+     "num": 2
+    },
+    {
+     "species": "monkey",
+     "num": 3
+    }
+   ],
+   "rows": [
+    {
+     "cue": "",
+     "program": ""
+    },
+    {
+     "cue": "",
+     "program": ""
+    },
+    {
+     "cue": "",
+     "program": ""
+    },
+    {
+     "cue": "wait",
+     "program": ""
+    }
+   ]
+  },
+  {
+   "t": 1305.03,
+   "type": "heat_tier",
+   "day": 1,
+   "tier": "clap",
+   "heat": 60,
+   "elapsed": 0
+  },
+  {
+   "t": 1335.42,
+   "type": "heat_tier",
+   "day": 1,
+   "tier": "quiet",
+   "heat": 48,
+   "elapsed": 11
+  },
+  {
+   "t": 1398.38,
+   "type": "show_end",
+   "day": 1,
+   "reason": "time",
+   "dur": 45,
+   "satisfaction": 34,
+   "gold": 67,
+   "fameGain": 34,
+   "bestChain": 1,
+   "performs": 27,
+   "angryPerforms": 0,
+   "heatAvg": 29,
+   "heatMax": 60,
+   "tierSec": {
+    "quiet": 34,
+    "clap": 11,
+    "cheer": 0,
+    "frenzy": 0
+   },
+   "maxMarksPeak": 0,
+   "looseHeat": null
+  },
+  {
+   "t": 1400.61,
+   "type": "day_start",
+   "day": 2
+  },
+  {
+   "t": 1403.48,
+   "type": "place_choose",
+   "day": 2,
+   "place": "shop"
+  }
+ ]
+}

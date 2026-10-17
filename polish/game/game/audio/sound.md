@@ -18,10 +18,15 @@
 | 介面 | 用途 | 何時呼叫 |
 |---|---|---|
 | `Sound.setCrowd(tier)` | 表演場的循環觀眾聲。`tier`: `'quiet'` / `'clap'` / `'cheer'` / `'frenzy'`(直接傳 spec 的熱度段名; `''` 或 `'quiet'` = 沒有觀眾聲) | 開演時依開演熱度段呼叫一次, 之後熱度**換段**時呼叫(每幀呼叫同一段也無害, 不會重頭)。換段自動 0.4 秒交叉淡入淡出; 傳 `''` / `'quiet'` 時 0.3 秒淡出 |
-| `Sound.setMusicDuck(bool)` | 出口詢問框、拿到卡過場開著時背景音樂壓到一半 | 詢問框 / 過場跳出時 `true`、關掉時 `false`。**大多數情況不接也可以**: `play('exit_prompt')`、`play('card_get')` 會自動壓低; `ui_confirm` / `ui_cancel` / `dungeon_end` 會自動恢復, 保險起見地下城裡的 `attack` / `skill` / `rope_throw` / `stairs_down` / `player_hurt` 也會恢復; 換曲也會恢復。**唯一要接的情況**: 第一次碰到鐘塔 2 層出口時 spec 只播 `unlock`、不播 `exit_prompt`, 那一刻請呼叫 `setMusicDuck(true)` |
+| `Sound.setMusicDuck(bool)` | 出口詢問框、拿到卡過場、暫停式引導開著時背景音樂壓到一半 | 詢問框 / 過場跳出時 `true`、關掉時 `false`。**大多數情況不接也可以**: `play('exit_prompt')`、`play('card_get')`、`play('guide_pause')` 會自動壓低; `ui_confirm` / `ui_cancel` / `dungeon_end` 會自動恢復, 保險起見地下城裡的 `attack` / `skill` / `rope_throw` / `stairs_down` / `player_hurt` 與表演場的 `perform` / `cue_fire` / `chain` / `clock_tick` 等也會恢復; 換曲也會恢復。打磨第 9 輪起鐘塔 2 層出口是普通出口(照常播 exit_prompt), **這個介面已沒有必須接的情況**, 保留給 RD 自行使用 |
 
 - **倒下自動停音樂**(打磨第 5 輪): `play('player_down')` 會順手做一次 `stopMusic()`(0.15 秒淡出), 讓倒下聲單獨響完。RD 照 spec 自己再呼叫 `stopMusic()` 也無害; 結算畫面照常 `playMusic('result')`
 
+- **暫停式引導**(打磨第 9 輪): RD **不用接任何新介面**, 照 spec 呼叫音效即可:
+  - `play('guide_pause')` 一響 → 背景音樂 0.2 秒內壓到一半, 表演場的觀眾聲 0.3 秒淡出暫停
+  - 引導期間熱度段照常 `setCrowd(...)` 也沒關係: 只記住最新的段, 不出聲
+  - 最後一張按 Z 的 `play('ui_confirm')` → 背景音樂恢復, 觀眾聲 0.4 秒淡入**當下熱度段**
+  - 保險: 萬一結束引導時沒播 ui_confirm, 遊戲恢復後的第一個動作或表演音效(attack、skill、rope_throw、perform、cue_fire、chain、clock_tick 等)也會恢復; `stopMusic()` 或換到另一首曲子也會解除
 - interface.json 的 `crowd_clap` / `crowd_cheer` / `crowd_frenzy` 也可以用 `play('crowd_clap')` 呼叫, 效果等同 `setCrowd('clap')`(不是一次性音效, 會一直循環到換段或停掉)
 - 觀眾聲**自動收掉**的時機(RD 不呼叫也會停): `play('loose')`、`play('show_end')`、`stopMusic()`、`playMusic(表演以外的曲子)`。所以失控、時間到收場、離開表演場都不用另外 `setCrowd('')`; 要明確寫也無害
 
@@ -63,7 +68,7 @@
 | wall_break | wall_break | 裂牆第 3 下碎掉(只呼叫這個, 不要同時呼叫 wall_crack) | — | sfx_wall_break.ogg + sfx_wall_crack.ogg 疊層 | 0.6 + 0.5 | 0.1 |
 | teleport | teleport | 傳送陣把馴獸師傳走的那一刻 | — | sfx_teleport.ogg | 0.55 | 0.1 |
 | heal | heal | 回復泉補滿心 | — | sfx_heal.ogg | 0.6 | 0.2 |
-| exit_prompt | exit_prompt | 碰到出口、詢問框跳出的那一刻(只呼叫一次; 選項移動播 ui_move, 選完播 ui_confirm / ui_cancel)。會自動把背景音樂壓到一半。**第一次碰到鐘塔 2 層出口那次不要呼叫**(spec 只播 unlock; 請改呼叫 `setMusicDuck(true)`) | — | 內嵌 PCM(門鈴「叮咚」C5 → A4, 0.93 秒) | 0.5 | 0.5 |
+| exit_prompt | exit_prompt | 碰到出口、詢問框跳出的那一刻(只呼叫一次; 選項移動播 ui_move, 選完播 ui_confirm / ui_cancel)。會自動把背景音樂壓到一半。打磨第 9 輪起所有出口(含鐘塔 2 層)都照常呼叫 | — | 內嵌 PCM(門鈴「叮咚」C5 → A4, 0.93 秒) | 0.5 | 0.5 |
 | stairs_down | stairs_down(打磨第 8 輪新增) | 走到樓梯、下樓轉場開始的那一刻(一次)。背景音樂不中斷 | — | sfx_stairs_step_1 / 2.ogg 交替四步, 一步比一步低(速度 1.0 → 0.82), 每步 0.09 秒後跟一聲小回音; 約 0.8 秒, 在 1.0 秒轉場內收尾 | 0.6 → 0.45(回音 0.18 → 0.12) | 0.8 |
 | boost_get | boost_get(打磨第 8 輪新增) | 碰到強化石碑、永久強化生效的那一刻。**只播這個**: 心 +1 的回血特效不另播 heal | — | sfx_boost_get.ogg(鋼鼓上揚短句, 升 4 個半音, 約 0.72 秒)+ 0.5 秒後 sfx_boost_ding.ogg(玻璃「叮」, 升高) | 0.6 + 0.3 | 0.3 |
 | chest_open | chest_open(打磨第 8 輪新增) | 碰到寶箱、開蓋動畫開始的那一刻 | — | sfx_chest_latch.ogg(金屬扣「喀」)+ 0.05 秒後 sfx_chest_creak.ogg(木頭吱呀)+ 0.22 秒後 sfx_sparkle.ogg(閃光); 約 0.4 秒, 0.3 秒後接 card_get 時已收尾 | 0.7 + 0.5 + 0.3 | 0.3 |
@@ -96,10 +101,15 @@
 | show_end | show_end | 表演時間到、正常收場(失控收場不要呼叫; 觀眾聲自動 0.3 秒淡出) | — | 內嵌 PCM(掌聲 3 秒) | 0.6 | 0.5 |
 | coin_tally | coin_tally | 結算畫面數字每跳一次(可每幀呼叫, 間隔會自動擋) | — | sfx_coin_tally.ogg | 0.4 | 0.06 |
 | buy | buy | 商店購買 / 裝備成功 | — | sfx_buy.ogg | 0.7 | 0.1 |
-| unlock | unlock | 第 2 座地下城開放(第一次碰到鐘塔 2 層出口那一刻; 這次不呼叫 exit_prompt)、商店上架提示冒出 | — | sfx_unlock.ogg | 0.65 | 0.3 |
+| unlock | unlock | 出發準備畫面冒出「第 2 座地下城開放」「商店上架新東西」提示的那一刻(打磨第 9 輪: 開鑰匙寶箱那一刻**不播** unlock, 只播 chest_open → card_get; 下一次出發準備冒提示時才播) | — | sfx_unlock.ogg | 0.65 | 0.3 |
 | tutorial_done | tutorial_done | 教學階段完成(播完成特效的那一刻)。**收服第 3 隻火柴猴時教學第 7 階段的完成不要呼叫**(那一刻只播 quest_done) | — | sfx_tutorial_done.ogg | 0.5 | 0.2 |
 | star | star | 總結算每顆星亮起 | `index`: 第幾顆, 從 0 起算; 一顆比一顆高 | sfx_star.ogg | 0.7 | 0.05 |
+| row_swap | row_swap(打磨第 9 輪新增) | 排節目單時兩列暗號互換、或選「上移」「下移」整列對調成功的那一刻。**只播這個, 不另播 ui_confirm**(spec)。上移到頂 / 下移到底這類沒換成的, 照舊播 ui_denied | — | sfx_row_swap_a.ogg(卡片滑動「刷」)→ 0.11 秒後 sfx_row_swap_b.ogg(另一張「刷」, 略高); 兩層都跳過開頭的滑動前奏, 15 毫秒內出聲, 約 0.3 秒 | 0.55 + 0.45 | 0.08 |
+| guide_pause | guide_pause(打磨第 9 輪新增) | 暫停式引導開始、畫面暫停的那一刻(一次; 大暫停符號彈出時)。**會自動把背景音樂壓到一半、表演場的觀眾聲暫停**(見下方「暫停式引導」) | — | 內嵌 PCM(音樂盒一個「叮」, 接著像磁帶減速一樣音高一路往下沉、停住; 0.62 秒, 2 毫秒內出聲) | 0.4 | 0.5 |
+| guide_card | guide_card(打磨第 9 輪新增) | 每張引導卡開始彈入的那一刻(第 1 張在暫停 0.8 秒後; 之後每按 Z 換卡一次)。**最後一張大卡不要呼叫**(改播 guide_finale); 按 Z 本身不另播音效; 未滿 3 秒按 Z 不反應也不播 | — | sfx_guide_card.ogg(一張卡片輕輕滑入, 放慢 0.9 倍; 先有一點滑動聲, 約 0.1 秒時「嗒」一下落定) | 0.4 | 0.2 |
+| guide_finale | guide_finale(打磨第 9 輪新增) | 最後一張大卡出現的那一刻(一次; 盛大特效 2.5 秒同時開始)。萬一同一刻也呼叫了 guide_card, guide_card 會被收掉 | — | 內嵌 PCM 一段混好的 2.5 秒: 號角樂句(含鈸)+ 小鼓滾奏(由小漸大)+ 三發煙火(起音對準 0.2 / 0.9 / 1.6 秒)+ 0.3 秒起觀眾歡呼; 2.2~2.5 秒淡出 | 1.1 | 1.0 |
 
+- 打磨第 9 輪新增 4 個事件(row_swap、guide_pause、guide_card、guide_finale), **全部用現成素材**, 沒有程式產生; 其他事件、素材、音量、opts 全部沿用第 8 輪
 - 打磨第 8 輪拿掉 `weapon_menu`(C 鍵與換武器視窗刪除)、`freeze_all`、`cheer`(兩張表演卡刪除)、`mark_add`(標記隱性化, 不讓玩家聽出有標記); 呼叫了也只是靜默忽略。cheer 原本的「耶—」錄音改給 confetti_burst 當觀眾層用。更早已拿掉 `upgrade`
 - heat_warn 為什麼程式產生: 找過 OpenGameArt 兩個 CC0 警報(Frenchyboy「Alarm」是 2 秒持續上掃的刺耳警報, 不夠短促; yd「Short alarm」標籤寫自爆倒數, 調性太重), 要求只是「短促、像警報、不刺耳」, 兩音交替的柔和方波最容易保證這幾點
 - 打磨第 8 輪新增的 13 個事件**全部用現成素材**, 沒有程式產生
@@ -111,9 +121,9 @@
 | 曲名 | spec 用在哪 | 何時呼叫 | 素材 | 長度 | 相對音量 |
 |---|---|---|---|---|---|
 | title | 開始畫面、日曆過場、出發準備 | 進開始畫面、日曆過場、出發準備畫面時 | music_title.mp3(Waunobe March 截段) | 70.6 秒 | 0.40 |
-| dungeon | 選武器、地下城(含見習草地) | 進選武器畫面時(之後進地下城同一首不會重頭); 出口詢問框、拿到卡過場開著時自動壓到一半(見上方 setMusicDuck); 下樓不中斷; 倒下時 play('player_down') 自動停掉 | music_dungeon.mp3(Monster Promenade 截段) | 73.8 秒 | 0.30(壓低時 0.15) |
+| dungeon | 選武器、地下城(含見習草地) | 進選武器畫面時(之後進地下城同一首不會重頭); 出口詢問框、拿到卡過場、暫停式引導開著時自動壓到一半(見上方 setMusicDuck 與暫停式引導); 下樓不中斷; 倒下時 play('player_down') 自動停掉 | music_dungeon.mp3(Monster Promenade 截段) | 73.8 秒 | 0.30(壓低時 0.15) |
 | setup | 見習過場、布置第 1、2 步、商店 | 進見習過場、布置第 1 步、商店時 | music_setup.mp3(Easy Lemon 60 秒版) | 62.5 秒 | 0.35 |
-| show | 表演場 | 開演進表演場時; 失控那一刻呼叫 `stopMusic()` | music_show.mp3(Four Beers' Polka 截段) | 73.6 秒 | 0.30 |
+| show | 表演場 | 開演進表演場時; 失控那一刻呼叫 `stopMusic()`; 暫停式引導時自動壓到一半(guide_pause → ui_confirm) | music_show.mp3(Four Beers' Polka 截段) | 73.6 秒 | 0.30 |
 | result | 地下城結算、表演結算、總結算 | 進任一結算畫面時 | music_result.mp3(Happy Boy End Theme) | 53.9 秒 | 0.40 |
 
 - 循環方式: 曲尾最後 1 秒與曲頭交叉淡化接回, 不是無縫剪接; 聽得出一次「段落重來」屬正常
@@ -139,7 +149,7 @@
 | firecracker 同一幀多顆 / 連續爆 | 間隔 0.1 秒、同時最多 2 組, 不會疊成一片噪音; 每組 0.45 秒的「劈哩啪啦」 |
 | firecracker + keg_blast(地下城) | 兩個都會響; 爆竹量得比 keg_blast 小約 15 dB, 高頻、短促, 爆炸桶是低沉的轟, 一聽就分得出 |
 | exit_prompt + 背景音樂 | 門鈴響的同時 dungeon 音樂 0.2 秒內降到一半, 門鈴浮在上面; 選完(ui_confirm / ui_cancel)恢復 |
-| 第一次碰到鐘塔 2 層出口: unlock(取代 exit_prompt) | spec: 只播 unlock。詢問框照樣跳出, 但沒有 exit_prompt 就不會自動壓低音樂 → RD 同一刻呼叫 `setMusicDuck(true)`; 選完的 ui_confirm / ui_cancel 自動恢復 |
+| 開鑰匙寶箱: chest_open → 0.3 秒後 card_get(打磨第 9 輪) | 同一般寶箱; 第 2 座在過場開始時開放, 但這一刻不播 unlock(spec)。鐘塔 2 層出口已是普通出口, 照常 exit_prompt |
 | chest_open → card_get | spec: 開箱瞬間 chest_open, 0.3 秒後過場開始才 card_get。chest_open 約 0.4 秒, 最後 0.1 秒是很輕的閃光尾巴, 實際不搶 card_get 的開頭 |
 | card_get + 背景音樂 | 鋼鼓跑句響的同時 dungeon 音樂降到一半; 按 Z 收下(ui_confirm)恢復。RD 收下時沒播 ui_confirm 也沒關係, 地下城一有動作(普攻、武器技、拋繩、下樓、扣心)就自動恢復 |
 | card_get 與 quest_done 的辨識 | 不同樂器、不同旋律: quest_done 是銅管 + 鋼鼓 + 撥弦的勝利句(見習草地限定); card_get 是鋼鼓上行跑句 + 三聲越來越高的閃光, 長 1.2 秒、比 quest_done 長, 層數更多 |
@@ -161,8 +171,22 @@
 | keg_blast + kill + player_hurt | 都會響; 爆炸桶連鎖時 keg_blast 同時最多 3 聲 |
 | capture_ready 之後很快 capture | 不同素材, 都響 |
 | coin_tally 每幀呼叫 | 間隔 0.06 秒自動擋, 大約每秒 16 下 |
+| guide_pause + 同一幀剛好有其他音效 | spec: 照常疊著播, 不另壓。guide_pause 是音樂盒的高音「叮」再往下沉, 跟打擊、撥弦、群眾聲的質感都不同 |
+| guide_pause → 0.8 秒後 guide_card | 不重疊: 叮聲 0.62 秒已收尾 |
+| guide_card(換卡)與 row_swap 的辨識 | 同一家的卡片聲, 但兩者不會同時出現(一個在引導、一個在排節目單)。row_swap 是兩聲快的「刷、刷」、略升高; guide_card 只有一聲、放慢、較輕 |
+| guide_finale + 背景音樂(已壓一半) | 號角與煙火浮在壓低的音樂上; 量得 guide_finale 最響 50 毫秒約 −9.3 dB(含音量), 比 quest_done(約 −11 dB)響, 是整個教學裡最大的一聲 |
+| guide_finale 與 card_get / quest_done 的辨識 | 三個都是「好事」, 但 guide_finale 長 2.5 秒、有鼓與煙火與觀眾, 另兩個 1 秒左右、只有旋律樂器; 號角是另一段旋律(不是 quest_done 那段 Win Jingle) |
+| guide_finale → 按 Z 的 ui_confirm | 大卡 3 秒後才接受 Z, guide_finale 2.5 秒已結束, 不重疊; ui_confirm 同時把音樂與觀眾聲恢復 |
+| row_swap + ui_confirm | spec: 互換 / 上下移只播 row_swap。RD 照 spec 不呼叫 ui_confirm 即可(同時呼叫兩個都會響) |
 
 ## 理念或經驗落實
+
+- 打磨第 9 輪: 既有事件的素材、音量、opts 全部沿用; 只新增 row_swap、guide_pause、guide_card、guide_finale, 維持「木頭布料紙當動作、樂句當成就」: 換列與引導卡是動作 → Kenney 卡片滑動聲(跟 coin_tally 同一個 Kenney 賭場素材包); 引導收尾是全教學最大的成就 → 號角 + 小鼓(跟繞場同一顆小鼓)+ 煙火(跟大彩炮同一個煙火包)+ 觀眾「耶—」(跟大彩炮同一份錄音), 都是本作已出現過的聲音家族
+- 照「按鍵直接回饋的音要在 0.03 秒內出聲」: row_swap 是按 Z 的直接回饋, 卡片滑動素材到峰值一成要 60~70 毫秒(前面是滑動前奏), 用播放起點跳過開頭 45 / 55 毫秒, 剩 15 毫秒; 原檔不改。guide_card 跟著 0.3 秒的彈入動畫, 保留滑動前奏當「滑進來」
+- 照「量最響 50 毫秒響度來設相對音量」: guide_finale 設在 quest_done 之上約 2 dB(spec 要最盛大); 混音時另外量了三發煙火「起爆後 60 毫秒對起爆前」的響度差(各 +6~+8 dB), 確認煙火從號角裡浮出來, 第一版用較輕的煙火只有 +0.6 dB, 換掉。實際輕重待試玩
+- 照「成對事件取同一個素材」的精神: 換列兩聲取同一包的兩種滑動; 引導卡與換列同一家族但一聲一快、一聲兩快, 可分辨
+- guide_pause 照 spec 的「音樂盒停下 / 磁帶減速」: 從 CC0 音樂盒錄音取一小段, 用變速重新取樣讓速度從 1.0 一路降到 0.2(音高也跟著往下沉, 量得 1297 → 596 Hz), 不是程式合成
+- 授權: 新素材全部 CC0(Kenney 卡片聲、BigSoundBank 音樂盒、Spring Spring 號角; 小鼓、煙火、觀眾歡呼沿用已登記的 CC0 素材)
 
 - 打磨第 8 輪: 既有事件的素材、音量、opts 全部沿用, 拿掉 spec 不再用的 4 個事件與 3 個專屬素材檔。新增 13 個事件, 維持「鋼鼓當成就、木頭布料當動作」: 石碑、拿到卡是成就 → 跟 heal / unlock 同一套 Kenney 鋼鼓短句(boost_get 用上揚句升調, 比 heal 亮; card_get 用上行跑句加閃光, 比 quest_done 長、層數多); 下樓、開箱是動作 → 木頭腳步、金屬扣與木頭吱呀。表演卡音照 spec 寫實(雨、蹄、吼、煙火), 都短、都比 cue_fire 小
 - 照「成對事件取同一個素材、前後呼應」: 散場與聚集取同一段空氣揮動循環的下降段與上升段, 一出一進; 大彩炮的吸入也用同一個上升段, 跟聚集是同一種「吸過來」
