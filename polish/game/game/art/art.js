@@ -1,4 +1,4 @@
-// 來馬戲團看一點大場面(打磨版第 9 輪)— 美術(Canvas 2D 幾何繪製, 無外部資源)
+// 來馬戲團看一點大場面(打磨版第 10 輪)— 美術(Canvas 2D 幾何繪製, 無外部資源)
 // 契約見 style.md / interface.json。全域物件 window.Art, 不用 ES module。
 (function () {
   'use strict';
@@ -848,7 +848,7 @@
     circle(ctx, -s * 0.55, 0, s * 0.16); ctx.fillStyle = P.outline; ctx.fill();
     ctx.restore();
   }
-  // 寶箱小圖示(地下城卡「寶箱 剩 N」、地下城結算戰利品): 金邊木箱
+  // 寶箱小圖示(第 10 輪起沒有呼叫端: 地下城卡改畫「石碑 剩 M」, 卡片寶箱拿掉; 留著不用): 金邊木箱
   function chestIcon(ctx, x, y, s, open) {
     ctx.save(); ctx.translate(x, y); ctx.lineJoin = 'round';
     rr(ctx, -s, -s * 0.2, s * 2, s * 1.0, s * 0.14); ctx.fillStyle = '#9a5e2e'; ctx.fill(); ctx.strokeStyle = P.outline; ctx.lineWidth = Math.max(1, s * 0.12); ctx.stroke();
@@ -856,6 +856,16 @@
     ctx.beginPath(); ctx.moveTo(-s, -s * 0.2); ctx.lineTo(-s, -s * 0.45); ctx.quadraticCurveTo(0, -s * 0.95, s, -s * 0.45); ctx.lineTo(s, -s * 0.2); ctx.closePath();
     ctx.fillStyle = '#b8743a'; ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#ffd24a'; ctx.fillRect(-s * 0.15, -s * 0.38, s * 0.3, s * 0.42);
+    ctx.restore();
+  }
+  // 小石碑圖示(第 10 輪; 地下城卡「石碑 剩 M」): 地下城石碑同一個圓頂碑身 + 底座 + 頂上金光點; s = 半寬
+  function shrineIcon(ctx, x, y, s) {
+    ctx.save(); ctx.translate(x, y); ctx.lineJoin = 'round';
+    ctx.strokeStyle = P.outline; ctx.lineWidth = Math.max(1, s * 0.16);
+    rr(ctx, -s, s * 0.6, s * 2, s * 0.5, s * 0.15); ctx.fillStyle = '#7a8090'; ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-s * 0.72, s * 0.65); ctx.lineTo(-s * 0.72, -s * 0.5); ctx.quadraticCurveTo(-s * 0.72, -s * 1.1, 0, -s * 1.1); ctx.quadraticCurveTo(s * 0.72, -s * 1.1, s * 0.72, -s * 0.5); ctx.lineTo(s * 0.72, s * 0.65); ctx.closePath();
+    ctx.fillStyle = '#9aa2b4'; ctx.fill(); ctx.stroke();
+    starPath(ctx, s * 0.55, -s * 1.0, s * 0.32); ctx.fillStyle = P.boost; ctx.fill();
     ctx.restore();
   }
   function selectFrame(ctx, x, y, w, h, r) {
@@ -1937,7 +1947,7 @@
 
   // ───────────── 地下城選擇卡 ─────────────
   // 400×460(第 8 輪): 色帶 + 名稱 + 「N 層」膠囊; 插圖(d1 湖邊的齒輪鐘塔 / d2 雪山冰洞, 下面鋪一排該地下城的地格);
-  // 住的魔物頭像一排(不寫名字); 「寶箱 剩 N · 石碑 剩 M」(都 0 →「全部拿到了」); 已開放 = 萊姆勾; 未開放 = 整張暗 + 鎖頭 + 條件字
+  // 住的魔物頭像一排(不寫名字); 「石碑 剩 M」+(鑰匙寶箱還在)「· 金鑰匙 鑰匙寶箱」(都 0 →「全部拿到了」); 已開放 = 萊姆勾; 未開放 = 整張暗 + 鎖頭 + 條件字
   function drawDungeonCard(ctx, s) {
     var d = dcKey(s.dungeon), info = DCODE[d], open = B(s.open);
     var style = d === 'd2' ? 'snow' : 'lake';
@@ -1972,14 +1982,23 @@
       paintSpecies(ctx, sp, (sp === 'tanuki' ? 0.58 : 0.7) * hr, {});
       ctx.restore();
     }
-    // 剩下的寶箱 / 石碑
-    var cl = Math.max(0, Math.floor(N(s.chestsLeft, 0))), bl = Math.max(0, Math.floor(N(s.boostsLeft, 0)));
+    // 第 10 輪: 「石碑 剩 M」(小石碑圖示)+ chestsLeft 1 時「· 金鑰匙圖示 鑰匙寶箱」(金色); 整排置中; 都 0 →「全部拿到了」
+    var cl = Math.max(0, Math.floor(N(s.chestsLeft, 0))) > 0 ? 1 : 0, bl = Math.max(0, Math.floor(N(s.boostsLeft, 0)));
     ctx.save(); if (!open) ctx.globalAlpha *= 0.5;
     if (cl === 0 && bl === 0) {
       T(ctx, '全部拿到了', 0, 132, { size: 20, color: P.textDim });
     } else {
-      chestIcon(ctx, -150, 136, 11, false);
-      T(ctx, '寶箱 剩 ' + cl + ' · 石碑 剩 ' + bl, -128, 132, { size: 20, align: 'left', color: P.text, maxW: 300 });
+      ctx.font = 'bold 20px ' + FONT;
+      var t1 = '石碑 剩 ' + bl, w1 = ctx.measureText(t1).width, t2 = '鑰匙寶箱', w2 = cl ? ctx.measureText(t2).width : 0;
+      var tot = 22 + w1 + (cl ? 20 + 26 + w2 : 0), lx0 = -tot / 2;
+      shrineIcon(ctx, lx0 + 8, 132, 9);
+      T(ctx, t1, lx0 + 22, 132, { size: 20, align: 'left', color: P.text });
+      if (cl) {
+        var kx = lx0 + 22 + w1 + 20;
+        circle(ctx, kx - 10, 132, 2.5); ctx.fillStyle = P.textDim; ctx.fill();
+        keyGlyph(ctx, kx + 10, 133, 10, P.boost);
+        T(ctx, t2, kx + 26, 132, { size: 20, align: 'left', color: P.boost });
+      }
     }
     ctx.restore();
     if (open) {
@@ -2862,15 +2881,16 @@
         ctx.save(); ctx.translate(cx + (sp === 'tanuki' ? 5 : 0), cy); paintSpecies(ctx, sp, (sp === 'tanuki' ? 0.55 : 0.69) * hr, {}); ctx.restore();
       }
     }
-    // 這趟拿到的東西(第 8 輪; 空陣列不畫這一列): 每項 = 小圖示 + 名稱(石碑 = 刻的圖案; 卡 = 暗號 / 表演卡圖示)
-    var loot = (Array.isArray(s.loot) ? s.loot : []).slice(0, 8);
+    // 這趟拿到的東西(第 8 輪; 空陣列不畫這一列): 每項 = 小圖示 + 名稱(石碑 = 刻的圖案; 鑰匙 = 金鑰匙)
+    // 第 10 輪: 卡改在商店買, loot 只剩 heart / rope / atk / key; 表外的 kind 直接略過(不畫成任何合法圖示)
+    var loot = (Array.isArray(s.loot) ? s.loot : []).filter(function (lo) { return lo && (BOOST[lo.kind] || lo.kind === 'key'); }).slice(0, 8);
     if (loot.length) {
       T(ctx, '拿到', -340, 2, { size: 20, align: 'left', color: P.textDim });
       ctx.save(); ctx.font = 'bold 18px ' + FONT;
       var items = [], totW = 0;
       for (var li = 0; li < loot.length; li++) {
         var lo = loot[li] || {}, kd = S(lo.kind, '');
-        var nm = S(lo.name, '') || (BOOST[kd] ? BOOST[kd].name : (kd === 'key' ? '雪境冰窟的鑰匙' : (kd === 'cue' ? (CUE[lo.key] || '暗號') : (PROG[lo.key] || '表演卡'))));
+        var nm = S(lo.name, '') || (BOOST[kd] ? BOOST[kd].name : '雪境冰窟的鑰匙');
         var w = Math.min(150, ctx.measureText(nm).width) + 34;
         items.push({ kd: kd, key: S(lo.key, ''), nm: nm, w: w }); totW += w + 16;
       }
@@ -2881,10 +2901,8 @@
       for (var lj = 0; lj < items.length; lj++) {
         var itm = items[lj];
         if (BOOST[itm.kd]) boostGlyph(ctx, itm.kd, lx + 12, 0, 10, BOOST[itm.kd].color);
-        else if (itm.kd === 'key') keyGlyph(ctx, lx + 12, 0, 11, P.boost);
-        else if (itm.kd === 'cue') { rr(ctx, lx, -13, 24, 26, 5); ctx.fillStyle = '#16323a'; ctx.fill(); ctx.strokeStyle = P.cue; ctx.lineWidth = 1.5; ctx.stroke(); iconCue(ctx, CUE[itm.key] ? itm.key : '', lx + 12, 0, 9, 1); }
-        else { rr(ctx, lx, -13, 24, 26, 5); ctx.fillStyle = '#3a1a2c'; ctx.fill(); ctx.strokeStyle = P.program; ctx.lineWidth = 1.5; ctx.stroke(); iconProg(ctx, PROG[itm.key] ? itm.key : '', lx + 12, 0, 9, 1); }
-        T(ctx, itm.nm, lx + 32, 0, { size: 18, align: 'left', color: (BOOST[itm.kd] || itm.kd === 'key') ? P.boost : (itm.kd === 'cue' ? P.cue : P.program), maxW: 150 });
+        else keyGlyph(ctx, lx + 12, 0, 11, P.boost);
+        T(ctx, itm.nm, lx + 32, 0, { size: 18, align: 'left', color: P.boost, maxW: 150 });
         lx += itm.w + 16;
       }
       ctx.restore();
@@ -2993,51 +3011,65 @@
     T(ctx, TAB[tab], 0, -1, { size: 22, color: cur ? '#ffffff' : P.textDim });
     if (B(s.selected)) selectFrame(ctx, -110, -25, 220, 50, 10);
   }
+  // 第 10 輪: 280×120(4 欄 × 2 列格子), 格內不畫說明。左: 圖示框 72×72; 右欄 x −48~130: 上 = 小標膠囊(暗號 / 表演卡; 武器不畫),
+  // 中 = 名稱 22px, 下 = 價格 / 「已擁有」/「名聲 N 解鎖」(靠右)。右上角 (+110, −44) 44×20 = NEW(白底金框膠囊 + 左邊閃爍的金星)。
+  // 買下彈一下: 底板佔滿 size 不縮放, 只把格內內容放大到 1.08 倍再回來 + 底板內緣一圈白光淡出(底板放大會超出 size)
+  function newTag(ctx, x, y) {
+    rr(ctx, x - 22, y - 10, 44, 20, 10); ctx.fillStyle = '#ffffff'; ctx.fill(); ctx.strokeStyle = P.boost; ctx.lineWidth = 2; ctx.stroke();
+    T(ctx, 'NEW', x + 3, y + 0.5, { size: 13, color: '#10131b', stroke: false });
+    var tw = 0.75 + 0.25 * Math.sin(now() / 260);
+    starPath(ctx, x - 13, y, 5 * tw); ctx.fillStyle = P.boost; ctx.fill(); ctx.strokeStyle = P.outline; ctx.lineWidth = 1; ctx.stroke();
+  }
   function drawShopItem(ctx, s) {
     var item = S(s.item, '');
     ctx.translate(N(s.x, 0), N(s.y, 0));
     var isCue = !!CUE[item], isProg = !!PROG[item], it = ITEM[item];
     var locked = B(s.fameLocked) && item !== 'club';
-    panel(ctx, -190, -45, 380, 90, 10, locked ? '#181c27' : P.panel, locked ? '#2c3344' : P.line);
+    var pd = N(s.popDur, 0.3) > 0 ? N(s.popDur, 0.3) : 0.3, pq = clamp(N(s.popT, pd) / pd, 0, 1);
+    var pop = pq < 1 ? 1 + 0.08 * Math.sin(Math.PI * pq) : 1;
+    panel(ctx, -139, -59, 278, 118, 10, locked ? '#181c27' : P.panel, locked ? '#2c3344' : P.line);
+    ctx.save(); ctx.scale(pop, pop);
     ctx.save(); if (locked) ctx.globalAlpha *= 0.4;
-    // 圖示框 70×70
-    rr(ctx, -182, -35, 70, 70, 8); ctx.fillStyle = '#161b27'; ctx.fill();
-    var name = '', desc = '';
-    if (isCue) { iconCue(ctx, item, -147, 0, 20, 1); name = CUE[item]; desc = CUE_DESC[item]; }
-    else if (isProg) { iconProg(ctx, item, -147, 0, 20, 1); name = PROG[item]; desc = PROG_DESC[item]; }
-    else if (it) {
-      name = it.name; desc = it.desc;
-      iconWeapon(ctx, item, -150, 4, 30);
-    } else { name = item || '?'; }
-    // 小標: 暗號(青)/ 表演卡(粉)
+    // 圖示框 72×72
+    rr(ctx, -128, -36, 72, 72, 8); ctx.fillStyle = '#161b27'; ctx.fill();
+    var name = '';
+    if (isCue) { rr(ctx, -128, -36, 72, 72, 8); ctx.strokeStyle = P.cue; ctx.lineWidth = 1.5; ctx.globalAlpha *= 0.6; ctx.stroke(); ctx.globalAlpha /= 0.6; iconCue(ctx, item, -92, 0, 21, 1); name = CUE[item]; }
+    else if (isProg) { rr(ctx, -128, -36, 72, 72, 8); ctx.strokeStyle = P.program; ctx.lineWidth = 1.5; ctx.globalAlpha *= 0.6; ctx.stroke(); ctx.globalAlpha /= 0.6; iconProg(ctx, item, -92, 0, 21, 1); name = PROG[item]; }
+    else if (it) { name = it.name; iconWeapon(ctx, item, -95, 4, 30); }
+    else { name = item || '?'; }
+    // 小標: 暗號(青)/ 表演卡(粉); 武器不畫, 名稱往上移
     if (isCue || isProg) {
       var tag = isCue ? '暗號' : '表演卡', tc = isCue ? P.cue : P.program, tgw = isCue ? 44 : 58;
-      rr(ctx, -100, -37, tgw, 21, 6); ctx.fillStyle = tc; ctx.fill();
-      T(ctx, tag, -100 + tgw / 2, -26.5, { size: 13, color: '#10131b', stroke: false });
-      T(ctx, name, -100 + tgw + 8, -26, { size: 20, align: 'left', maxW: 272 - tgw });
-    } else T(ctx, name, -100, -26, { size: 20, align: 'left', maxW: 280 });
-    if (desc) richLine(ctx, desc, -100, 3, { size: 15, align: 'left', color: '#c8d0e0', maxW: 280 });
+      rr(ctx, -46, -48, tgw, 21, 6); ctx.fillStyle = tc; ctx.fill();
+      T(ctx, tag, -46 + tgw / 2, -37.5, { size: 13, color: '#10131b', stroke: false });
+      T(ctx, name, -46, -4, { size: 22, align: 'left', maxW: 176 });
+    } else T(ctx, name, -46, -12, { size: 24, align: 'left', maxW: 176 });
     ctx.restore();
     // 右下: 價格 / 狀態 / 名聲門檻
     var cost = Math.max(0, Math.floor(N(s.cost, 0)));
-    var status = '', scol = P.textDim;
     if (locked) {
-      // 名聲未到: 整格暗 + 鎖頭 +「名聲 N 解鎖」(名聲色)
-      ctx.save(); ctx.translate(-147, 0);
+      // 名聲未到: 整格暗 + 鎖頭(蓋在圖示框上)+「名聲 N 解鎖」(名聲色)
+      ctx.save(); ctx.translate(-92, 0);
       ctx.strokeStyle = '#b8c0d0'; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.arc(0, -6, 8, Math.PI, 0); ctx.stroke();
       rr(ctx, -11, -6, 22, 17, 4); ctx.fillStyle = '#b8c0d0'; ctx.fill();
       ctx.restore();
-      repIcon(ctx, 26, 29, 8);
-      T(ctx, '名聲 ' + Math.max(0, Math.floor(N(s.fameReq, 0))) + ' 解鎖', 180, 29, { size: 17, align: 'right', color: P.rep });
+      var lt = '名聲 ' + Math.max(0, Math.floor(N(s.fameReq, 0))) + ' 解鎖';
+      ctx.font = 'bold 17px ' + FONT; var lw = Math.min(150, ctx.measureText(lt).width);
+      repIcon(ctx, 128 - lw - 12, 34, 8);
+      T(ctx, lt, 128, 34, { size: 17, align: 'right', color: P.rep, maxW: 150 });
+    } else if (B(s.owned) || item === 'club') {
+      T(ctx, '已擁有', 128, 34, { size: 18, align: 'right', color: P.textDim });
     } else {
-      if (B(s.owned) || item === 'club') status = '已擁有';
-      if (status) T(ctx, status, 180, 29, { size: 17, align: 'right', color: scol });
-      else {
-        var aff = B(s.affordable);
-        T(ctx, cost + ' 金', 180, 29, { size: 18, align: 'right', color: aff ? P.gold : '#ff7a7a' });
-      }
+      var aff = B(s.affordable), ct = cost + ' 金';
+      ctx.font = 'bold 20px ' + FONT; var cw = Math.min(150, ctx.measureText(ct).width);
+      coinIcon(ctx, 128 - cw - 12, 34, 8);
+      T(ctx, ct, 128, 34, { size: 20, align: 'right', color: aff ? P.gold : '#ff7a7a', maxW: 150 });
     }
-    if (B(s.selected)) selectFrame(ctx, -190, -45, 380, 90, 10);
+    ctx.restore();
+    // NEW(剛上架; 名聲未到時不會是 fresh, 保險起見鎖住時不畫); 不跟著彈, 固定在框內右上角
+    if (B(s.fresh) && !locked) newTag(ctx, 110, -44);
+    if (pq < 1) { rr(ctx, -136, -56, 272, 112, 8); ctx.strokeStyle = 'rgba(255,255,255,' + (0.9 * (1 - pq)).toFixed(3) + ')'; ctx.lineWidth = 3; ctx.stroke(); }
+    if (B(s.selected)) selectFrame(ctx, -140, -60, 280, 120, 10);
   }
   function drawShopDetail(ctx, s) {
     ctx.translate(N(s.x, 640), N(s.y, 570));
@@ -3154,10 +3186,10 @@
       starPath(ctx, -90 + i * 90, -194, 26);
       ctx.fillStyle = i < stars ? P.select : '#2c3446'; ctx.fill(); ctx.strokeStyle = i < stars ? '#fff2b0' : '#465372'; ctx.lineWidth = 3; ctx.stroke();
     }
-    var cards = Math.max(0, Math.floor(N(s.cards, 0))), cm = Math.max(0, Math.floor(N(s.cardsMax, 7)));
+    var cards = Math.max(0, Math.floor(N(s.cards, 0))), cm = Math.max(0, Math.floor(N(s.cardsMax, 13)));
     var bo = Math.max(0, Math.floor(N(s.boosts, 0))), bm = Math.max(0, Math.floor(N(s.boostsMax, 9)));
     var rows = [['總名聲', String(Math.floor(N(s.rep, 0))), P.rep], ['累計賺得金幣', String(Math.floor(N(s.goldEarned, 0))), P.gold], ['最長連鎖', Math.floor(N(s.bestChain, 0)) + ' 段', '#9ff0ff'],
-      ['拿到的卡與強化', '卡 ' + cards + ' / ' + cm + ' · 強化 ' + bo + ' / ' + bm, P.boost]];
+      ['買到的卡與強化', '卡 ' + cards + ' / ' + cm + ' · 強化 ' + bo + ' / ' + bm, P.boost]];
     for (var r = 0; r < 4; r++) {
       var yy = -146 + r * 30;
       T(ctx, rows[r][0], -300, yy, { size: 19, align: 'left', color: P.textDim });
@@ -3744,7 +3776,7 @@
     circle(ctx, 0, 132, 22); ctx.fillStyle = 'rgba(12,15,22,0.7)'; ctx.fill(); ctx.strokeStyle = KEY_ACC; ctx.lineWidth = 2; ctx.stroke();
     dunIcon(ctx, 'd2', 0, 133, 15, 1);
   }
-  // 拿到卡的過場: 壓暗 0.6(連 HUD) + 放射光芒; 0~0.6 秒卡片從寶箱 (fromX,fromY) 轉著飛到 (640,320) 並放大; 0.6~1.2 秒卡片發光、光點噴開;
+  // 拿到卡的過場: 壓暗 0.6(連 HUD) + 放射光芒; 0~0.6 秒卡片從 (fromX,fromY)(商店 = 剛買那格中心; 鑰匙 = 寶箱)轉著飛到 (640,320) 並放大; 0.6~1.2 秒卡片發光、光點噴開;
   // 卡下方 卡名 (640,535)、〔類別〕+ 說明 (640,575)、第一次另加提示 (640,615)、ready 才畫閃爍的「按 [Z] 收下」(640,670)。字在 0.5~0.8 秒淡入(卡先飛到, 字才出來)
   function drawCardGet(ctx, s) {
     var dur = N(s.dur, 1.2) > 0 ? N(s.dur, 1.2) : 1.2, t = clamp(N(s.t, dur), 0, dur);

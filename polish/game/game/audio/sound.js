@@ -247,6 +247,11 @@
   var GUIDE_OFF_EV = { ui_confirm: 1, ui_cancel: 1, dungeon_end: 1, attack: 1, skill: 1, rope_throw: 1, stairs_down: 1, player_hurt: 1, perform: 1, cue_fire: 1, chain: 1, ignite: 1, calm: 1, special: 1, angry_perform: 1, clock_tick: 1 };
   // 這些事件代表詢問框 / 過場已關閉 → 背景音樂恢復音量(後面幾個是「只有地下城在跑才會發生」的動作, 當保險: RD 收下卡時沒播 ui_confirm 也會在下一個動作恢復)
   var DUCK_RELEASE_EV = { ui_confirm: 1, ui_cancel: 1, dungeon_end: 1, attack: 1, skill: 1, rope_throw: 1, stairs_down: 1, player_hurt: 1 };
+  // 打磨第 10 輪: 商店買卡的過場「收下」不播音效(spec), 只靠上面那組恢復會讓商店音樂一直停在一半。
+  // 拿到卡過場期間不接受其他按鍵, 所以由 card_get 壓低時, 之後任何選單音(移游標、再買、買不起)都代表過場已關 → 恢復。
+  // 只限 card_get 壓低的情況: 出口詢問框開著時移游標(ui_move)不能把音樂放大。
+  var CARD_DUCK_RELEASE_EV = { ui_move: 1, ui_denied: 1, buy: 1, unlock: 1 };
+  var duckBy = '';
   // 這些事件一發生就停掉背景音樂(倒下: spec「背景音樂立刻停, player_down 單獨響完」)
   var MUSIC_STOP_EV = { player_down: 1 };
 
@@ -403,7 +408,7 @@
   }
   function startMusic(name) {
     if (cur && cur.name === name && !cur.stopping) return;
-    duck = 1; // 換曲一律恢復正常音量
+    duck = 1; duckBy = ''; // 換曲一律恢復正常音量
     fadeOutTrack(cur, SWITCH_FADE);
     var m = makeTrack(name); cur = m;
     var a = m.els[0];
@@ -518,8 +523,8 @@
         // 觀眾聲與音樂壓低: 靜音時也照樣更新狀態, 解除靜音後才對得上
         if (CROWD_EV[name]) { setCrowd(CROWD_EV[name]); return; }
         if (CROWD_STOP_EV[name]) setCrowd('');
-        if (DUCK_EV[name]) setDuck(true);
-        else if (DUCK_RELEASE_EV[name] || GUIDE_OFF_EV[name]) setDuck(false);
+        if (DUCK_EV[name]) { setDuck(true); duckBy = name; }
+        else if (DUCK_RELEASE_EV[name] || GUIDE_OFF_EV[name] || (duckBy === 'card_get' && CARD_DUCK_RELEASE_EV[name])) { setDuck(false); duckBy = ''; }
         if (name === 'guide_pause') setGuideHold(true);
         else if (GUIDE_OFF_EV[name]) setGuideHold(false);
         if (MUSIC_STOP_EV[name]) Sound.stopMusic();
@@ -564,7 +569,7 @@
     // 表演熱度段: 'quiet' | 'clap' | 'cheer' | 'frenzy'('' 或 'quiet' = 沒有觀眾聲)。每幀呼叫也無害
     setCrowd: function (tier) { try { setCrowd(tier); } catch (e) { } },
     // 出口詢問框 / 拿到卡過場開著時 true(背景音樂壓到一半), 關掉時 false。exit_prompt / card_get / ui_confirm / ui_cancel / dungeon_end 也會自動處理
-    setMusicDuck: function (b) { try { setDuck(!!b); } catch (e) { } },
+    setMusicDuck: function (b) { try { setDuck(!!b); duckBy = b ? 'manual' : ''; } catch (e) { } },
     setMuted: function (b) {
       muted = !!b;
       try {

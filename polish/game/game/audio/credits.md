@@ -2,6 +2,8 @@
 
 授權統計: CC0 90 項(Kenney 62 檔 + OpenGameArt 9 檔 + 內嵌 19 段, 內嵌段的來源為 OpenGameArt、BigSoundBank 與本表已登記的 CC0 檔)、CC BY 4.0 8 項(背景音樂 5 檔 + 觀眾歡呼 2 檔 + 卡通馬蹄 1 檔; 馬蹄原錄音是 CC0, 但轉製者的整包頁面標 CC BY 4.0, 保守起見照 CC BY 署名)。另有 1 個程式產生的音效(heat_warn, 無外部素材, 不列)。
 
+打磨第 10 輪異動: 無(spec 沒有新音效, 素材全部沿用; 只調整 sound.js 的音樂壓低恢復時機)。
+
 打磨第 9 輪異動: 新增 3 個檔(Kenney 賭場音效包的卡片滑動聲, 給 row_swap、guide_card)與 2 段內嵌(guide_pause: BigSoundBank 音樂盒; guide_finale: OpenGameArt 號角 + 已登記的小鼓、煙火、歡呼混音); 其他檔案不動。
 
 打磨第 8 輪異動: 刪除 sfx_weapon_menu.ogg、sfx_freeze_glass.ogg、sfx_mark_add.ogg 與內嵌段 freeze_all(對應事件 spec 不再用); sfx_cheer.ogg 保留, 改給 confetti_burst 用。新增 15 個檔(Kenney 10 檔、OpenGameArt 5 檔)與 6 段內嵌, 給本輪新增的 13 個事件用; 其他檔案不動。
