@@ -16,6 +16,7 @@ const ROWS = 4;                            // 暗號節目單列數
 const TIERS = ['quiet', 'clap', 'cheer', 'frenzy'];
 const LOOSE_LINE = 92;                     // 失控線(全場平均熱度 %)
 const D2R = Math.PI / 180;
+const TM = () => !!(window.PVDX && PVDX.on);   // 觸控模式(touch.js): 少數畫面的資訊要躲開虛擬按鈕, 只在這個模式下換位置
 const rnd = (a, b) => a + Math.random() * (b - a);
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 const dist = (ax, ay, bx, by) => Math.hypot(ax - bx, ay - by);
@@ -375,25 +376,34 @@ function keyName(e) {
   }
   return null;
 }
+// 按下 / 放開 / 全放開: 鍵盤與觸控按鈕(touch.js)共用同一條路徑
+function inputDown(k) {
+  if (window.PVDX && PVDX.paused) return;   // 網站暫停 / 直拿提示中不收輸入
+  Snd.init();
+  keys[k] = true;
+  pressed[k] = true;
+  if (TUT.cur && TUT.cur.phase === 'show') TUT.cur.pk[k] = true;
+}
+function inputUp(k) { keys[k] = false; }
+function inputReset() {
+  for (const k in keys) keys[k] = false;
+  pressed = {};
+}
 window.addEventListener('keydown', function (e) {
   const k = keyName(e);
   if (!k) return;
   e.preventDefault();
   if (e.repeat) return;
-  Snd.init();
-  keys[k] = true;
-  pressed[k] = true;
-  if (TUT.cur && TUT.cur.phase === 'show') TUT.cur.pk[k] = true;
+  inputDown(k);
 });
 window.addEventListener('keyup', function (e) {
   const k = keyName(e);
   if (!k) return;
   e.preventDefault();
-  keys[k] = false;
+  inputUp(k);
 });
 window.addEventListener('blur', function () {
-  for (const k in keys) keys[k] = false;
-  pressed = {};
+  inputReset();
 });
 
 
@@ -467,7 +477,7 @@ const TS = {
       const c = slotCenter(i); return { x: c.x, y: c.y, hh: 55 };
     }, ok: () => stageCount() === 3 },
   9: { where: () => scene === 'setup1' && G.day === 0, text: () => '[↓] 再 [Z] 下一步', keys: () => [],
-    tgt: () => ({ x: 1070, y: 505, hh: 35 }), ok: c => !!c.flags.next },
+    tgt: () => (TM() ? { x: 1085, y: 460, hh: 30 } : { x: 1070, y: 505, hh: 35 }), ok: c => !!c.flags.next },
   10: { where: () => scene === 'setup2' && G.day === 0, text: () => '[Z] 選暗號: 什麼時候演', keys: () => [],
     tgt: () => ({ x: 280, y: 100, hh: 26 }), ok: () => !!G.rows[0].cue },
   11: { where: () => scene === 'setup2' && G.day === 0, text: () => '[→] 再 [Z] 選表演卡: 演什麼', keys: () => [],
@@ -481,7 +491,7 @@ const TS = {
     geo: () => ({ x: 812, y: 46, bx: 700, by: 110, side: 'down' }), tick: (c, dt) => { c.t += dt; },
     ok: c => c.t >= 4 || (!!S && S.heat < 75 && c.t > 0.3) },
   19: { where: () => scene === 'prep', text: () => '[←][→] 選 [Z] 決定', keys: () => [],
-    geo: () => (PL.cur === 0 ? { x: 440, y: 165, bx: 440, by: 105, side: 'up' } : { x: 850, y: 235, bx: 850, by: 175, side: 'up' }),
+    geo: () => (PL.cur === 0 ? { x: TM() ? 480 : 440, y: 165, bx: TM() ? 480 : 440, by: 105, side: 'up' } : { x: 850, y: 235, bx: 850, by: 175, side: 'up' }),
     ok: c => !!c.flags.placeChosen },
   20: { where: () => scene === 'shop', text: () => '[←][→] 換分頁', keys: () => [], tgt: () => ({ x: 640, y: 85, hh: 25 }), ok: c => !!c.flags.tab },
   // 21~25: 地下城引導卡(見 GD)
@@ -2067,7 +2077,7 @@ function setup1Input(dt) {
       else {
         Snd.play('ui_denied');
         if (G.day === 0) {   // 見習日一定要選滿 3 隻
-          setupHint('要選 3 隻上台 才能下一步', 1070, 450);
+          setupHint('要選 3 隻上台 才能下一步', TM() ? 1085 : 1070, TM() ? 408 : 450);
         }
       }
     }
@@ -3221,9 +3231,12 @@ function renderSetup1() {
   Art.drawBackground(ctx, bgState('setup1'));
   drawBank(s, s.zone === 'grid');
   const b = G.bank[Math.min(s.cur, G.bank.length - 1)];
-  if (b) Art.drawMonsterInfo(ctx, monsterInfoState(b, 480, 555));
-  Art.drawButton(ctx, { x: 960, y: 470, w: 220, h: 70, label: '下一步', selected: s.zone === 'next' });
-  if (G.day !== 0) Art.drawButton(ctx, { x: 960, y: 570, w: 220, h: 70, label: '回上一頁', selected: s.zone === 'back' });
+  if (b) {
+    if (TM()) { ctx.save(); ctx.translate(628, 555); ctx.scale(0.85, 0.85); Art.drawMonsterInfo(ctx, monsterInfoState(b, 0, 0)); ctx.restore(); }   // 觸控: 縮成 x 271~985, 夾在方向鍵與 B 鍵之間
+    else Art.drawMonsterInfo(ctx, monsterInfoState(b, 480, 555));
+  }
+  Art.drawButton(ctx, { x: TM() ? 990 : 960, y: TM() ? 430 : 470, w: TM() ? 190 : 220, h: TM() ? 60 : 70, label: '下一步', selected: s.zone === 'next' });
+  if (G.day !== 0) Art.drawButton(ctx, { x: TM() ? 990 : 960, y: TM() ? 495 : 570, w: TM() ? 190 : 220, h: TM() ? 60 : 70, label: '回上一頁', selected: s.zone === 'back' });
   for (const f of UI.floats) Art.drawFloatText(ctx, { x: f.x, y: f.y - (f.kind === 'hint' ? 0 : f.t * 30), text: f.text, kind: f.kind, t: f.t, dur: f.dur });
   Art.drawHud(ctx, hudState());
   Art.drawStageCount(ctx, { x: 640, y: 25, count: stageCount(), max: stageLimit(), popT: Math.min(0.3, G.stagePopT), popDur: 0.3 });
@@ -3255,8 +3268,8 @@ function renderShop() {
     Art.drawShopItem(ctx, st);
   });
   if (s.zone === 'grid') lines = shopDetailLines(items[s.idx]);
-  Art.drawShopDetail(ctx, { x: 640, y: 570, lines });
-  Art.drawButton(ctx, { x: 1000, y: 625, w: 200, h: 70, label: '離開', selected: s.zone === 'go' });
+  Art.drawShopDetail(ctx, { x: 640, y: TM() ? 443 : 570, lines });
+  Art.drawButton(ctx, { x: TM() ? 940 : 1000, y: TM() ? 505 : 625, w: 200, h: 70, label: '離開', selected: s.zone === 'go' });
   for (const f of UI.floats) Art.drawFloatText(ctx, { x: f.x, y: f.y - f.t * 30, text: f.text, kind: f.kind, t: f.t, dur: f.dur });
   Art.drawHud(ctx, hudState());
   renderTutorial('all');
@@ -3274,10 +3287,10 @@ function render() {
     case 'intermission': Art.drawIntermission(ctx, { t: IM.t, ready: IM.t >= 0.6, monsters: IM.mons, day: G.day, weapon: G.weapon }); break;
     case 'prep': {
       Art.drawBackground(ctx, bgState('prep'));
-      Art.drawPlaceCard(ctx, { x: 440, y: 385, w: 440, h: 440, place: PL.stage === 'dungeon' ? 'dungeon' : 'show',
+      Art.drawPlaceCard(ctx, { x: TM() ? 480 : 440, y: 385, w: 440, h: 440, place: PL.stage === 'dungeon' ? 'dungeon' : 'show',
         note: PL.stage === 'dungeon' ? '抓魔物 · 找石碑變強' : '上台表演 · 賺滿意度', selected: PL.zone === 'card' && PL.cur === 0 });
       Art.drawPlaceCard(ctx, { x: 850, y: 385, w: 260, h: 300, place: 'shop', note: '武器 · 暗號 · 表演卡', selected: PL.zone === 'card' && PL.cur === 1 });
-      Art.drawButton(ctx, { x: 1060, y: 640, w: 190, h: 60, label: Snd.muted ? '聲音 關' : '聲音 開', selected: PL.zone === 'sound' });
+      Art.drawButton(ctx, { x: TM() ? 985 : 1060, y: TM() ? 420 : 640, w: TM() ? 170 : 190, h: 60, label: Snd.muted ? '聲音 關' : '聲音 開', selected: PL.zone === 'sound' });
       if (PL.notice) Art.drawFloatText(ctx, { x: 640, y: 110, text: PL.notice.text, kind: 'unlock', t: PL.notice.t, dur: 1.5 });
       Art.drawHud(ctx, hudState());
       renderTutorial('all');
@@ -3285,7 +3298,7 @@ function render() {
     }
     case 'select':
       Art.drawBackground(ctx, bgState('select'));
-      DUNGEON_ORDER.forEach((id, i) => Art.drawDungeonCard(ctx, { x: 400 + 480 * i, y: 390, dungeon: id, name: DUNGEONS[id].name, floors: DUNGEONS[id].floors.length,
+      DUNGEON_ORDER.forEach((id, i) => Art.drawDungeonCard(ctx, { x: 400 + 480 * i, y: TM() ? 330 : 390, dungeon: id, name: DUNGEONS[id].name, floors: DUNGEONS[id].floors.length,
         species: DUNGEONS[id].species.slice(), chestsLeft: leftCount(id, 'chests', 'gold'), keyLeft: leftCount(id, 'chests', 'key'), boostsLeft: leftCount(id, 'boosts'),
         open: !!G.unlocked[id], condition: G.unlocked[id] ? '' : '在湖畔鐘塔第 2 層的寶箱找到鑰匙', selected: i === SEL.cur }));
       Art.drawHud(ctx, hudState());
@@ -3346,10 +3359,11 @@ function frame(ts) {
   const dt = Math.min((ts - lastTs) / 1000, 1 / 30);
   lastTs = ts;
   try {
-    update(dt);
+    if (!(window.PVDX && PVDX.paused)) update(dt);   // 網站暫停 / 直拿提示時凍結(touch.js)
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, CW, CH);
     render();
+    if (window.PVDX) PVDX.draw(ctx);                 // 觸控按鈕畫在最上層(電腦版是空函式)
   } catch (err) { console.error(err); }
   requestAnimationFrame(frame);
 }
