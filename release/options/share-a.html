@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>分享預覽 A — 七隻魔物大遊行</title>
+<style>body{margin:0;overflow:hidden;background:#000}canvas{display:block}</style>
+</head>
+<body>
+<canvas id="c" width="1200" height="630"></canvas>
+<script src="../game/art/art.js"></script>
+<script>
+// 預覽 A: 舞台上七種魔物排成一列大遊行(遊戲全部魔物陣容), 遊戲名在上方聚光燈下
+(function () {
+  var cv = document.getElementById('c'), ctx = cv.getContext('2d');
+  var W = 1200, H = 630, TAU = Math.PI * 2;
+  var FONT = '"Microsoft JhengHei","PingFang TC","Noto Sans TC","Heiti TC",sans-serif';
+
+  function monster(sp, x, y, sc, dir) {
+    ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc);
+    ctx.beginPath(); ctx.rect(-70, -38, 140, 110); ctx.clip();
+    Art.drawShowMonster(ctx, { x: 0, y: 0, species: sp, dir: dir, rage: 0, angryLow: 80, marks: 0, mode: 'roam', move: 'walk' });
+    ctx.restore();
+  }
+  function star(x, y, r) {
+    ctx.beginPath();
+    for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, rad = i % 2 ? r * 0.45 : r; ctx.lineTo(x + Math.cos(a) * rad, y + Math.sin(a) * rad); }
+    ctx.closePath();
+  }
+  function title(text, x, y, size) {
+    ctx.save();
+    ctx.font = '900 ' + size + 'px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+    ctx.lineWidth = size * 0.2; ctx.strokeStyle = '#3a1a10'; ctx.strokeText(text, x, y + 5);
+    ctx.strokeText(text, x, y);
+    var tg = ctx.createLinearGradient(0, y - size / 2, 0, y + size / 2);
+    tg.addColorStop(0, '#fff2b8'); tg.addColorStop(0.55, '#ffd24a'); tg.addColorStop(1, '#f0a030');
+    ctx.fillStyle = tg; ctx.fillText(text, x, y);
+    ctx.restore();
+  }
+
+  // 1. 背景(開始畫面同色系)+ 兩道聚光燈打在遊戲名上
+  var g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#1c1630'); g.addColorStop(0.6, '#241a2e'); g.addColorStop(1, '#120e18');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  var beams = [[170, -0.32], [1030, 0.32]];
+  for (var b = 0; b < 2; b++) {
+    ctx.save(); ctx.translate(beams[b][0], -30); ctx.rotate(beams[b][1]);
+    ctx.beginPath(); ctx.moveTo(-24, 0); ctx.lineTo(24, 0); ctx.lineTo(190, 680); ctx.lineTo(-190, 680); ctx.closePath();
+    ctx.fillStyle = 'rgba(255,240,200,0.07)'; ctx.fill(); ctx.restore();
+  }
+  // 頂端彩旗串
+  var cols = ['#e05a4a', '#ffd24a', '#5ad1e6', '#f4ecdc'];
+  ctx.strokeStyle = '#6a6070'; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.moveTo(0, 14); ctx.quadraticCurveTo(600, 64, 1200, 14); ctx.stroke();
+  for (var f = 1; f < 24; f++) {
+    var u = f / 24, a1 = 1 - u, px = a1 * a1 * 0 + 2 * a1 * u * 600 + u * u * 1200, py = a1 * a1 * 14 + 2 * a1 * u * 64 + u * u * 14;
+    ctx.beginPath(); ctx.moveTo(px - 13, py); ctx.lineTo(px + 13, py); ctx.lineTo(px, py + 26); ctx.closePath();
+    ctx.fillStyle = cols[f % 4]; ctx.fill(); ctx.strokeStyle = '#0d1018'; ctx.lineWidth = 1.5; ctx.stroke();
+  }
+
+  // 2. 舞台
+  ctx.beginPath(); ctx.ellipse(600, 548, 660, 120, 0, 0, TAU); ctx.fillStyle = '#2b2a35'; ctx.fill();
+  ctx.strokeStyle = '#4a4458'; ctx.lineWidth = 4; ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(600, 548, 420, 70, 0, 0, TAU); ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 3; ctx.stroke();
+  // 舞台中央一圈暖光
+  var sg = ctx.createRadialGradient(600, 470, 30, 600, 470, 520);
+  sg.addColorStop(0, 'rgba(255,224,150,0.22)'); sg.addColorStop(1, 'rgba(255,224,150,0)');
+  ctx.fillStyle = sg; ctx.fillRect(0, 250, W, 380);
+
+  // 3. 遊戲名(上方, 獨立一帶, 不壓到魔物)+ 兩側星星
+  title('來馬戲團看一點大場面', 600, 150, 100);
+  ctx.save(); ctx.lineJoin = 'round'; ctx.fillStyle = '#ffe08a'; ctx.strokeStyle = '#8a5a10'; ctx.lineWidth = 3;
+  star(60, 150, 22); ctx.fill(); ctx.stroke();
+  star(1140, 150, 22); ctx.fill(); ctx.stroke();
+  star(300, 250, 12); ctx.fill(); star(600, 258, 14); ctx.fill(); star(900, 250, 12); ctx.fill();
+  ctx.restore();
+
+  // 4. 七種魔物大遊行(由左往右走, 高低錯開); 每隻 R 24 × 2.7 ≈ 身體直徑 130
+  var parade = ['tanuki', 'beetle', 'penguin', 'monkey', 'parrot', 'hedgehog', 'lily'];
+  for (var i = 0; i < parade.length; i++) {
+    var x = 120 + i * 160, y = (i % 2 === 0) ? 470 : 430;
+    if (parade[i] === 'monkey') y -= 22;    // 火柴猴蹦一下(遊戲裡走路會跳)
+    monster(parade[i], x, y, 2.7, 1);
+  }
+})();
+</script>
+</body>
+</html>

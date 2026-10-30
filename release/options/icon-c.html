@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>圖示 C — 爆竹刺蝟與大彩炮</title>
+<style>body{margin:0;overflow:hidden;background:#000}canvas{display:block}</style>
+</head>
+<body>
+<canvas id="c" width="512" height="512"></canvas>
+<script src="../game/art/art.js"></script>
+<script>
+// 圖示 C: 主角 = 爆竹刺蝟(背上一排紅爆竹的剪影), 站在金色燈泡圓框的舞台光裡; 背後是大彩炮爆開的彩紙
+(function () {
+  var cv = document.getElementById('c'), ctx = cv.getContext('2d');
+  var W = 512, H = 512, TAU = Math.PI * 2, OUT = '#0d1018';
+
+  function monster(sp, x, y, sc, dir) {
+    ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc);
+    ctx.beginPath(); ctx.rect(-70, -38, 140, 110); ctx.clip();
+    Art.drawShowMonster(ctx, { x: 0, y: 0, species: sp, dir: dir, rage: 0, angryLow: 80, marks: 0, mode: 'roam', move: 'walk' });
+    ctx.restore();
+  }
+
+  // 1. 背景: 深紫徑向
+  var g = ctx.createRadialGradient(256, 256, 60, 256, 256, 380);
+  g.addColorStop(0, '#4a2a7a'); g.addColorStop(1, '#170d2a');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+  // 2. 大彩炮爆開(沿用 drawConfetti 的 burst, 縮放後以圖示中心為爆心)
+  var cs = 0.5;
+  ctx.save(); ctx.translate(256 - 640 * cs, 256 - 356 * cs); ctx.scale(cs, cs);
+  Art.drawConfetti(ctx, { phase: 'burst', t: 0.34, dur: 0.8, count: 8 });
+  ctx.restore();
+
+  // 3. 舞台光圓框: 金框 + 一圈燈泡, 框內暖色光
+  var R = 178, cx = 256, cy = 262;
+  var lg = ctx.createRadialGradient(cx, cy - 30, 20, cx, cy, R);
+  lg.addColorStop(0, '#fff6d8'); lg.addColorStop(0.75, '#ffd98a'); lg.addColorStop(1, '#f0b04a');
+  ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.fillStyle = lg; ctx.fill();
+  ctx.lineWidth = 16; ctx.strokeStyle = '#e05a4a'; ctx.stroke();
+  ctx.lineWidth = 5; ctx.strokeStyle = OUT; ctx.beginPath(); ctx.arc(cx, cy, R + 8, 0, TAU); ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx, cy, R - 8, 0, TAU); ctx.lineWidth = 3; ctx.stroke();
+  for (var i = 0; i < 16; i++) {
+    var a = i * TAU / 16;
+    ctx.beginPath(); ctx.arc(cx + Math.cos(a) * R, cy + Math.sin(a) * R, 6.5, 0, TAU);
+    ctx.fillStyle = '#fff3b0'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = OUT; ctx.stroke();
+  }
+  // 地面影子底座
+  ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R - 10, 0, TAU); ctx.clip();
+  ctx.fillStyle = 'rgba(160,80,30,0.28)'; ctx.fillRect(0, 352, W, 200);
+  ctx.restore();
+
+  // 4. 主角: 爆竹刺蝟(R 24 × 5.0, 剪影約 280 寬)
+  monster('hedgehog', 256, 252, 5.0, -1);
+})();
+</script>
+</body>
+</html>

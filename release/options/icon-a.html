@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>圖示 A — 火柴猴站上大鼓</title>
+<style>body{margin:0;overflow:hidden;background:#000}canvas{display:block}</style>
+</head>
+<body>
+<canvas id="c" width="512" height="512"></canvas>
+<script src="../game/art/art.js"></script>
+<script>
+// 圖示 A: 主角 = 火柴猴(遊戲第一隻收服、見習表演的主角), 站在馬戲團大鼓上; 背景 = 帳篷紅白放射條紋
+(function () {
+  var cv = document.getElementById('c'), ctx = cv.getContext('2d');
+  var W = 512, H = 512, TAU = Math.PI * 2, OUT = '#0d1018';
+
+  // 魔物: 沿用表演場畫法(drawShowMonster)放大; 剪掉頭上的怒氣條(圖示不需要)
+  function monster(sp, x, y, sc, dir) {
+    ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc);
+    ctx.beginPath(); ctx.rect(-70, -38, 140, 110); ctx.clip();
+    Art.drawShowMonster(ctx, { x: 0, y: 0, species: sp, dir: dir, rage: 0, angryLow: 80, marks: 0, mode: 'roam', move: 'walk' });
+    ctx.restore();
+  }
+  function star(x, y, r) {
+    ctx.beginPath();
+    for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, rad = i % 2 ? r * 0.45 : r; ctx.lineTo(x + Math.cos(a) * rad, y + Math.sin(a) * rad); }
+    ctx.closePath();
+  }
+
+  // 1. 背景: 帳篷紅白放射條紋(從鼓面中心放射), 四角壓暗
+  ctx.fillStyle = '#f4ecdc'; ctx.fillRect(0, 0, W, H);
+  var cx = 256, cy = 330;
+  ctx.fillStyle = '#e05a4a';
+  for (var i = 0; i < 20; i += 2) {
+    var a0 = i * TAU / 20, a1 = (i + 1) * TAU / 20;
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, 900, a0, a1); ctx.closePath(); ctx.fill();
+  }
+  var vg = ctx.createRadialGradient(256, 270, 150, 256, 270, 380);
+  vg.addColorStop(0, 'rgba(40,16,24,0)'); vg.addColorStop(1, 'rgba(40,16,24,0.62)');
+  ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+  // 主角背後一圈聚光(讓橘色猴子從紅條紋裡跳出來)
+  var sg = ctx.createRadialGradient(256, 225, 40, 256, 225, 200);
+  sg.addColorStop(0, 'rgba(255,248,225,0.95)'); sg.addColorStop(0.7, 'rgba(255,240,200,0.75)'); sg.addColorStop(1, 'rgba(255,240,200,0)');
+  ctx.fillStyle = sg; ctx.beginPath(); ctx.arc(256, 225, 200, 0, TAU); ctx.fill();
+
+  // 2. 大鼓(進場過場右邊鼓台的同一套畫法放大: 藍鼓身 + 金鋸齒 + 紅鼓面)
+  ctx.save(); ctx.lineJoin = 'round';
+  var dx = 256, top = 352, rx = 128, bh = 96;
+  ctx.beginPath(); ctx.ellipse(dx, top + bh + 6, rx + 14, 18, 0, 0, TAU); ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fill();
+  ctx.beginPath(); ctx.moveTo(dx - rx, top); ctx.lineTo(dx - rx, top + bh); ctx.ellipse(dx, top + bh, rx, 24, 0, Math.PI, 0, true); ctx.lineTo(dx + rx, top); ctx.closePath();
+  ctx.fillStyle = '#3a5a9a'; ctx.fill();
+  ctx.save(); ctx.clip();
+  ctx.fillStyle = '#ffd24a';
+  for (var z = 0; z < 6; z++) {
+    var zx = dx - rx + z * (2 * rx / 6);
+    ctx.beginPath(); ctx.moveTo(zx, top); ctx.lineTo(zx + rx / 6, top + bh + 24); ctx.lineTo(zx + rx / 3, top); ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+  ctx.beginPath(); ctx.moveTo(dx - rx, top); ctx.lineTo(dx - rx, top + bh); ctx.ellipse(dx, top + bh, rx, 24, 0, Math.PI, 0, true); ctx.lineTo(dx + rx, top);
+  ctx.strokeStyle = OUT; ctx.lineWidth = 7; ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(dx, top, rx, 26, 0, 0, TAU); ctx.fillStyle = '#e05a4a'; ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(dx, top, rx - 18, 17, 0, 0, TAU); ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 4; ctx.stroke();
+  ctx.restore();
+
+  // 3. 主角: 火柴猴(R 24 × 5.2 ≈ 身體直徑 250)
+  monster('monkey', 256, 236, 5.2, 1);
+
+  // 4. 兩顆金星(在中間 80% 內, 四角只放背景)
+  ctx.save(); ctx.lineJoin = 'round';
+  star(108, 118, 26); ctx.fillStyle = '#ffe08a'; ctx.fill(); ctx.strokeStyle = '#8a5a10'; ctx.lineWidth = 4; ctx.stroke();
+  star(410, 104, 20); ctx.fill(); ctx.stroke();
+  ctx.restore();
+})();
+</script>
+</body>
+</html>

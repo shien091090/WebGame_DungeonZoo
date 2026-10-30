@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>分享預覽 C — 在地下城套住魔物</title>
+<style>body{margin:0;overflow:hidden;background:#000}canvas{display:block}</style>
+</head>
+<body>
+<canvas id="c" width="1200" height="630"></canvas>
+<script src="../game/art/art.js"></script>
+<script>
+// 預覽 C: 湖畔鐘塔地下城 —— 馴獸師甩出套索套住火柴猴, 旁邊有寶箱、強化石碑、樓梯、冰柱企鵝; 遊戲名在上方
+(function () {
+  var cv = document.getElementById('c'), ctx = cv.getContext('2d');
+  var W = 1200, H = 630;
+  var FONT = '"Microsoft JhengHei","PingFang TC","Noto Sans TC","Heiti TC",sans-serif';
+  var BAND = 168, SC = 2.0, D = 'lake';
+
+  function title(text, x, y, size) {
+    ctx.save();
+    ctx.font = '900 ' + size + 'px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+    ctx.lineWidth = size * 0.2; ctx.strokeStyle = '#3a1a10'; ctx.strokeText(text, x, y + 5); ctx.strokeText(text, x, y);
+    var tg = ctx.createLinearGradient(0, y - size / 2, 0, y + size / 2);
+    tg.addColorStop(0, '#fff2b8'); tg.addColorStop(0.55, '#ffd24a'); tg.addColorStop(1, '#f0a030');
+    ctx.fillStyle = tg; ctx.fillText(text, x, y);
+    ctx.restore();
+  }
+  function cx(c) { return 30 + 60 * c; }
+  function cy(r) { return 30 + 60 * r; }
+
+  // 1. 上方名稱帶: 遊戲背景色 + 帳篷紅白條紋窄邊(連到馬戲團)
+  var g = ctx.createLinearGradient(0, 0, 0, BAND);
+  g.addColorStop(0, '#1c2230'); g.addColorStop(1, '#141821');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, BAND);
+  for (var sx = 0; sx < W; sx += 40) { ctx.fillStyle = (sx / 40) % 2 ? '#f4ecdc' : '#e05a4a'; ctx.fillRect(sx, BAND - 12, 40, 12); }
+  ctx.fillStyle = '#0d1018'; ctx.fillRect(0, BAND - 2, W, 2);
+
+  // 2. 地下城場景(遊戲座標 60 像素一格, 放大 2 倍; 10 欄 × 4 列, 最下一列只露出上半)
+  var layout = [
+    'wwwwwwwwww',
+    'wbffffffpw',
+    'wfffffffff',
+    'wwwwwwwwww'
+  ];
+  ctx.save();
+  ctx.beginPath(); ctx.rect(0, BAND, W, H - BAND); ctx.clip();
+  ctx.translate(0, BAND); ctx.scale(SC, SC);
+  var KIND = { w: 'wall', f: 'floor', '.': 'floor', b: 'bush', p: 'pillar' };
+  for (var r = 0; r < layout.length; r++) {
+    for (var c = 0; c < layout[r].length; c++) {
+      Art.drawTile(ctx, { x: cx(c), y: cy(r), dungeon: D, floor: 1, kind: KIND[layout[r][c]] || 'floor', nest: false });
+    }
+  }
+  // 場景物: 強化石碑(未拿, 發光)、金幣寶箱(關著)、往下樓梯
+  Art.drawBoostShrine(ctx, { x: cx(1), y: cy(2), dungeon: D, kind: 'heart', used: false, t: 0.4 });
+  Art.drawChest(ctx, { x: cx(7), y: cy(1), dungeon: D, open: false, openT: 0, openDur: 0.6, key: false });
+  Art.drawStairs(ctx, { x: cx(9), y: cy(2), dungeon: D, floor: 1, dir: 'down' });
+  // 旁邊閒晃的魔物: 冰柱企鵝
+  Art.drawWildMonster(ctx, { x: cx(7) + 6, y: cy(2) + 4, species: 'penguin', hp: 3, maxHp: 3, dir: -1, ropeAim: 'none' });
+  // 主戲: 馴獸師(面向右)甩套索套住虛弱的火柴猴
+  var tx = cx(2) + 10, ty = cy(2) - 4, mx = cx(5) - 4, my = cy(1) + 22;
+  Art.drawLasso(ctx, { x1: tx + 10, y1: ty - 4, x2: mx, y2: my, progress: 0.7, t: 0.6, limit: 2.5, len: 150, maxLen: 260 });
+  Art.drawWildMonster(ctx, { x: mx, y: my, species: 'monkey', hp: 1, maxHp: 3, weak: true, lassoed: true, dir: -1, ropeAim: 'none' });
+  Art.drawTamer(ctx, { x: tx, y: ty, facing: 2, weapon: 'club', lassoing: true });
+  ctx.restore();
+
+  // 3. 遊戲名
+  title('來馬戲團看一點大場面', 600, 80, 96);
+})();
+</script>
+</body>
+</html>

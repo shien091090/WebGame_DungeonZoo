@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>分享預覽 B — 帶著魔物走進帳篷</title>
+<style>body{margin:0;overflow:hidden;background:#000}canvas{display:block}</style>
+</head>
+<body>
+<canvas id="c" width="1200" height="630"></canvas>
+<script src="../game/art/art.js"></script>
+<script>
+// 預覽 B: 進場過場 —— 馴獸師帶著這趟收服的五隻魔物排成一列, 沿紅地毯走向帳篷; 遊戲名在上方夜空帶
+(function () {
+  var cv = document.getElementById('c'), ctx = cv.getContext('2d');
+  var W = 1200, H = 630;
+  var FONT = '"Microsoft JhengHei","PingFang TC","Noto Sans TC","Heiti TC",sans-serif';
+  var BAND = 172;     // 上方遊戲名帶的高度
+  var SRC_Y = 152;    // 進場過場從來源 y 152 開始取(上面是過場自己的大字與說明, 不取)
+
+  function title(text, x, y, size) {
+    ctx.save();
+    ctx.font = '900 ' + size + 'px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+    ctx.lineWidth = size * 0.2; ctx.strokeStyle = '#3a1a10'; ctx.strokeText(text, x, y + 5); ctx.strokeText(text, x, y);
+    var tg = ctx.createLinearGradient(0, y - size / 2, 0, y + size / 2);
+    tg.addColorStop(0, '#fff2b8'); tg.addColorStop(0.55, '#ffd24a'); tg.addColorStop(1, '#f0a030');
+    ctx.fillStyle = tg; ctx.fillText(text, x, y);
+    ctx.restore();
+  }
+
+  // 1. 上方夜空帶(與過場夜空同色, 接縫看不出來)
+  var g = ctx.createLinearGradient(0, 0, 0, BAND);
+  g.addColorStop(0, '#1a1430'); g.addColorStop(1, '#1f182f');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, BAND + 2);
+
+  // 2. 場景: 沿用 drawIntermission, 等比 1200/1280 縮放, 剪掉過場自己的字
+  //    t 1.1、5 隻魔物 → 馴獸師走到 x 432、魔物依序在 352 / 272 / 192 / 112 / 32, 還沒有人進門
+  var sc = W / 1280;
+  ctx.save();
+  ctx.beginPath(); ctx.rect(0, BAND, W, H - BAND); ctx.clip();
+  ctx.translate(0, BAND - SRC_Y * sc); ctx.scale(sc, sc);
+  Art.drawIntermission(ctx, { t: 1.1, ready: false, monsters: ['monkey', 'penguin', 'parrot', 'hedgehog', 'tanuki'], day: 2, weapon: 'sword' });
+  ctx.restore();
+
+  // 3. 遊戲名
+  title('來馬戲團看一點大場面', 600, 88, 96);
+})();
+</script>
+</body>
+</html>
