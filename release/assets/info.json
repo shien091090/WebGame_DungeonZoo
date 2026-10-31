@@ -6,5 +6,6 @@
   "mobile": true,
   "color": "#f29cac",
   "textColor": "#2d2144",
-  "ratio": "21:9"
+  "ratio": "16:9",
+  "mobileRatio": "16:9-21:9"
 }

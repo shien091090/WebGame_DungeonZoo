@@ -1,6 +1,7 @@
 {
   "canvas": {
-    "width": 1680,
+    "width": 1280,
+    "maxWidth": 1680,
     "height": 720
   },
   "draw": [
