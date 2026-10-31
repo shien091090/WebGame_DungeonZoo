@@ -6,6 +6,13 @@
   },
   "draw": [
     {
+      "name": "drawSoundIcon",
+      "state": [
+        "muted",
+        "hud"
+      ]
+    },
+    {
       "name": "drawBackground",
       "state": [
         "scene",
