@@ -433,7 +433,7 @@ function keyName(e) {
 }
 // 按下 / 放開 / 全放開: 鍵盤與觸控按鈕(touch.js)共用同一條路徑
 function inputDown(k) {
-  if (window.PVDX && PVDX.paused) return;   // 網站暫停 / 直拿提示中不收輸入
+  if (window.PVDX && PVDX.paused) return;   // 網站暫停 / 直拿提示 / Esc 暫停中不收輸入
   Snd.init();
   keys[k] = true;
   pressed[k] = true;
@@ -445,6 +445,13 @@ function inputReset() {
   pressed = {};
 }
 window.addEventListener('keydown', function (e) {
+  // M: 靜音開關(通用鍵, 哪個畫面都能按; 和出發準備的聲音按鈕切同一個設定)
+  if (e.code === 'KeyM' || e.key === 'm' || e.key === 'M') {
+    e.preventDefault();
+    if (e.repeat || (window.PVDX && PVDX.paused)) return;
+    Snd.init(); Snd.toggleMute(); ev('mute_toggle', { muted: Snd.muted }); Snd.play('ui_confirm');
+    return;
+  }
   const k = keyName(e);
   if (!k) return;
   e.preventDefault();
@@ -3048,6 +3055,7 @@ function toResult() {
     chestGold: G.chestGold, chestsOpened: G.chestsOpened, coldDay: G.keyDay });
   downloadLog();
   setScene('result');
+  if (window.PVDX) PVDX.finish();   // 玩完一局: 通知網站(touch.js)
 }
 function resultInput(dt) {
   RS.t += dt;
@@ -3487,7 +3495,7 @@ function frame(ts) {
   const dt = Math.min((ts - lastTs) / 1000, 1 / 30);
   lastTs = ts;
   try {
-    if (!(window.PVDX && PVDX.paused)) update(dt);   // 網站暫停 / 直拿提示時凍結(touch.js)
+    if (!(window.PVDX && PVDX.paused)) update(dt);   // 網站暫停 / 直拿提示 / Esc 暫停時凍結(touch.js)
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, CW, CH);
     render();
