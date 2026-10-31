@@ -21,11 +21,12 @@
 
   // ───────── 佔位圖形(style.md 沒有虛擬按鈕 / 繩索鍵帽圖案 / 暫停畫面, 集中在這裡) ─────────
   var Placeholder = {
-    // 十字方向鍵: 中心 + 四個方向鍵; 整組約 232×232(畫面高度的 1/3)
-    dpad: { x: 146, y: 590, off: 74, size: 70, R: 128, dead: 24 },
-    a: { x: 1176, y: 612, r: 54, hit: 66 },
-    b: { x: 1046, y: 636, r: 44, hit: 56 },
-    rope: { x: 1226, y: 474, r: 36, hit: 48 },
+    // 按鈕放大: 方向鍵外圈直徑 336(約畫面高度一半), A / B / 繩索以右緣 1280 為基準; 半透明, 會蓋進畫面邊緣一些
+    // 圓弧方向鍵: 中心 (x, y), 外圈半徑 Ro、內圈半徑 Ri, 四段之間留 gap 寬的細縫; 可按範圍半徑 R(比外圈大, 手指偏出去也算)
+    dpad: { x: 192, y: 538, Ro: 168, Ri: 58, gap: 8, R: 190, dead: 26 },
+    a: { x: 1180, y: 604, r: 80, hit: 96 },
+    b: { x: 1018, y: 652, r: 62, hit: 76 },
+    rope: { x: 1198, y: 428, r: 54, hit: 66 },
     // 哪些按鈕要顯示(同時決定能不能按): 開場日曆 2 秒自動翻頁、表演中玩家不操作 → 整組不畫(避免蓋到「共 4 天」與觀眾席 / 節目單);
     // 暫停式引導只接受 A → 只畫 A(其餘會蓋到引導卡)
     visible: function () {
@@ -71,18 +72,19 @@
       var d = this.dpad, k, h = d.size / 2, vis = this.visible(), i;
       ctx.save();
       if (vis.dpad) {
-        // 十字底盤
-        ctx.beginPath(); ctx.arc(d.x, d.y, d.off - 10, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(26,32,48,0.28)'; ctx.fill();
-        var dirs = [['up', 0, -1, 0], ['right', 1, 0, Math.PI / 2], ['down', 0, 1, Math.PI], ['left', -1, 0, -Math.PI / 2]];
+        // 圓弧方向鍵: 一圈切成上右下左四段, 段與段之間留固定寬度的細縫
+        var dirs = [['up', -Math.PI / 2], ['right', 0], ['down', Math.PI / 2], ['left', Math.PI]], q = Math.PI / 4;
         for (i = 0; i < dirs.length; i++) {
-          k = dirs[i]; var cx = d.x + k[1] * d.off, cy = d.y + k[2] * d.off, lit = !!held[k[0]];
-          this.rr(ctx, cx - h, cy - h, d.size, d.size, 16); this.drawBtnBody(ctx, lit);
-          this.drawArrow(ctx, cx, cy, k[3], 1.6, lit);
+          k = dirs[i]; var c = k[1], lit = !!held[k[0]], go = d.gap / 2 / d.Ro, gi = d.gap / 2 / d.Ri;
+          ctx.beginPath(); ctx.arc(d.x, d.y, d.Ro, c - q + go, c + q - go); ctx.arc(d.x, d.y, d.Ri, c + q - gi, c - q + gi, true); ctx.closePath();
+          this.drawBtnBody(ctx, lit);
+          var mr = (d.Ro + d.Ri) / 2 + 4;
+          this.drawArrow(ctx, d.x + Math.cos(c) * mr, d.y + Math.sin(c) * mr, c + Math.PI / 2, 2.4, lit);
         }
+        ctx.beginPath(); ctx.arc(d.x, d.y, d.Ri - d.gap, 0, Math.PI * 2); ctx.fillStyle = 'rgba(26,32,48,0.3)'; ctx.fill();
       }
       // A / B
-      var big = [['z', this.a, 'A', 44, vis.a], ['x', this.b, 'B', 36, vis.b]];
+      var big = [['z', this.a, 'A', 64, vis.a], ['x', this.b, 'B', 50, vis.b]];
       for (i = 0; i < big.length; i++) {
         if (!big[i][4]) continue;
         var b = big[i][1], lit2 = !!held[big[i][0]];
