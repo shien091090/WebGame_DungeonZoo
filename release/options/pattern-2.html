@@ -1,0 +1,34 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>body{margin:0;overflow:hidden}</style>
+<canvas id="c" width="256" height="256"></canvas>
+<script>
+// 色帶圖樣(主色 2 #f29cac): 帳篷的斜條紋 + 舞台上的金星, 都用接近底色的淡粉; 碰到邊緣的星在對邊補畫, 拼起來無縫
+var c = document.getElementById('c'), ctx = c.getContext('2d'), S = 256;
+ctx.fillStyle = '#f29cac'; ctx.fillRect(0, 0, S, S);
+// 斜條紋: 寬 32、間距 64, 64 整除 256 → 四邊都接得起來
+ctx.save(); ctx.beginPath(); ctx.rect(0, 0, S, S); ctx.clip();
+ctx.fillStyle = '#f5a9b7';
+for (var k = -S; k < S * 2; k += 64) {
+  ctx.beginPath(); ctx.moveTo(k, 0); ctx.lineTo(k + 32, 0); ctx.lineTo(k + 32 - S, S); ctx.lineTo(k - S, S); ctx.closePath(); ctx.fill();
+}
+ctx.restore();
+function star(x, y, r, rot) {
+  ctx.beginPath();
+  for (var i = 0; i < 10; i++) {
+    var a = rot + i * Math.PI / 5 - Math.PI / 2, rr = i % 2 ? r * 0.45 : r;
+    ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr);
+  }
+  ctx.closePath(); ctx.fill();
+}
+function dot(x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
+// 位置固定(不用亂數), 每個圖形在九宮格位移各畫一次 → 越界的部分出現在對邊
+var stars = [[30, 40, 11, 0.2], [150, 22, 8, 0.6], [210, 120, 12, 0.1], [92, 150, 9, 0.9], [20, 220, 7, 0.4], [180, 236, 10, 0.7], [250, 60, 6, 0.3]];
+var dots = [[100, 70, 3], [60, 105, 2.5], [236, 180, 3], [130, 210, 2.5], [170, 90, 2], [8, 140, 2.5]];
+for (var ox = -S; ox <= S; ox += S) for (var oy = -S; oy <= S; oy += S) {
+  ctx.fillStyle = '#f8bdc8';
+  stars.forEach(function (s) { star(s[0] + ox, s[1] + oy, s[2], s[3]); });
+  ctx.fillStyle = '#f7b4c0';
+  dots.forEach(function (d) { dot(d[0] + ox, d[1] + oy, d[2]); });
+}
+</script>
