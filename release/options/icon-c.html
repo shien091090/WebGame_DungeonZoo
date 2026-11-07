@@ -1,57 +1,48 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<title>圖示 C — 爆竹刺蝟與大彩炮</title>
-<style>body{margin:0;overflow:hidden;background:#000}canvas{display:block}</style>
+<title>icon-c 夜裡的馬戲團帳篷</title>
+<style>html,body{margin:0;overflow:hidden;background:#000}canvas{display:block}</style>
 </head>
 <body>
 <canvas id="c" width="512" height="512"></canvas>
 <script src="../game/art/art.js"></script>
 <script>
-// 圖示 C: 主角 = 爆竹刺蝟(背上一排紅爆竹的剪影), 站在金色燈泡圓框的舞台光裡; 背後是大彩炮爆開的彩紙
+// 圖示 C: 夜裡的紅白條紋馬戲團帳篷, 門口亮著暖光, 馴獸師帶著火柴猴走向門口, 不放任何字
+// 沿用進場過場(drawIntermission)的帳篷場景: 只取 y ≥ 150 的場景區(上方的標題字與說明句剪掉)
 (function () {
-  var cv = document.getElementById('c'), ctx = cv.getContext('2d');
-  var W = 512, H = 512, TAU = Math.PI * 2, OUT = '#0d1018';
+  var cv = document.getElementById('c'), ctx = cv.getContext('2d'), A = window.Art;
+  var W = 512, H = 512, K = 0.76, SX = 640, SY = 383, CX = 256, CY = 270;
 
-  function monster(sp, x, y, sc, dir) {
-    ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc);
-    ctx.beginPath(); ctx.rect(-70, -38, 140, 110); ctx.clip();
-    Art.drawShowMonster(ctx, { x: 0, y: 0, species: sp, dir: dir, rage: 0, angryLow: 80, marks: 0, mode: 'roam', move: 'walk' });
-    ctx.restore();
-  }
-
-  // 1. 背景: 深紫徑向
-  var g = ctx.createRadialGradient(256, 256, 60, 256, 256, 380);
-  g.addColorStop(0, '#4a2a7a'); g.addColorStop(1, '#170d2a');
-  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-
-  // 2. 大彩炮爆開(沿用 drawConfetti 的 burst, 縮放後以圖示中心為爆心)
-  var cs = 0.5;
-  ctx.save(); ctx.translate(256 - 640 * cs, 256 - 356 * cs); ctx.scale(cs, cs);
-  Art.drawConfetti(ctx, { phase: 'burst', t: 0.34, dur: 0.8, count: 8 });
+  ctx.save();
+  // 換到過場的原座標系(帳篷中心 (640,383) 對到圖示 (256,270))
+  ctx.translate(CX, CY); ctx.scale(K, K); ctx.translate(-SX, -SY);
+  // 夜空(和過場同一組漸層, 接縫看不出來), 先鋪滿整張
+  var g = ctx.createLinearGradient(0, 0, 0, 720);
+  g.addColorStop(0, '#1c1630'); g.addColorStop(0.6, '#241a2e'); g.addColorStop(1, '#120e18');
+  ctx.fillStyle = g; ctx.fillRect(0, -200, 1280, 1200);
+  ctx.fillStyle = '#2a2230'; ctx.fillRect(0, 600, 1280, 400);
+  // 帳篷場景: 全員已進門、門口暖光脈動到最亮的那一刻; 不傳 ready(不出現「按 Z」)
+  ctx.save();
+  ctx.beginPath(); ctx.rect(0, 150, 1280, 600); ctx.clip();
+  A.drawIntermission(ctx, { t: 3.45, ready: false, monsters: [], day: 1, weapon: 'sword' });
   ctx.restore();
-
-  // 3. 舞台光圓框: 金框 + 一圈燈泡, 框內暖色光
-  var R = 178, cx = 256, cy = 262;
-  var lg = ctx.createRadialGradient(cx, cy - 30, 20, cx, cy, R);
-  lg.addColorStop(0, '#fff6d8'); lg.addColorStop(0.75, '#ffd98a'); lg.addColorStop(1, '#f0b04a');
-  ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.fillStyle = lg; ctx.fill();
-  ctx.lineWidth = 16; ctx.strokeStyle = '#e05a4a'; ctx.stroke();
-  ctx.lineWidth = 5; ctx.strokeStyle = OUT; ctx.beginPath(); ctx.arc(cx, cy, R + 8, 0, TAU); ctx.stroke();
-  ctx.beginPath(); ctx.arc(cx, cy, R - 8, 0, TAU); ctx.lineWidth = 3; ctx.stroke();
-  for (var i = 0; i < 16; i++) {
-    var a = i * TAU / 16;
-    ctx.beginPath(); ctx.arc(cx + Math.cos(a) * R, cy + Math.sin(a) * R, 6.5, 0, TAU);
-    ctx.fillStyle = '#fff3b0'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = OUT; ctx.stroke();
+  // 夜空的星(帳篷上方)
+  var st = [[440, 120], [520, 64], [770, 92], [850, 140], [600, 40], [700, 30]];
+  for (var i = 0; i < st.length; i++) {
+    ctx.beginPath(); ctx.arc(st[i][0], st[i][1], 5, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,240,200,0.6)'; ctx.fill();
   }
-  // 地面影子底座
-  ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R - 10, 0, TAU); ctx.clip();
-  ctx.fillStyle = 'rgba(160,80,30,0.28)'; ctx.fillRect(0, 352, W, 200);
+  // 隊伍: 馴獸師(面向右)走到門口, 火柴猴跟在後面
+  ctx.save(); ctx.translate(584, 574); ctx.scale(1.5, 1.5);
+  A.drawTamer(ctx, { x: 0, y: 0, facing: 2, weapon: 'sword' });
   ctx.restore();
-
-  // 4. 主角: 爆竹刺蝟(R 24 × 5.0, 剪影約 280 寬)
-  monster('hedgehog', 256, 252, 5.0, -1);
+  ctx.save(); ctx.translate(480, 560); ctx.scale(1.5, 1.5);
+  ctx.beginPath(); ctx.rect(-70, -37, 140, 110); ctx.clip();
+  A.drawShowMonster(ctx, { x: 0, y: 0, species: 'monkey', rage: 20, angryLow: 80, mode: 'roam', dir: 1, move: 'walk' });
+  ctx.restore();
+  ctx.restore();
 })();
 </script>
 </body>

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>banner-c 夜裡進帳篷</title>
+<style>html,body{margin:0;overflow:hidden;background:#000}canvas{display:block}</style>
+</head>
+<body>
+<canvas id="c" width="1680" height="720"></canvas>
+<script src="../game/art/art.js"></script>
+<script>
+// 橫幅 C: 夜裡的馬戲團帳篷外 — 門口亮著暖光, 馴獸師帶隊沿紅地毯進場, 刺蝟在鼓台上耍把戲, 企鵝和鈴蘭精在旁排隊;
+// 沿用進場過場(drawIntermission)的帳篷場景, 只取 y ≥ 150 的場景區; 上方夜空放遊戲名; 左下角只有紅地毯與地面
+(function () {
+  var cv = document.getElementById('c'), ctx = cv.getContext('2d'), A = window.Art;
+  var W = 1680, H = 720, OX = 200;   // 過場是 1280 寬的構圖, 往右挪 200 置中, 兩側由這頁補
+  var FONT = '"Microsoft JhengHei","PingFang TC","Noto Sans TC","Heiti TC",sans-serif';
+
+  function monster(sp, x, y, k, extra) {
+    var s = { x: 0, y: 0, species: sp, rage: 20, angryLow: 80, mode: 'roam', dir: 1, move: 'walk' };
+    for (var key in extra) s[key] = extra[key];
+    ctx.save(); ctx.translate(x, y); ctx.scale(k, k);
+    ctx.beginPath(); ctx.rect(-70, -37, 140, 110); ctx.clip();   // 剪掉頭上的怒氣條
+    A.drawShowMonster(ctx, s);
+    ctx.restore();
+  }
+  function title(str, x, y, size, maxW) {
+    ctx.save();
+    ctx.font = '900 ' + size + 'px ' + FONT;
+    var w = ctx.measureText(str).width;
+    if (w > maxW) { size = Math.floor(size * maxW / w); ctx.font = '900 ' + size + 'px ' + FONT; }
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+    ctx.shadowColor = 'rgba(255,200,90,0.5)'; ctx.shadowBlur = 28;
+    ctx.lineWidth = size * 0.2; ctx.strokeStyle = '#3a1a10'; ctx.strokeText(str, x, y);
+    ctx.shadowBlur = 0;
+    var g = ctx.createLinearGradient(0, y - size / 2, 0, y + size / 2);
+    g.addColorStop(0, '#fff3b8'); g.addColorStop(0.55, '#ffe08a'); g.addColorStop(1, '#ffc83a');
+    ctx.fillStyle = g; ctx.fillText(str, x, y);
+    ctx.restore();
+  }
+  function bunting(x0, y0, x1, y1, sag, n) {
+    var mx = (x0 + x1) / 2, my = (y0 + y1) / 2 + sag, cols = ['#e05a4a', '#ffd24a', '#5ad1e6', '#f4ecdc'];
+    ctx.strokeStyle = '#6a6070'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.quadraticCurveTo(mx, my, x1, y1); ctx.stroke();
+    for (var i = 1; i < n; i++) {
+      var u = i / n, a = 1 - u, px = a * a * x0 + 2 * a * u * mx + u * u * x1, py = a * a * y0 + 2 * a * u * my + u * u * y1;
+      if (i % 2) {
+        ctx.beginPath(); ctx.moveTo(px - 9, py); ctx.lineTo(px + 9, py); ctx.lineTo(px, py + 20); ctx.closePath();
+        ctx.fillStyle = cols[(i >> 1) % 4]; ctx.fill(); ctx.strokeStyle = '#0d1018'; ctx.lineWidth = 1.2; ctx.stroke();
+      } else {
+        ctx.beginPath(); ctx.arc(px, py + 3, 4.5, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255,226,150,0.8)'; ctx.fill();
+      }
+    }
+  }
+
+  // 夜空(和過場同一組漸層)、兩側補星星、地面、左側紅地毯延伸
+  var g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#1c1630'); g.addColorStop(0.6, '#241a2e'); g.addColorStop(1, '#120e18');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  var stars = [[60, 200], [130, 290], [40, 360], [1530, 210], [1610, 300], [1650, 180], [1580, 380], [170, 230]];
+  for (var i = 0; i < stars.length; i++) { ctx.beginPath(); ctx.arc(stars[i][0], stars[i][1], 2.2, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255,240,200,0.45)'; ctx.fill(); }
+  ctx.fillStyle = '#2a2230'; ctx.fillRect(0, 600, W, 120);
+  ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.fillRect(0, 600, W, 3);
+  ctx.fillStyle = '#8a2a36'; ctx.fillRect(0, 598, OX + 2, 24);
+  ctx.fillStyle = 'rgba(255,210,74,0.55)'; ctx.fillRect(0, 618, OX + 2, 2);
+
+  // 帳篷場景(全員已進門、門口暖光最亮的那一刻), 剪掉上方的標題字與說明句
+  ctx.save(); ctx.translate(OX, 0);
+  ctx.beginPath(); ctx.rect(0, 150, 1280, 570); ctx.clip();
+  A.drawIntermission(ctx, { t: 3.45, ready: false, monsters: [], day: 1, weapon: 'sword' });
+  ctx.restore();
+  // 兩側延伸的旗串
+  bunting(0, 280, OX, 300, -8, 5);
+  bunting(OX + 1201, 300, W, 270, 50, 7);
+
+  // 頂上夜空的星點(標題周圍)
+  for (var s2 = 0; s2 < 6; s2++) {
+    var sx = 160 + s2 * 272, sy = 34 + (s2 % 2) * 150;
+    if (sy > 100 && sx > 560 && sx < 1120) continue;
+    ctx.beginPath(); ctx.arc(sx, sy, 2.5, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255,240,200,0.5)'; ctx.fill();
+  }
+
+  // 進場隊伍(紅地毯上, 往門口走): 鸚鵡、火柴猴、馴獸師(帶頭)
+  monster('parrot', 610, 556, 1.75, { dir: 1, move: 'hop', moveT: 0.15, moveDur: 0.3 });
+  monster('monkey', 712, 548, 1.75, { dir: 1, move: 'hop', moveT: 0.15, moveDur: 0.3 });
+  ctx.save(); ctx.translate(806, 568); ctx.scale(1.75, 1.75);
+  A.drawTamer(ctx, { x: 0, y: 0, facing: 2, weapon: 'sword' });
+  ctx.restore();
+  // 鼓台上的爆竹刺蝟(鼓面在 x 1118~1202、y 548)
+  monster('hedgehog', 1160, 512, 1.6, { dir: -1 });
+  // 右側排隊: 冰柱企鵝、鈴蘭精
+  monster('penguin', 1468, 558, 1.75, { dir: -1 });
+  monster('lily', 1568, 560, 1.6, { dir: -1 });
+
+  // 遊戲名: 帳篷頂上的夜空
+  title('來馬戲團看一點大場面', 840, 86, 106, 1240);
+})();
+</script>
+</body>
+</html>

@@ -1,63 +1,48 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<title>圖示 B — 夜晚的馬戲團帳篷</title>
-<style>body{margin:0;overflow:hidden;background:#000}canvas{display:block}</style>
+<title>icon-b 炸藥桶與企鵝</title>
+<style>html,body{margin:0;overflow:hidden;background:#000}canvas{display:block}</style>
 </head>
 <body>
 <canvas id="c" width="512" height="512"></canvas>
 <script src="../game/art/art.js"></script>
 <script>
-// 圖示 B: 主體 = 進場過場的紅白條紋帳篷(門洞亮著暖光 = 全員進場、表演要開始), 夜空 + 兩道聚光燈
+// 圖示 B: 表演場俯視 — 炸藥桶正在爆(橘黃火光圈鋪滿畫面中央), 冰柱企鵝被炸得頭暈眼花轉星星, 不放任何字
 (function () {
-  var cv = document.getElementById('c'), ctx = cv.getContext('2d');
-  var W = 512, H = 512, TAU = Math.PI * 2;
+  var cv = document.getElementById('c'), ctx = cv.getContext('2d'), A = window.Art;
+  var W = 512, H = 512, CX = 256, CY = 262;
 
-  // 1. 夜空(與進場過場同色系)+ 交叉的兩道聚光燈 + 星點
-  var g = ctx.createLinearGradient(0, 0, 0, H);
-  g.addColorStop(0, '#2a1f4a'); g.addColorStop(0.65, '#231a36'); g.addColorStop(1, '#140f1e');
-  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  var beams = [[60, 520, 0.55], [452, 520, -0.55]];
-  for (var b = 0; b < 2; b++) {
-    ctx.save(); ctx.translate(beams[b][0], beams[b][1]); ctx.rotate(beams[b][2]);
-    var bg = ctx.createLinearGradient(0, 0, 0, -560);
-    bg.addColorStop(0, 'rgba(255,236,180,0.30)'); bg.addColorStop(1, 'rgba(255,236,180,0)');
-    ctx.beginPath(); ctx.moveTo(-18, 0); ctx.lineTo(18, 0); ctx.lineTo(120, -560); ctx.lineTo(-120, -560); ctx.closePath();
-    ctx.fillStyle = bg; ctx.fill(); ctx.restore();
-  }
-  var stars = [[92, 92], [150, 60], [370, 70], [430, 120], [70, 200], [450, 210], [300, 40]];
-  for (var s = 0; s < stars.length; s++) {
-    ctx.beginPath(); ctx.arc(stars[s][0], stars[s][1], 2.5 + (s % 3), 0, TAU); ctx.fillStyle = 'rgba(255,240,200,0.7)'; ctx.fill();
-  }
-  // 地面
-  ctx.beginPath(); ctx.ellipse(256, 446, 236, 44, 0, 0, TAU); ctx.fillStyle = '#3a2c40'; ctx.fill();
-  ctx.beginPath(); ctx.ellipse(256, 440, 200, 30, 0, 0, TAU); ctx.fillStyle = '#4a3648'; ctx.fill();
+  // 底: 表演場地板(遊戲內場地色)+ 場地圓圈線
+  ctx.fillStyle = '#23222c'; ctx.fillRect(0, 0, W, H);
+  var fg = ctx.createRadialGradient(CX, CY, 40, CX, CY, 380);
+  fg.addColorStop(0, '#3a3746'); fg.addColorStop(1, '#16151d');
+  ctx.fillStyle = fg; ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.ellipse(CX, CY, 300, 300, 0, 0, Math.PI * 2); ctx.stroke();
 
-  // 2. 帳篷: 沿用進場過場(drawIntermission), 只剪出帳篷本體(含旗子), 縮放置中
-  //    來源座標: 帳篷牆 x 400~880、屋頂 x 370~910、旗桿頂 y 166、地面 y 600
-  //    t 3.45、沒有魔物 → 全員已進門, 門洞暖光脈動中; 隊伍都已進門, 不會畫出來
-  var sc = 0.74, ox = 256 - 640 * sc, oy = 440 - 600 * sc;
-  ctx.save(); ctx.translate(ox, oy); ctx.scale(sc, sc);
-  ctx.beginPath();
-  ctx.moveTo(400, 602); ctx.lineTo(400, 342); ctx.lineTo(368, 342);
-  ctx.quadraticCurveTo(520, 298, 640, 196); ctx.quadraticCurveTo(760, 298, 912, 342);
-  ctx.lineTo(880, 342); ctx.lineTo(880, 602); ctx.closePath();
-  ctx.rect(626, 158, 64, 52);   // 旗桿 + 旗子
-  ctx.rect(383, 340, 544, 34);  // 簷口波浪邊
-  ctx.clip();
-  Art.drawIntermission(ctx, { t: 3.45, ready: false, monsters: [], day: 1, weapon: 'club' });
+  // 炸藥桶爆炸(遊戲內畫法放大): 範圍圈半徑 110 × 2.05 ≈ 225
+  ctx.save();
+  ctx.translate(CX, CY); ctx.scale(2.05, 2.05);
+  A.drawShowKeg(ctx, { x: 0, y: 0, phase: 'blast', t: 0.05, dur: 0.3, radius: 110 });
   ctx.restore();
 
-  // 3. 帳篷兩側各一顆金星(中間 80% 內)
-  function star(x, y, r) {
-    ctx.beginPath();
-    for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, rad = i % 2 ? r * 0.45 : r; ctx.lineTo(x + Math.cos(a) * rad, y + Math.sin(a) * rad); }
-    ctx.closePath();
+  // 四周飛出去的彩紙(遊戲彩炮配色), 只在中央 80% 內
+  var CONF = ['#ff5d7a', '#ffd24a', '#c6f046', '#5ad1e6', '#ff8fc8', '#b46cff'];
+  var bits = [[96, 120, 0.6], [418, 140, -0.5], [80, 330, -0.3], [440, 360, 0.8], [150, 448, 0.3], [372, 456, -0.7], [256, 70, 0.1]];
+  for (var i = 0; i < bits.length; i++) {
+    ctx.save(); ctx.translate(bits[i][0], bits[i][1]); ctx.rotate(bits[i][2]);
+    ctx.fillStyle = CONF[i % CONF.length]; ctx.fillRect(-13, -7, 26, 14);
+    ctx.lineWidth = 3; ctx.strokeStyle = '#0d1018'; ctx.strokeRect(-13, -7, 26, 14);
+    ctx.restore();
   }
-  ctx.save(); ctx.lineJoin = 'round'; ctx.fillStyle = '#ffe08a'; ctx.strokeStyle = '#8a5a10'; ctx.lineWidth = 4;
-  star(120, 168, 24); ctx.fill(); ctx.stroke();
-  star(392, 168, 24); ctx.fill(); ctx.stroke();
+
+  // 主角: 冰柱企鵝被撞歪(暈眼 + 頭上轉星星)。剪掉頭上的怒氣條
+  ctx.save();
+  ctx.translate(CX, CY + 8); ctx.scale(6.4, 6.4);
+  ctx.beginPath(); ctx.rect(-70, -37, 140, 110); ctx.clip();
+  A.drawShowMonster(ctx, { x: 0, y: 0, species: 'penguin', rage: 30, angryLow: 80, marks: 0, mode: 'knock', knockT: 0.07, knockDur: 0.25, dir: 1, move: 'walk' });
   ctx.restore();
 })();
 </script>

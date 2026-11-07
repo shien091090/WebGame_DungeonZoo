@@ -16,7 +16,8 @@ const START_GOLD = 40;                     // 第 1 天開局 / 重來開局的�
 const WAIT_SECS = 5;                       // 暗號「過 5 秒」
 const GUIDE_SHOW_AT = 4.0;                 // 見習表演暫停式引導開演後幾秒暫停
 const SHOW_SECS = 30;                     // 正式表演秒數
-const PENDING_KEY = 'gamelog-WebGame_DungeonZoo-pending';
+const PENDING_KEY = 'dungeon-zoo:gamelogPending';
+const OLD_PENDING_KEY = 'gamelog-WebGame_DungeonZoo-pending';
 const SHELF_FAME = [200, 500, 1000];           // 商店上架名聲門檻(0 一開始就上架)
 const ROWS = 4;                            // 暗號節目單列數
 const TIERS = ['quiet', 'clap', 'cheer', 'frenzy'];
@@ -121,7 +122,13 @@ function downloadLog() {
 // 開始畫面按 Z: 上一次沒玩完的紀錄補下載(finished 為 false)
 function flushPending() {
   let raw = null;
-  try { raw = localStorage.getItem(PENDING_KEY); } catch (e) { return; }
+  try {
+    raw = localStorage.getItem(PENDING_KEY);
+    if (!raw) {   // 舊鍵名搬到新鍵名(只刪自己的舊鍵)
+      raw = localStorage.getItem(OLD_PENDING_KEY);
+      if (raw) { localStorage.setItem(PENDING_KEY, raw); localStorage.removeItem(OLD_PENDING_KEY); }
+    }
+  } catch (e) { return; }
   if (!raw) return;
   try {
     const o = JSON.parse(raw);

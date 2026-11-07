@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>banner-b 表演場大混戰</title>
+<style>html,body{margin:0;overflow:hidden;background:#000}canvas{display:block}</style>
+</head>
+<body>
+<canvas id="c" width="1680" height="720"></canvas>
+<script src="../game/art/art.js"></script>
+<script>
+// 橫幅 B: 表演場俯視的大場面 — 大彩炮炸開、火柴猴失控衝刺、炸藥桶點火、標靶 / 凍住 / 澆熄 / 冒火各種狀態同場;
+// 上方觀眾席的空位放遊戲名, 下方觀眾席歡呼(左下角 x < 504 只留空座位)
+(function () {
+  var cv = document.getElementById('c'), ctx = cv.getContext('2d'), A = window.Art;
+  var W = 1680, H = 720, SXK = W / 1280;
+  var FONT = '"Microsoft JhengHei","PingFang TC","Noto Sans TC","Heiti TC",sans-serif';
+
+  function monster(sp, x, y, k, extra) {
+    var s = { x: 0, y: 0, species: sp, rage: 20, angryLow: 80, mode: 'roam', dir: 1, move: 'walk' };
+    for (var key in extra) s[key] = extra[key];
+    ctx.save(); ctx.translate(x, y); ctx.scale(k, k);
+    ctx.beginPath(); ctx.rect(-70, -37, 140, 110); ctx.clip();   // 剪掉頭上的怒氣條
+    A.drawShowMonster(ctx, s);
+    ctx.restore();
+  }
+  function title(str, x, y, size, maxW) {
+    ctx.save();
+    ctx.font = '900 ' + size + 'px ' + FONT;
+    var w = ctx.measureText(str).width;
+    if (w > maxW) { size = Math.floor(size * maxW / w); ctx.font = '900 ' + size + 'px ' + FONT; }
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+    ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 6;
+    ctx.lineWidth = size * 0.2; ctx.strokeStyle = '#3a1a10'; ctx.strokeText(str, x, y);
+    ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+    var g = ctx.createLinearGradient(0, y - size / 2, 0, y + size / 2);
+    g.addColorStop(0, '#fff3b8'); g.addColorStop(0.55, '#ffe08a'); g.addColorStop(1, '#ffc83a');
+    ctx.fillStyle = g; ctx.fillText(str, x, y);
+    ctx.restore();
+  }
+
+  // 表演場(遊戲內場地, 橫向拉到 1680 寬)
+  ctx.save(); ctx.scale(SXK, 1); A.drawShowArena(ctx); ctx.restore();
+  // 上方觀眾席壓暗一點, 給遊戲名當底
+  var tg = ctx.createLinearGradient(0, 0, 0, 150);
+  tg.addColorStop(0, 'rgba(10,8,16,0.55)'); tg.addColorStop(1, 'rgba(10,8,16,0.2)');
+  ctx.fillStyle = tg; ctx.fillRect(0, 0, W, 146);
+  // 大彩炮炸開(彩紙只留在場地內、標題以下)
+  ctx.save();
+  ctx.beginPath(); ctx.rect(82, 150, 1516, 386); ctx.clip();
+  ctx.scale(SXK, 1);
+  A.drawConfetti(ctx, { phase: 'burst', t: 0.3, dur: 0.8, count: 12 });
+  ctx.restore();
+
+  // 炸藥桶: 點著引信、橘色預警圈
+  ctx.save(); ctx.translate(1110, 452); ctx.scale(1.45, 1.45);
+  A.drawShowKeg(ctx, { x: 0, y: 0, phase: 'fuse', t: 0.55, dur: 1, radius: 66 });
+  ctx.restore();
+
+  // 魔物們(各種狀態同場)
+  monster('tanuki', 320, 330, 2.3, { mode: 'program', dir: 1 });                                        // 被表演卡帶著繞場
+  monster('hedgehog', 540, 290, 2.35, { marks: 5, rage: 95, dir: 1 });                                  // 氣到冒火
+  monster('lily', 610, 452, 2.35, { fx: 'doused', fxT: 0.2, fxDur: 0.5, dir: 1 });                       // 被澆熄
+  monster('beetle', 1196, 470, 2.2, { marks: 2, rage: 85, fx: 'ignited', fxT: 0.25, fxDur: 0.5, dir: -1 }); // 炸藥桶旁被點燃
+  monster('parrot', 1200, 268, 2.35, { target: true, dir: -1 });                                        // 被當成標靶
+  monster('penguin', 1410, 400, 2.35, { frozenLeft: 3, frozenDur: 5, dir: -1 });                         // 凍住
+  monster('monkey', 850, 372, 3.3, { mode: 'charge', looseT: 0.4, looseDur: 2.5, rage: 100, dir: 1 });   // 主角: 失控衝刺
+
+  // 下方觀眾席: 全排座位; 觀眾只坐 x ≥ 560(左下角留給網站標籤)
+  for (var i = 0; i < 12; i++) {
+    var vx = 90 + i * 136;
+    var on = vx >= 560;
+    A.drawVisitor(ctx, { x: vx, y: 612, side: 'bottom', i: i % 8, mode: on ? 'watch' : 'empty', mood: i % 3 === 0 ? 'frenzy' : 'cheer', t: 0.37 * i });
+  }
+
+  // 遊戲名: 上方觀眾席
+  title('來馬戲團看一點大場面', 840, 92, 108, 1240);
+})();
+</script>
+</body>
+</html>

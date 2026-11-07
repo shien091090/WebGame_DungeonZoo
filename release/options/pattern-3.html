@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>pattern-3 粉色帶</title>
+<style>html,body{margin:0;overflow:hidden}canvas{display:block}</style>
+</head>
+<body>
+<canvas id="c" width="256" height="256"></canvas>
+<script>
+// 色帶圖樣 3: 底色 #f29cac + 馬戲團旗串(三角旗 + 小燈泡)與金星, 同色系淡紋; 四邊無縫(旗串週期 128 / 32、星星在對邊補畫)
+(function () {
+  var BG = '#f29cac', LK = 0.26, SK = 0.14, DK = 0.07;
+  var ctx = document.getElementById('c').getContext('2d'), S = 256;
+  function hex(c) { return [parseInt(c.substr(1, 2), 16), parseInt(c.substr(3, 2), 16), parseInt(c.substr(5, 2), 16)]; }
+  function mix(c, t, k) { var a = hex(c), b = hex(t); return 'rgb(' + a.map(function (v, i) { return Math.round(v + (b[i] - v) * k); }).join(',') + ')'; }
+  var LIGHT = mix(BG, '#ffffff', LK), SOFT = mix(BG, '#ffffff', SK), DARK = mix(BG, '#000000', DK);
+  ctx.fillStyle = BG; ctx.fillRect(0, 0, S, S);
+  function tiled(fn) { for (var dx = -S; dx <= S; dx += S) for (var dy = -S; dy <= S; dy += S) { ctx.save(); ctx.translate(dx, dy); fn(); ctx.restore(); } }
+  // 旗串: 兩排(y 40、168, 相隔 128), 每 128 一段下垂弧, 三角旗與燈泡間距 32
+  var ROWS = [40, 168], SAG = 24;
+  tiled(function () {
+    for (var r = 0; r < ROWS.length; r++) {
+      var y0 = ROWS[r];
+      ctx.beginPath();
+      for (var x = -128; x < S + 128; x += 128) { ctx.moveTo(x, y0); ctx.quadraticCurveTo(x + 64, y0 + SAG, x + 128, y0); }
+      ctx.strokeStyle = DARK; ctx.lineWidth = 3; ctx.stroke();
+      for (var i = 0; i < 8; i++) {
+        var px = 16 + i * 32, u = (px % 128) / 128, py = y0 + 2 * u * (1 - u) * SAG;
+        if (i % 2 === 0) {
+          ctx.beginPath(); ctx.moveTo(px - 12, py); ctx.lineTo(px + 12, py); ctx.lineTo(px, py + 28); ctx.closePath();
+          ctx.fillStyle = (i % 4 === 0) ? LIGHT : SOFT; ctx.fill();
+        } else {
+          ctx.beginPath(); ctx.arc(px, py + 5, 5.5, 0, Math.PI * 2); ctx.fillStyle = LIGHT; ctx.fill();
+        }
+      }
+    }
+  });
+  // 金星(帳篷徽章與標題旁的星), 落在兩排旗串之間; 碰邊的那顆由 tiled 在對邊補畫
+  function star(x, y, R, col) {
+    ctx.beginPath();
+    for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? R * 0.45 : R; ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
+    ctx.closePath(); ctx.fillStyle = col; ctx.fill();
+  }
+  var STARS = [[64, 112, 12], [192, 120, 9], [0, 240, 10], [128, 236, 12]];
+  tiled(function () { for (var k = 0; k < STARS.length; k++) star(STARS[k][0], STARS[k][1], STARS[k][2], k % 2 ? SOFT : LIGHT); });
+})();
+</script>
+</body>
+</html>
