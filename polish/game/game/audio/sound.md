@@ -2,7 +2,7 @@
 
 ## 聲音風格
 
-輕快的卡通馬戲團: 撥弦(pizzicato)/ 鋼鼓短樂句當成就音, 木頭、布料、軟撞擊當動作音, 少量電子音只用在「魔法 / 怪事」(傳送、惹生氣、冷靜、特殊效果)與「警示」(heat_warn)。spec 指定音色的事件例外: 見習過場用馬戲團小號、觀眾聲與大彩炮的「哇」用真人群眾錄音、出口用門鈴「叮咚」; 打磨第 8 輪的表演卡音照 spec 用寫實音(雨聲、蹄聲、低吼、爆竹、煙火)但都短、都壓在 cue_fire 之下。
+輕快的卡通馬戲團: 撥弦(pizzicato)/ 鋼鼓短樂句當成就音, 木頭、布料、軟撞擊當動作音, 少量電子音只用在「魔法 / 怪事」(傳送、惹生氣、冷靜、特殊效果)與「警示」(heat_warn)。spec 指定音色的事件例外: 見習過場用馬戲團小號、觀眾聲與大彩炮的「哇」用真人群眾錄音、出口用門鈴「叮咚」; 打磨第 8 輪的表演卡音照 spec 用寫實音(雨聲、蹄聲、低吼、爆竹、煙火)但都短、都壓在 cue_fire 之下。打磨第 13 輪的通關動畫同樣用寫實的布料、木頭錄音當動作, 收在全作最大的一聲銅管號角 + 鼓 + 觀眾。
 
 ## 接法
 
@@ -29,6 +29,13 @@
   - 保險: 萬一結束引導時沒播 ui_confirm, 遊戲恢復後的第一個動作或表演音效(attack、skill、rope_throw、perform、cue_fire、chain、clock_tick 等)也會恢復; `stopMusic()` 或換到另一首曲子也會解除
 - interface.json 的 `crowd_clap` / `crowd_cheer` / `crowd_frenzy` 也可以用 `play('crowd_clap')` 呼叫, 效果等同 `setCrowd('clap')`(不是一次性音效, 會一直循環到換段或停掉)
 - 觀眾聲**自動收掉**的時機(RD 不呼叫也會停): `play('loose')`、`play('show_end')`、`stopMusic()`、`playMusic(表演以外的曲子)`。所以失控、時間到收場、離開表演場都不用另外 `setCrowd('')`; 要明確寫也無害
+- **通關動畫「帳篷大謝幕」**(打磨第 13 輪): RD **不用接任何新介面**, 照總結算的計時 `t` 在四個時間點各呼叫一次:
+  - `t = 0`(第 4 天表演結算按 Z 那一刻): `play('curtain_close')`。**不要另播 ui_confirm**(spec)
+  - `t ≈ 0.66`(招牌第一次落到中間): `play('sign_land')`
+  - `t = 1.35`: `play('curtain_open')` 與 `play('clear_fanfare')` **同一幀一起呼叫**
+  - 背景音樂 `result` 從第 4 天表演結算一路接著播, 不用重新 `playMusic`(呼叫同一首也不會重頭)。`play('clear_fanfare')` 會**自動把音樂壓到一半, 3 秒後自己恢復**; RD 不用呼叫 `setMusicDuck`(呼叫了也無害, 但 `setMusicDuck(true)` 之後要自己 `setMusicDuck(false)`)
+  - 通關畫面 2.2 秒後按 Z 重來: `play('ui_confirm')`(也會順手恢復音樂音量); 2.2 秒前按 Z 不呼叫任何音效
+  - Esc 暫停照舊由 touch.js 靜音處理; 動畫停住時 RD 不要重複呼叫已經過的時間點
 
 ## 事件表
 
@@ -107,12 +114,16 @@
 | buy | buy | 商店購買 / 裝備成功(武器、暗號、表演卡都播; 買暗號 / 表演卡時 0.3 秒後另接 card_get, 買武器只播 buy) | — | sfx_buy.ogg | 0.7 | 0.1 |
 | unlock | unlock | 出發準備畫面冒出「第 2 座地下城開放」「商店上架新東西」提示的那一刻(打磨第 9 輪: 開鑰匙寶箱那一刻**不播** unlock, 只播 chest_open → card_get; 下一次出發準備冒提示時才播) | — | sfx_unlock.ogg | 0.65 | 0.3 |
 | tutorial_done | tutorial_done | 教學階段完成(播完成特效的那一刻)。**收服第 3 隻火柴猴時教學第 7 階段的完成不要呼叫**(那一刻只播 quest_done) | — | sfx_tutorial_done.ogg | 0.5 | 0.2 |
-| star | star | 總結算每顆星亮起 | `index`: 第幾顆, 從 0 起算; 一顆比一顆高 | sfx_star.ogg | 0.7 | 0.05 |
 | row_swap | row_swap(打磨第 9 輪新增) | 排節目單時兩列暗號互換、或選「上移」「下移」整列對調成功的那一刻。**只播這個, 不另播 ui_confirm**(spec)。上移到頂 / 下移到底這類沒換成的, 照舊播 ui_denied | — | sfx_row_swap_a.ogg(卡片滑動「刷」)→ 0.11 秒後 sfx_row_swap_b.ogg(另一張「刷」, 略高); 兩層都跳過開頭的滑動前奏, 15 毫秒內出聲, 約 0.3 秒 | 0.55 + 0.45 | 0.08 |
 | guide_pause | guide_pause(打磨第 9 輪新增) | 暫停式引導開始、畫面暫停的那一刻(一次; 大暫停符號彈出時)。**會自動把背景音樂壓到一半、表演場的觀眾聲暫停**(見下方「暫停式引導」) | — | 內嵌 PCM(音樂盒一個「叮」, 接著像磁帶減速一樣音高一路往下沉、停住; 0.62 秒, 2 毫秒內出聲) | 0.4 | 0.5 |
 | guide_card | guide_card(打磨第 9 輪新增) | 每張引導卡開始彈入的那一刻(第 1 張在暫停 0.8 秒後; 之後每按 Z 換卡一次)。**最後一張大卡不要呼叫**(改播 guide_finale); 按 Z 本身不另播音效; 未滿 3 秒按 Z 不反應也不播 | — | sfx_guide_card.ogg(一張卡片輕輕滑入, 放慢 0.9 倍; 先有一點滑動聲, 約 0.1 秒時「嗒」一下落定) | 0.4 | 0.2 |
 | guide_finale | guide_finale(打磨第 9 輪新增) | 最後一張大卡出現的那一刻(一次; 盛大特效 2.5 秒同時開始)。萬一同一刻也呼叫了 guide_card, guide_card 會被收掉 | — | 內嵌 PCM 一段混好的 2.5 秒: 號角樂句(含鈸)+ 小鼓滾奏(由小漸大)+ 三發煙火(起音對準 0.2 / 0.9 / 1.6 秒)+ 0.3 秒起觀眾歡呼; 2.2~2.5 秒淡出 | 1.1 | 1.0 |
+| curtain_close | curtain_close(打磨第 13 輪新增) | 通關動畫 t = 0: 第 4 天表演結算**按 Z 的那一刻**, 紅絨布幕開始從兩側拉上(一次)。**只播這個, 不另播 ui_confirm** | — | 內嵌 PCM 一段混好的 0.8 秒(有聲約 0.62 秒): 布料摩擦一筆放慢 0.8 倍成厚重的「唰——」(4 毫秒內出聲、一路變大到 0.3 秒)+ 長繩揮過的低沉風聲墊底 + 約 0.5 秒時尼龍旗一甩的悶響當「軟軟的合攏」 | 0.75 | 1.0 |
+| sign_land | sign_land(打磨第 13 輪新增) | 通關動畫 t ≈ 0.66: 招牌**第一次**落到畫面中間的那一刻(一次; 之後的回彈、晃動不再呼叫) | — | 內嵌 PCM 0.45 秒: 劇場地板木棍一擊的「咚」(12 毫秒內出聲)+ 繩子「吱」一聲 + 0.15 / 0.23 / 0.31 / 0.39 秒四聲一聲比一聲高的玻璃「叮」(燈泡一圈亮起; 跟 chest_open 的閃光同一個素材) | 1.0 | 0.5 |
+| curtain_open | curtain_open(打磨第 13 輪新增) | 通關動畫 t = 1.35: 布幕往兩側拉開的那一刻(一次), **和 clear_fanfare 同一幀呼叫** | — | 內嵌 PCM 0.85 秒(有聲約 0.65 秒): 跟 curtain_close 同一份布料錄音的另一筆, 方向相反 = 一開始最大、往外散開變小 + 木棍揮過的「咻」(加速 1.15 倍, 輕快)+ 尾端布料輕輕一抖 | 0.9 | 0.5 |
+| clear_fanfare | clear_fanfare(打磨第 13 輪新增, 取代 star) | 通關動畫 t = 1.35: 和 curtain_open **同一幀**呼叫(一次)。**會自動把背景音樂壓到一半, 3 秒後恢復** | — | 內嵌 PCM 一段混好的 3.0 秒: 0~0.22 秒小鼓滾奏(由小漸大, 16 毫秒內出聲)+ 號角拾音 → **0.25 秒**大鼓 + 鈸 + 銅管三部和聲長音同時進來(最響點量在 0.26 秒, 對準聚光燈與紙花的 t = 1.6)→ 長音撐到約 2.4 秒; 0.4 秒起觀眾「耶—」+ 掌聲, 0.65 / 1.35 秒兩聲口哨; 2.55~3.0 秒淡出 | 1.5 | 2.0 |
 
+- 打磨第 13 輪拿掉 `star`(評星拿掉); 呼叫了也只是靜默忽略, 素材檔 sfx_star.ogg 已刪。新增 4 個事件(curtain_close、sign_land、curtain_open、clear_fanfare), **全部用現成素材**混成, 沒有程式產生; 其他事件、素材、音量、opts 全部沿用第 12 輪
 - 打磨第 9 輪新增 4 個事件(row_swap、guide_pause、guide_card、guide_finale), **全部用現成素材**, 沒有程式產生; 其他事件、素材、音量、opts 全部沿用第 8 輪
 - 打磨第 8 輪拿掉 `weapon_menu`(C 鍵與換武器視窗刪除)、`freeze_all`、`cheer`(兩張表演卡刪除)、`mark_add`(標記隱性化, 不讓玩家聽出有標記); 呼叫了也只是靜默忽略。cheer 原本的「耶—」錄音改給 confetti_burst 當觀眾層用。更早已拿掉 `upgrade`
 - heat_warn 為什麼程式產生: 找過 OpenGameArt 兩個 CC0 警報(Frenchyboy「Alarm」是 2 秒持續上掃的刺耳警報, 不夠短促; yd「Short alarm」標籤寫自爆倒數, 調性太重), 要求只是「短促、像警報、不刺耳」, 兩音交替的柔和方波最容易保證這幾點
@@ -128,7 +139,7 @@
 | dungeon | 選武器、地下城(含見習草地) | 進選武器畫面時(之後進地下城同一首不會重頭); 出口詢問框、拿到卡過場、暫停式引導開著時自動壓到一半(見上方 setMusicDuck 與暫停式引導); 下樓不中斷; 倒下時 play('player_down') 自動停掉 | music_dungeon.mp3(Monster Promenade 截段) | 73.8 秒 | 0.30(壓低時 0.15) |
 | setup | 進場過場(每天)、布置第 1、2 步、商店 | 進進場過場、布置第 1 步、商店時; 商店的拿到卡過場時自動壓到一半(card_get), 收下後下一個選單音恢復 | music_setup.mp3(Easy Lemon 60 秒版) | 62.5 秒 | 0.35 |
 | show | 表演場 | 開演進表演場時; 失控那一刻呼叫 `stopMusic()`; 暫停式引導時自動壓到一半(guide_pause → ui_confirm) | music_show.mp3(Four Beers' Polka 截段) | 73.6 秒 | 0.30 |
-| result | 地下城結算、表演結算、總結算 | 進任一結算畫面時 | music_result.mp3(Happy Boy End Theme) | 53.9 秒 | 0.40 |
+| result | 地下城結算、表演結算、總結算(通關畫面) | 進任一結算畫面時; 第 4 天表演結算 → 通關畫面一路接著播, 不用重新呼叫; clear_fanfare 播放的 3 秒內自動壓到一半(打磨第 13 輪) | music_result.mp3(Happy Boy End Theme) | 53.9 秒 | 0.40 |
 
 - 循環方式: 曲尾最後 1 秒與曲頭交叉淡化接回, 不是無縫剪接; 聽得出一次「段落重來」屬正常
 - 背景音樂與觀眾歡呼聲需要在遊戲畫面上署名(CC BY 4.0), 署名文字見 credits.md
@@ -189,8 +200,25 @@
 | guide_finale 與 card_get / quest_done 的辨識 | 三個都是「好事」, 但 guide_finale 長 2.5 秒、有鼓與煙火與觀眾, 另兩個 1 秒左右、只有旋律樂器; 號角是另一段旋律(不是 quest_done 那段 Win Jingle) |
 | guide_finale → 按 Z 的 ui_confirm | 大卡 3 秒後才接受 Z, guide_finale 2.5 秒已結束, 不重疊; ui_confirm 同時把音樂與觀眾聲恢復 |
 | row_swap + ui_confirm | spec: 互換 / 上下移只播 row_swap。RD 照 spec 不呼叫 ui_confirm 即可(同時呼叫兩個都會響) |
+| 通關動畫: curtain_close → sign_land → curtain_open + clear_fanfare(打磨第 13 輪) | spec: 按 Z 那一刻只播 curtain_close(不另播 ui_confirm); 0.66 秒 sign_land; 1.35 秒 curtain_open 與 clear_fanfare 疊著播。三段時間錯開: curtain_close 有聲約 0.62 秒, sign_land 進來時已收尾; sign_land 約 0.45 秒, 1.1 秒前已結束, 不跟 1.35 秒那組重疊 |
+| curtain_open + clear_fanfare 同一幀 | spec: 布幕聲在底下、號角在上面。量得最響 50 毫秒響度(含音量) curtain_open 約 −20.2 dB、clear_fanfare 約 −7.5 dB, 差約 13 dB; curtain_open 是一開始最大、0.65 秒內散掉的布料聲, clear_fanfare 頭 0.22 秒是小鼓滾奏, 布料「唰」剛好墊在滾奏底下, 0.25 秒號角與鈸進來時布幕聲已經在變小 |
+| clear_fanfare + 背景音樂 result | 號角一響音樂 0.2 秒內降到一半, 3 秒後自動恢復(spec)。期間按 Z 重來(2.2 秒後才接受)的 ui_confirm 也會恢復; 換曲也會恢復 |
+| curtain_close 與 curtain_open 的辨識 | 同一份布料錄音(spec「同一種布料聲」), 靠方向分: 拉上 = 放慢、更低更厚、一路變大、收尾一聲悶的「合攏」; 拉開 = 原速、亮一點、一開始最大往外散開、沒有合攏聲。量得拉上約 −15.0 dB、拉開約 −20.2 dB(拉開更輕) |
+| clear_fanfare 與 guide_finale 的辨識 | 兩個都是「號角 + 鼓 + 觀眾」, 但 clear_fanfare 是另一段旋律(經典的「sol → DO——」長音)、三部和聲、多了大鼓、鈸與口哨, 長 3 秒、比 guide_finale 響約 2 dB; guide_finale 是三發煙火。一個在見習教學尾、一個在全遊戲尾, 不會同時出現 |
+| clear_fanfare 與 intermission 的辨識 | 同一支小號樂句(刻意呼應): intermission 是單支小號吹完整句「do mi sol DO sol DO——」、約 −19 dB; clear_fanfare 只取最後「sol → DO——」, 疊成三部和聲加鼓、鈸、觀眾, 響約 11 dB。兩者不會同時出現 |
+| sign_land 與 chest_open / gold_get 的辨識 | 三個都有同一個玻璃「叮」, 但 sign_land 的主體是低沉的木頭「咚」, 叮是四聲連續往上(燈泡一圈); chest_open 是金屬扣 + 吱呀一聲叮、gold_get 是金幣嘩啦。sign_land 只出現在通關動畫 |
 
 ## 理念或經驗落實
+
+- 打磨第 13 輪: 既有事件的素材、音量、opts 全部沿用; 拿掉 star(連同 sfx_star.ogg 與它的內嵌段)。新增 4 個通關動畫音, **全部用現成素材混成, 沒有程式產生**, 維持「木頭布料當動作、銅管鼓與觀眾當成就」:
+  - 布幕是動作 → 布料錄音。照「寫實的物件錄音找 BigSoundBank」: OpenGameArt 搜不到 CC0 的布料揮動, BigSoundBank(CC0)搜 curtain / fabric / cloth 找到浴簾摩擦、尼龍旗甩動、長繩揮動; 沒有真的舞台布幕錄音, 用浴簾摩擦放慢 0.8 倍當厚重絨布, 旗子甩一下的悶響當「合攏」
+  - 照「成對事件取同一個素材、前後呼應」: 拉上與拉開取**同一份**浴簾錄音的不同兩筆(spec「同一種布料聲但方向相反」), 拉上一路變大收在合攏、拉開一開始最大往外散開、原速更輕快
+  - 照「按鍵直接回饋的音要在 0.03 秒內出聲, 刻意漸強的要有立即出聲的層墊著」: curtain_close 是按 Z 的直接回饋, 但布料這一筆本來是漸強(原錄音 0.3 秒才到峰值一成)→ 用響度重塑把開頭拉到最響的 −9 dB 左右再往上爬, 加上從中段起播的繩子風聲, 量得 4 毫秒到峰值一成; sign_land 12 毫秒、clear_fanfare 16 毫秒
+  - 招牌落定 → 劇場「三擊」錄音(BigSoundBank, 木棍敲舞台地板)裡的一擊當「咚」, 一聽就是劇場; 燈泡的「叮叮叮」用本作已登記的玻璃閃光(chest_open / gold_get 同一個)升調連四聲, 跟寶箱的「亮晶晶」是同一家族
+  - 照「規格指定演出音的撞擊點時間, 驗收量最響點」: spec 要號角最高點在 clear_fanfare 開始後 0.25 秒。號角取 OpenGameArt 上 fvcalderan 的 CC0「Classic fanfare lick」(do mi sol DO sol DO——)——下載後比對, 它就是本作每天進場過場 intermission 那支小號(已登記的 sfx_intermission.ogg), 正好讓「每天開演前的小號」在通關時變成大合奏, 前後呼應。用音高追蹤找到長音 DO 起音在原檔 1.175 秒, 對齊到 0.25 秒; 長音以 80 毫秒交叉淡化延長, 再用同一支號角降五度、降八度疊成三部和聲當「大合奏」。第一版最響點量在 0.34 秒, 查出是低音通鼓起音慢(降速後 0.08 秒才到頂), 把大鼓提前 0.075 秒後最響點落在 0.26 秒
+  - 照「量最響 50 毫秒響度來設相對音量」: spec 要 clear_fanfare 比 guide_finale 更大 → 設 1.5, 約 −7.5 dB(guide_finale −9.3、card_get −10.0); 布幕拉上 −15.0、招牌 −15.4、布幕拉開 −20.2(spec 要更輕、在號角底下)。實際輕重與辨識度待試玩確認
+  - 也比過的號角: cynicmusic「Victory Fanfare Short」(CC0, 11.8 秒的整段曲子, 挑不出單獨的最高點)、Umplix「Victory」(CC0, 12.6 秒)、nene「Production Theme Intro」(CC0, 12 秒、0.5 秒才出聲); Spring Spring 的「Fanfares」「Brass Fanfare」是 CC BY / CC BY-SA, 而且 guide_finale 已用他的 CC0 號角, 換一段旋律才分得出兩個場合
+  - 授權: 新素材全部 CC0(BigSoundBank 11 筆; 號角沿用 intermission 已登記的 fvcalderan 小號、小鼓沿用 guide_finale 已登記的 Spring Spring 小鼓、玻璃閃光沿用已登記的 Kenney 檔), 全部以 PCM 內嵌, 沒有新增 assets/ 檔案
 
 - 打磨第 12 輪: 既有事件的素材、音量、opts 全部沿用, 沒有刪任何素材檔。只新增 stairs_up、gold_get, **都用現成素材, 沒有程式產生**:
   - 照「成對事件取同一個素材、前後呼應」: stairs_up 不另找素材, 直接用 stairs_down 那組 Kenney 木頭腳步, 把音高走向與音量走向都反過來(spec「同材質、音階反過來」)。量得兩者最響 50 毫秒響度幾乎一樣(−17.4 / −17.2 dB), 有聲長度 0.83 / 0.78 秒, 都在 1.0 秒轉場內
